@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}工作台 - 项目管理系统{% endblock %}
+{% block content %}
+<h3 class="mb-4">工作台</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card text-bg-primary h-100"><div class="card-body">
+    <h6>项目总数</h6><h2>{{ project_count }}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-secondary h-100"><div class="card-body">
+    <h6>任务总数</h6><h2>{{ task_count }}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-warning h-100"><div class="card-body">
+    <h6>待处理 / 进行中</h6><h2>{{ todo_count }} / {{ doing_count }}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-success h-100"><div class="card-body">
+    <h6>已完成</h6><h2>{{ done_count }}</h2></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">我的项目</div>
+      <ul class="list-group list-group-flush">
+        {% for project in my_projects %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'project_detail' project.pk %}">{{ project.name }}</a>
+          <span class="badge bg-primary">{{ project.get_status_display }}</span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">暂无项目，<a href="{% url 'project_create' %}">去创建一个</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">我的待办任务</div>
+      <ul class="list-group list-group-flush">
+        {% for task in my_tasks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'project_detail' task.project.pk %}">{{ task.title }}</a>
+          <span>
+            <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %} me-1">{{ task.get_priority_display }}</span>
+            <span class="badge bg-secondary">{{ task.get_status_display }}</span>
+          </span>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">没有待办任务 🎉</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

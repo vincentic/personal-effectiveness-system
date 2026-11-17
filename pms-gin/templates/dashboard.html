@@ -1,0 +1,50 @@
+{{define "content"}}
+<h3 class="mb-4">工作台</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card text-bg-primary h-100"><div class="card-body">
+    <h6>项目总数</h6><h2>{{.ProjectCount}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-secondary h-100"><div class="card-body">
+    <h6>任务总数</h6><h2>{{.TaskCount}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-warning h-100"><div class="card-body">
+    <h6>待处理 / 进行中</h6><h2>{{.TodoCount}} / {{.DoingCount}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-success h-100"><div class="card-body">
+    <h6>已完成</h6><h2>{{.DoneCount}}</h2></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">我的项目</div>
+      <ul class="list-group list-group-flush">
+        {{range .MyProjects}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/projects/{{.ID}}/">{{.Name}}</a>
+          <span class="badge bg-primary">{{.StatusLabel}}</span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无项目，<a href="/projects/new/">去创建一个</a></li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">我的待办任务</div>
+      <ul class="list-group list-group-flush">
+        {{range .MyTasks}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/projects/{{.ProjectID}}/">{{.Title}}</a>
+          <span>
+            <span class="badge {{.PriorityBadge}} me-1">{{.PriorityLabel}}</span>
+            <span class="badge bg-secondary">{{.StatusLabel}}</span>
+          </span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">没有待办任务 🎉</li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+</div>
+{{end}}

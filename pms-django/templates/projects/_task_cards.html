@@ -1,0 +1,30 @@
+{% with tasks=project.tasks.all %}
+{% for task in tasks %}
+  {% if task.status == status %}
+  <div class="card shadow-sm mb-2">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <strong class="small">{{ task.title }}</strong>
+        <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+          {{ task.get_priority_display }}
+        </span>
+      </div>
+      {% if task.description %}<p class="small text-muted mb-1">{{ task.description|truncatechars:50 }}</p>{% endif %}
+      <div class="d-flex justify-content-between align-items-center">
+        <small class="text-muted">
+          {{ task.assignee.username|default:"未指派" }}
+          {% if task.due_date %}· 截止 {{ task.due_date }}{% endif %}
+        </small>
+        <span class="d-flex gap-1">
+          <a href="{% url 'task_update' task.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-1">改</a>
+          <a href="{% url 'task_delete' task.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"
+             onclick="return confirm('确定删除该任务吗？')">删</a>
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% empty %}
+  <p class="text-muted small">暂无任务</p>
+{% endfor %}
+{% endwith %}
