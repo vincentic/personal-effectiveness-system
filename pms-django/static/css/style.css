@@ -1,6 +1,7 @@
 /* ==========================================================
-   PMS 项目管理系统 · 自定义样式
+   个人效能系统 · 自定义样式
    在 Bootstrap 5.3 之后加载：只做视觉增强，不改动栅格与组件结构
+   前 1–9 节为通用设计体系，第 10 节起为效能系统清单界面专用
    ========================================================== */
 
 :root {
@@ -355,4 +356,157 @@ button:focus-visible,
   .card[class*="text-bg-"]:hover {
     transform: none;
   }
+}
+
+/* ==========================================================
+   10. 个人效能系统 · 清单界面专用
+   ========================================================== */
+
+/* 顶部导航：靛蓝渐变，区别于原项目蓝 */
+.app-navbar {
+  background: linear-gradient(100deg, #4338ca 0%, #4f46e5 55%, #6366f1 100%) !important;
+}
+
+/* 今日 hero 卡 */
+.quick-hero {
+  border: 1px solid #dfe3fb;
+  background: linear-gradient(135deg, #f5f6ff 0%, #eef2ff 45%, #f8fafc 100%);
+}
+.quick-label {
+  color: #6366f1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+}
+.quick-mit {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.stat-mini {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #e4e9f0;
+  border-radius: 0.7rem;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.stat-mini span {
+  color: var(--pms-muted);
+  font-size: 0.78rem;
+}
+.stat-mini strong {
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 工作台统计卡（浅色底 + 左侧色条） */
+.stat-card {
+  --accent: var(--pms-primary);
+  border-left: 4px solid var(--accent);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--bs-box-shadow); }
+.stat-daily   { --accent: #6366f1; }
+.stat-weekly  { --accent: #0ea5e9; }
+.stat-monthly { --accent: #f59e0b; }
+.stat-label {
+  color: var(--pms-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+.stat-num {
+  margin: 0.15rem 0 0.35rem;
+  font-size: 2.1rem;
+  font-weight: 650;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.stat-link { font-size: 0.82rem; text-decoration: none; }
+.stat-link:hover { text-decoration: underline; }
+
+/* 柔和徽章 */
+.bg-soft-primary   { background-color: #eef2ff !important; color: #4338ca !important; }
+.bg-soft-secondary { background-color: #f1f5f9 !important; color: #475569 !important; }
+.bg-soft-success   { background-color: #ecfdf5 !important; color: #047857 !important; }
+
+/* 精力徽章 */
+.energy-low    { background-color: #fef3c7 !important; color: #b45309 !important; }
+.energy-medium { background-color: #e0f2fe !important; color: #0369a1 !important; }
+.energy-high   { background-color: #dcfce7 !important; color: #15803d !important; }
+
+/* 值得投入徽章 */
+.badge-worth-yes    { background-color: #dcfce7 !important; color: #15803d !important; }
+.badge-worth-adjust { background-color: #fef3c7 !important; color: #b45309 !important; }
+.badge-worth-stop   { background-color: #fee2e2 !important; color: #b91c1c !important; }
+
+/* 细进度条 */
+.progress-thin {
+  height: 6px;
+  background-color: #e9edf4;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+.progress-thin .progress-bar { background-color: #6366f1; }
+.progress-thin .progress-bar.bg-soft { background-color: #0ea5e9; }
+
+.list-table { min-width: 640px; }
+
+/* 清单卡片（表单页分区） */
+.checklist-card { overflow: hidden; }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #312e81;
+  background: linear-gradient(90deg, #f5f6ff, #ffffff);
+}
+.section-header small {
+  color: var(--pms-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+.section-no {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 0.55rem;
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+/* 清单表格 */
+.block-table { min-width: 720px; margin-bottom: 0; }
+.block-table > :not(caption) > * > * { padding: 0.55rem 0.5rem; }
+.block-table .form-control,
+.block-table .form-select { padding: 0.4rem 0.55rem; font-size: 0.87rem; }
+.check-circle .form-check-input { width: 1.15rem; height: 1.15rem; cursor: pointer; }
+
+/* 勾选行与分组标题 */
+.check-line { padding: 0.3rem 0; }
+.check-line .form-check-input { cursor: pointer; margin-top: 0.15rem; }
+.check-line .form-check-label { font-size: 0.9rem; cursor: pointer; }
+.check-group-title {
+  color: #4338ca;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 2px solid #eef2ff;
+}
+
+@media (max-width: 767.98px) {
+  .section-header { flex-wrap: wrap; }
+  .section-header small { width: 100%; padding-left: 2.5rem; }
+  .quick-mit { font-size: 1.05rem; }
 }

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - 个人效能系统{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div><h3 class="mb-0">{{ title }}</h3></div>
+  <a href="{% url 'daily_list' %}" class="btn btn-outline-secondary">← 返回列表</a>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+
+  {# 一、今日方向 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header">
+      <span class="section-no">一</span> 今日方向 <small>先决定成果，再安排时间</small>
+    </div>
+    <div class="card-body">
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">{{ form.plan_date.label }}</label>
+          {{ form.plan_date }}
+          {{ form.plan_date.errors }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">{{ form.sleep_hours.label }}</label>
+          {{ form.sleep_hours }}
+          {{ form.sleep_hours.errors }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">{{ form.energy_level.label }}</label>
+          {{ form.energy_level }}
+          {{ form.energy_level.errors }}
+        </div>
+      </div>
+      <div class="mb-1">
+        <label class="form-label fw-semibold">{{ form.mit.label }}</label>
+        {{ form.mit }}
+        {{ form.mit.errors }}
+      </div>
+    </div>
+  </div>
+
+  {# 二、今日组块与时间盒 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header">
+      <span class="section-no">二</span> 今日组块与时间盒
+      <small>每块写清 输入 / 关键动作 / 可验收输出；时间盒结束检查进度，不要求强行做完</small>
+    </div>
+    <div class="card-body">
+      {{ formset.management_form }}
+      {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+      <div class="table-responsive">
+        <table class="table block-table align-middle">
+          <thead>
+            <tr>
+              <th style="width:42px">#</th>
+              <th style="width:180px">组块 / 任务</th>
+              <th style="width:150px">时间盒</th>
+              <th>输入</th>
+              <th>关键动作</th>
+              <th>可验收输出</th>
+              <th style="width:56px" class="text-center">完成</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in formset %}
+            <tr class="{% if f.errors %}table-danger{% endif %}">
+              <td class="text-muted small">{{ f.seq.value|default:forloop.counter }}</td>
+              <td>{{ f.block_name }}{{ f.block_name.errors }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-1">
+                  {{ f.time_start }}{{ f.time_end }}
+                </div>
+                {{ f.time_start.errors }}{{ f.time_end.errors }}
+              </td>
+              <td>{{ f.input_desc }}{{ f.input_desc.errors }}</td>
+              <td>{{ f.key_action }}{{ f.key_action.errors }}</td>
+              <td>{{ f.deliverable }}{{ f.deliverable.errors }}</td>
+              <td class="text-center"><label class="check-circle">{{ f.is_done }}</label></td>
+              <td>
+                {{ f.id }}
+                {% if f.DELETE %}<label class="text-danger" title="删除本行">{{ f.DELETE }} ✕</label>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# 三、执行前后检查 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">三</span> 执行前后检查</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <h6 class="check-group-title">启动前</h6>
+          <div class="form-check check-line">{{ form.pre_know_output }}<label class="form-check-label">{{ form.pre_know_output.label }}</label></div>
+          <div class="form-check check-line">{{ form.pre_materials_ready }}<label class="form-check-label">{{ form.pre_materials_ready.label }}</label></div>
+          <div class="form-check check-line">{{ form.pre_phone_handled }}<label class="form-check-label">{{ form.pre_phone_handled.label }}</label></div>
+        </div>
+        <div class="col-md-4">
+          <h6 class="check-group-title">执行中</h6>
+          <div class="form-check check-line">{{ form.during_one_block }}<label class="form-check-label">{{ form.during_one_block.label }}</label></div>
+          <div class="form-check check-line">{{ form.during_shrink_step }}<label class="form-check-label">{{ form.during_shrink_step.label }}</label></div>
+          <div class="form-check check-line">{{ form.during_record_distraction }}<label class="form-check-label">{{ form.during_record_distraction.label }}</label></div>
+        </div>
+        <div class="col-md-4">
+          <h6 class="check-group-title">结束后</h6>
+          <div class="form-check check-line">{{ form.post_visible_output }}<label class="form-check-label">{{ form.post_visible_output.label }}</label></div>
+          <div class="form-check check-line">{{ form.post_recall }}<label class="form-check-label">{{ form.post_recall.label }}</label></div>
+          <div class="form-check check-line">{{ form.post_next_step }}<label class="form-check-label">{{ form.post_next_step.label }}</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# 四、生活维护 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">四</span> 生活维护 <small>不追求满分，保持基本盘</small></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-3 col-6"><div class="form-check check-line">{{ form.life_water_food }}<label class="form-check-label">{{ form.life_water_food.label }}</label></div></div>
+        <div class="col-md-3 col-6"><div class="form-check check-line">{{ form.life_walk_exercise }}<label class="form-check-label">{{ form.life_walk_exercise.label }}</label></div></div>
+        <div class="col-md-3 col-6"><div class="form-check check-line">{{ form.life_clean_tidy }}<label class="form-check-label">{{ form.life_clean_tidy.label }}</label></div></div>
+        <div class="col-md-3 col-6"><div class="form-check check-line">{{ form.life_social_outdoor }}<label class="form-check-label">{{ form.life_social_outdoor.label }}</label></div></div>
+      </div>
+    </div>
+  </div>
+
+  {# 五、晚间 5 分钟复盘 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">五</span> 晚间 5 分钟复盘</div>
+    <div class="card-body">
+      <div class="mb-3"><label class="form-label fw-semibold">{{ form.review_accomplished.label }}</label>{{ form.review_accomplished }}</div>
+      <div class="mb-3"><label class="form-label fw-semibold">{{ form.review_resistance.label }}</label>{{ form.review_resistance }}</div>
+      <div class="mb-3"><label class="form-label fw-semibold">{{ form.review_tomorrow_start.label }}</label>{{ form.review_tomorrow_start }}</div>
+      <div class="mb-1"><label class="form-label fw-semibold">{{ form.review_gratitude.label }}</label>{{ form.review_gratitude }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mb-5">
+    <a href="{% url 'daily_list' %}" class="btn btn-outline-secondary">取消</a>
+    <button type="submit" class="btn btn-primary">保存清单</button>
+  </div>
+</form>
+{% endblock %}

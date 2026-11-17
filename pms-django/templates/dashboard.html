@@ -1,50 +1,153 @@
 {% extends "base.html" %}
-{% block title %}工作台 - 项目管理系统{% endblock %}
+{% block title %}工作台 - 个人效能系统{% endblock %}
 {% block content %}
-<h3 class="mb-4">工作台</h3>
 
-<div class="row g-3 mb-4">
-  <div class="col-md-3"><div class="card text-bg-primary h-100"><div class="card-body">
-    <h6>项目总数</h6><h2>{{ project_count }}</h2></div></div></div>
-  <div class="col-md-3"><div class="card text-bg-secondary h-100"><div class="card-body">
-    <h6>任务总数</h6><h2>{{ task_count }}</h2></div></div></div>
-  <div class="col-md-3"><div class="card text-bg-warning h-100"><div class="card-body">
-    <h6>待处理 / 进行中</h6><h2>{{ todo_count }} / {{ doing_count }}</h2></div></div></div>
-  <div class="col-md-3"><div class="card text-bg-success h-100"><div class="card-body">
-    <h6>已完成</h6><h2>{{ done_count }}</h2></div></div></div>
+<div class="d-flex align-items-end justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h3 class="mb-1">工作台</h3>
+    <p class="text-muted mb-0">先做重要成果 · 组块决定做什么，时间盒决定投入多久 · 结束时复盘</p>
+  </div>
+  <div class="text-muted small">{{ today|date:"Y年m月d日 l" }}</div>
 </div>
 
+{# 今日快速入口 #}
+<div class="card quick-hero mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div class="flex-grow-1" style="min-width:260px">
+        <div class="quick-label">今日最重要成果 · MIT</div>
+        {% if today_plan and today_plan.mit %}
+          <div class="quick-mit">{{ today_plan.mit }}</div>
+        {% else %}
+          <div class="quick-mit text-muted">还没写下今天最重要的成果</div>
+        {% endif %}
+      </div>
+      <a href="{% if today_plan %}{% url 'daily_update' today_plan.pk %}{% else %}{% url 'daily_create' %}{% endif %}"
+         class="btn btn-primary">
+        {% if today_plan %}编辑今日清单{% else %}填写今日清单{% endif %}
+      </a>
+    </div>
+    {% if today_plan %}
+    <div class="row g-3 mt-3">
+      <div class="col-6 col-md-3">
+        <div class="stat-mini"><span>精力</span><strong>{{ today_plan.get_energy_level_display }}</strong></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-mini"><span>组块进度</span><strong>{{ today_plan.blocks_done }}/{{ today_plan.blocks_total }}</strong></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-mini"><span>检查完成</span><strong>{{ today_plan.checklist_done }}/{{ today_plan.checklist_total }}</strong></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-mini"><span>睡眠</span><strong>{% if today_plan.sleep_hours %}{{ today_plan.sleep_hours }}h{% else %}—{% endif %}</strong></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# 统计卡 #}
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card stat-card stat-daily h-100"><div class="card-body">
+    <div class="stat-label">每日执行清单</div><h2 class="stat-num">{{ daily_count }}</h2>
+    <a href="{% url 'daily_list' %}" class="stat-link">查看全部 →</a>
+  </div></div></div>
+  <div class="col-md-4"><div class="card stat-card stat-weekly h-100"><div class="card-body">
+    <div class="stat-label">每周复盘</div><h2 class="stat-num">{{ weekly_count }}</h2>
+    <a href="{% url 'weekly_list' %}" class="stat-link">查看全部 →</a>
+  </div></div></div>
+  <div class="col-md-4"><div class="card stat-card stat-monthly h-100"><div class="card-body">
+    <div class="stat-label">每月重构</div><h2 class="stat-num">{{ monthly_count }}</h2>
+    <a href="{% url 'monthly_list' %}" class="stat-link">查看全部 →</a>
+  </div></div></div>
+</div>
+
+{# 本周 / 本月状态 #}
+<div class="row g-4 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>本周复盘</span>
+        {% if week_review %}
+          <a href="{% url 'weekly_update' week_review.pk %}" class="small">编辑</a>
+        {% else %}
+          <a href="{% url 'weekly_create' %}" class="small">去填写</a>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if week_review %}
+          <p class="mb-1"><span class="text-muted small">本周最重要成果</span></p>
+          <p class="mb-2">
+            {% if week_review.next_mit_1 %}<span class="badge bg-soft-primary me-1">{{ week_review.next_mit_1 }}</span>{% endif %}
+            {% if week_review.next_mit_2 %}<span class="badge bg-soft-primary me-1">{{ week_review.next_mit_2 }}</span>{% endif %}
+            {% if week_review.next_mit_3 %}<span class="badge bg-soft-primary me-1">{{ week_review.next_mit_3 }}</span>{% endif %}
+          </p>
+          <p class="mb-0 text-muted small">{{ week_review.week_start|date:"m/d" }} – {{ week_review.week_end|date:"m/d" }}</p>
+        {% else %}
+          <p class="text-muted mb-0">本周还没有复盘，建议用 30–45 分钟回顾事实、定下周承诺。</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>本月重构</span>
+        {% if month_review %}
+          <a href="{% url 'monthly_update' month_review.pk %}" class="small">编辑</a>
+        {% else %}
+          <a href="{% url 'monthly_create' %}" class="small">去填写</a>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if month_review %}
+          <p class="mb-1"><span class="text-muted small">本月最重要成果</span></p>
+          <p class="mb-2">{{ month_review.top_achievement|truncatechars:80 }}</p>
+          <p class="mb-0 text-muted small">系统健康均分：{% if month_review.avg_score %}{{ month_review.avg_score }} / 5{% else %}未评分{% endif %}</p>
+        {% else %}
+          <p class="text-muted mb-0">本月还没有重构，建议用 45–60 分钟检查目标、系统健康与三项改进。</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# 最近记录 #}
 <div class="row g-4">
   <div class="col-md-6">
     <div class="card shadow-sm h-100">
-      <div class="card-header">我的项目</div>
+      <div class="card-header">最近每日清单</div>
       <ul class="list-group list-group-flush">
-        {% for project in my_projects %}
+        {% for p in recent_daily %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <a href="{% url 'project_detail' project.pk %}">{{ project.name }}</a>
-          <span class="badge bg-primary">{{ project.get_status_display }}</span>
+          <a href="{% url 'daily_update' p.pk %}">{{ p.plan_date|date:"m月d日" }} · {{ p.mit|truncatechars:24|default:"（未写 MIT）" }}</a>
+          <span class="badge bg-soft-primary">{{ p.blocks_done }}/{{ p.blocks_total }} 组块</span>
         </li>
         {% empty %}
-        <li class="list-group-item text-muted">暂无项目，<a href="{% url 'project_create' %}">去创建一个</a></li>
+        <li class="list-group-item text-muted">暂无记录，<a href="{% url 'daily_create' %}">填写今日清单</a></li>
         {% endfor %}
       </ul>
     </div>
   </div>
   <div class="col-md-6">
     <div class="card shadow-sm h-100">
-      <div class="card-header">我的待办任务</div>
+      <div class="card-header">最近复盘与重构</div>
       <ul class="list-group list-group-flush">
-        {% for task in my_tasks %}
+        {% for w in recent_weekly %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <a href="{% url 'project_detail' task.project.pk %}">{{ task.title }}</a>
-          <span>
-            <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-info text-dark{% else %}bg-secondary{% endif %} me-1">{{ task.get_priority_display }}</span>
-            <span class="badge bg-secondary">{{ task.get_status_display }}</span>
-          </span>
+          <a href="{% url 'weekly_update' w.pk %}">周复盘 · {{ w.week_start|date:"m/d" }}</a>
+          <span class="badge bg-soft-secondary">每周</span>
         </li>
-        {% empty %}
-        <li class="list-group-item text-muted">没有待办任务 🎉</li>
         {% endfor %}
+        {% for m in recent_monthly %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'monthly_update' m.pk %}">月重构 · {{ m.month }}</a>
+          <span class="badge bg-soft-success">每月</span>
+        </li>
+        {% endfor %}
+        {% if not recent_weekly and not recent_monthly %}
+        <li class="list-group-item text-muted">暂无记录</li>
+        {% endif %}
       </ul>
     </div>
   </div>

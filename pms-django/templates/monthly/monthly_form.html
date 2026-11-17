@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - 个人效能系统{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div><h3 class="mb-0">{{ title }}</h3></div>
+  <a href="{% url 'monthly_list' %}" class="btn btn-outline-secondary">← 返回列表</a>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+  {# 一、目标与价值检查 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">一</span> 目标与价值检查</div>
+    <div class="card-body">
+      <div class="row g-3 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">{{ form.month.label }}</label>
+          {{ form.month }}{{ form.month.errors }}
+        </div>
+      </div>
+      <div class="mb-3"><label class="form-label fw-semibold">{{ form.top_achievement.label }}</label>{{ form.top_achievement }}</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-3"><label class="form-label">{{ form.worth_continue.label }}</label>{{ form.worth_continue }}</div>
+        <div class="col-md-9"><label class="form-label">{{ form.worth_reason.label }}</label>{{ form.worth_reason }}</div>
+      </div>
+      <div class="mb-2"><label class="form-label fw-semibold">{{ form.most_valuable_input.label }}</label>{{ form.most_valuable_input }}</div>
+      <div class="mb-1"><label class="form-label fw-semibold">{{ form.biggest_opportunity_cost.label }}</label>{{ form.biggest_opportunity_cost }}</div>
+    </div>
+  </div>
+
+  {# 二、系统健康检查 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">二</span> 系统健康检查 <small>模块自评 1–5 分</small></div>
+    <div class="card-body">
+      {{ health.management_form }}
+      {% if health.non_form_errors %}<div class="alert alert-danger">{{ health.non_form_errors }}</div>{% endif %}
+      <div class="table-responsive">
+        <table class="table block-table align-middle">
+          <thead><tr><th style="width:240px">模块</th><th style="width:140px">自评（1–5）</th><th>需要的改变</th></tr></thead>
+          <tbody>
+            {% for f in health %}
+            <tr>
+              <td>{{ f.module }}{{ f.module.errors }}</td>
+              <td>{{ f.score }}{{ f.score.errors }}</td>
+              <td>{{ f.needed_change }}{{ f.needed_change.errors }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# 三、下月只做三项系统改进 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">三</span> 下月只做三项系统改进</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4"><label class="form-label fw-semibold">{{ form.keep_item.label }}</label>{{ form.keep_item }}</div>
+        <div class="col-md-4"><label class="form-label fw-semibold">{{ form.cut_item.label }}</label>{{ form.cut_item }}</div>
+        <div class="col-md-4"><label class="form-label fw-semibold">{{ form.experiment_item.label }}</label>{{ form.experiment_item }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# 四、季度方向校准 #}
+  <div class="card checklist-card mb-4">
+    <div class="card-header section-header"><span class="section-no">四</span> 季度方向校准 <small>可选</small></div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><div class="form-check check-line">{{ form.q_skill_portfolio }}<label class="form-check-label">{{ form.q_skill_portfolio.label }}</label></div></div>
+        <div class="col-md-6"><div class="form-check check-line">{{ form.q_career_alignment }}<label class="form-check-label">{{ form.q_career_alignment.label }}</label></div></div>
+        <div class="col-md-6"><div class="form-check check-line">{{ form.q_life_autonomy }}<label class="form-check-label">{{ form.q_life_autonomy.label }}</label></div></div>
+        <div class="col-md-6"><div class="form-check check-line">{{ form.q_recovery_relations }}<label class="form-check-label">{{ form.q_recovery_relations.label }}</label></div></div>
+        <div class="col-md-12"><div class="form-check check-line">{{ form.q_longterm_decision }}<label class="form-check-label">{{ form.q_longterm_decision.label }}</label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mb-5">
+    <a href="{% url 'monthly_list' %}" class="btn btn-outline-secondary">取消</a>
+    <button type="submit" class="btn btn-primary">保存重构</button>
+  </div>
+</form>
+{% endblock %}

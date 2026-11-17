@@ -1,6 +1,33 @@
-# PMS 项目管理系统 · 四版本实现
+# 个人效能系统（原 PMS 项目管理系统）· 四版本实现
 
-本仓库用四种技术栈实现了同一套 PMS（项目/任务/成员管理），四个版本**共用同一个 MySQL 数据库、同一套表结构与同一套 REST API 契约**，账号、数据和 API Token 完全互通。
+> **v2（当前）**：依据《个人效能系统 · 版本 1.0》三张清单（每日执行 / 每周复盘 / 每月重构），数据模型整体替换为效能模型。**Django 版已改造为参照实现**（日/周/月三张清单界面，完整 CRUD）。其余三版本轮保留 v1 代码。
+>
+> **v1（历史基线）**：四版本 PMS（项目/任务/成员管理），共用 MySQL 表结构与 REST API 契约，账号/数据/Token 互通。提交 `a702875` 为 v1 基线，旧建表语句见 [db/schema.v1-legacy.sql](db/schema.v1-legacy.sql)。
+
+## 版本与数据模型对照（v2）
+
+| 版本 | 数据模型 | 界面 | 说明 |
+|------|---------|------|------|
+| Django | ✅ v2 效能模型 | ✅ 日/周/月三张清单 | 参照实现，已完整改造 |
+| Spring Boot | v1（projects/tasks） | v1 旧界面 | 本轮未改；如需独立运行用 legacy schema |
+| Gin | v1（projects/tasks） | v1 旧界面 | 本轮未改 |
+| FastAPI | v1（projects/tasks） | 纯 API | 本轮未改 |
+
+**效能系统三张清单 ↔ 数据表**：每日执行（`daily_plans` + `time_blocks`）、每周复盘（`weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`）、每月重构（`monthly_reviews` + `system_health_checks`）。完整字段映射与设计说明见 [db/DESIGN.md](db/DESIGN.md)。
+
+### Django 版快速体验（v2）
+
+```bash
+cd pms-django
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+# 按 .env 配置好 MySQL 后：
+python manage.py migrate
+python manage.py runserver 8000
+# 登录后依次进入：每日执行 / 每周复盘 / 每月重构
+```
+
+> 迁移说明：Django 版的 `0001_initial.py` 已重建为 v2 效能模型。若数据库已有 v1 的 Django 表（auth_user / projects_project 等），需在全新库上使用，或自行编写数据迁移。
 
 ## 目录结构
 

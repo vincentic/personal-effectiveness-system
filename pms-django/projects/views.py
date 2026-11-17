@@ -1,10 +1,42 @@
+from datetime import timedelta
+
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
-from .forms import ProjectForm, TaskForm
-from .models import Project, Task
+from .forms import (
+    DailyPlanForm,
+    DomainReviewFormSet,
+    HealthCheckFormSet,
+    MonthlyReviewForm,
+    TaskFlowFormSet,
+    TimeBlockFormSet,
+    WeeklyReviewForm,
+)
+from .models import DailyPlan, MonthlyReview, TimeBlock, WeeklyReview
+
+
+DOMAIN_INITIAL = [
+    {"domain": "work"},
+    {"domain": "study"},
+    {"domain": "body"},
+    {"domain": "relations"},
+]
+
+HEALTH_INITIAL = [
+    {"module": "direction"},
+    {"module": "taskload"},
+    {"module": "blockquality"},
+    {"module": "timebox"},
+    {"module": "sleepenergy"},
+    {"module": "reviewquality"},
+]
+
+
+def _monday(d):
+    return d - timedelta(days=d.weekday())
 
 
 def login_view(request):
@@ -20,123 +52,206 @@ def login_view(request):
 
 @login_required
 def dashboard(request):
-    """工作台：统计概览 + 我的项目 + 我的任务"""
+    """工作台：效能系统概览 + 今日入口"""
+    today = timezone.localdate()
+    monday = _monday(today)
+    month = today.strftime("%Y-%m")
+
+    daily_qs = DailyPlan.objects.filter(user=request.user)
+    weekly_qs = WeeklyReview.objects.filter(user=request.user)
+    monthly_qs = MonthlyReview.objects.filter(user=request.user)
+
+    today_plan = daily_qs.filter(plan_date=today).first()
+    week_review = weekly_qs.filter(week_start=monday).first()
+    month_review = monthly_qs.filter(month=month).first()
+
     context = {
-        "project_count": Project.objects.count(),
-        "task_count": Task.objects.count(),
-        "todo_count": Task.objects.filter(status="todo").count(),
-        "doing_count": Task.objects.filter(status="doing").count(),
-        "done_count": Task.objects.filter(status="done").count(),
-        "my_projects": Project.objects.filter(owner=request.user)[:5],
-        "my_tasks": Task.objects.filter(assignee=request.user).exclude(status="done")[:10],
+        "today": today,
+        "today_plan": today_plan,
+        "week_review": week_review,
+        "month_review": month_review,
+        "daily_count": daily_qs.count(),
+        "weekly_count": weekly_qs.count(),
+        "monthly_count": monthly_qs.count(),
+        "recent_daily": daily_qs[:5],
+        "recent_weekly": weekly_qs[:5],
+        "recent_monthly": monthly_qs[:5],
+        "block_total": sum(p.blocks_total for p in daily_qs[:7]),
+        "block_done": sum(p.blocks_done for p in daily_qs[:7]),
     }
     return render(request, "dashboard.html", context)
 
 
+# ---------------------------------------------------------------- 每日执行清单
+
 @login_required
-def project_list(request):
-    """项目列表（支持按状态、名称筛选）"""
-    status = request.GET.get("status", "")
-    keyword = request.GET.get("q", "")
-    qs = Project.objects.all()
-    if status:
-        qs = qs.filter(status=status)
-    if keyword:
-        qs = qs.filter(name__icontains=keyword)
-    return render(request, "projects/project_list.html", {"projects": qs, "status": status, "keyword": keyword})
+def daily_list(request):
+    plans = DailyPlan.objects.filter(user=request.user)
+    return render(request, "daily/daily_list.html", {"plans": plans})
 
 
 @login_required
-def project_create(request):
-    """新建项目（创建者自动成为负责人）"""
+def daily_create(request):
     if request.method == "POST":
-        form = ProjectForm(request.POST)
-        if form.is_valid():
-            project = form.save(commit=False)
-            project.owner = request.user
-            project.save()
-            form.save_m2m()
-            return redirect("project_detail", pk=project.pk)
+        form = DailyPlanForm(request.POST)
+        formset = TimeBlockFormSet(request.POST, prefix="blocks")
+        if form.is_valid() and formset.is_valid():
+            plan = form.save(commit=False)
+            plan.user = request.user
+            plan.save()
+            formset.instance = plan
+            formset.save()
+            return redirect("daily_list")
     else:
-        form = ProjectForm()
-    return render(request, "projects/project_form.html", {"form": form, "title": "新建项目"})
+        form = DailyPlanForm(initial={"plan_date": timezone.localdate()})
+        formset = TimeBlockFormSet(prefix="blocks", initial=[{"seq": i} for i in range(1, 5)])
+    return render(request, "daily/daily_form.html", {"form": form, "formset": formset, "title": "填写今日执行清单"})
 
 
 @login_required
-def project_detail(request, pk):
-    """项目详情：信息 + 任务看板"""
-    project = get_object_or_404(Project, pk=pk)
-    tasks = project.tasks.select_related("assignee")
-    return render(request, "projects/project_detail.html", {"project": project, "tasks": tasks})
-
-
-@login_required
-def project_update(request, pk):
-    """编辑项目（仅负责人可操作）"""
-    project = get_object_or_404(Project, pk=pk)
-    if project.owner != request.user:
-        return redirect("project_detail", pk=pk)
+def daily_update(request, pk):
+    plan = get_object_or_404(DailyPlan, pk=pk, user=request.user)
     if request.method == "POST":
-        form = ProjectForm(request.POST, instance=project)
-        if form.is_valid():
+        form = DailyPlanForm(request.POST, instance=plan)
+        formset = TimeBlockFormSet(request.POST, instance=plan, prefix="blocks")
+        if form.is_valid() and formset.is_valid():
             form.save()
-            return redirect("project_detail", pk=pk)
+            formset.save()
+            return redirect("daily_list")
     else:
-        form = ProjectForm(instance=project)
-    return render(request, "projects/project_form.html", {"form": form, "title": "编辑项目"})
+        form = DailyPlanForm(instance=plan)
+        formset = TimeBlockFormSet(instance=plan, prefix="blocks")
+    return render(request, "daily/daily_form.html", {"form": form, "formset": formset, "title": "编辑每日执行清单", "plan": plan})
 
 
 @login_required
-def project_delete(request, pk):
-    """删除项目（仅负责人可操作）"""
-    project = get_object_or_404(Project, pk=pk)
-    if project.owner == request.user:
-        project.delete()
-    return redirect("project_list")
-
-
-@login_required
-def task_create(request, project_pk):
-    """新建任务"""
-    project = get_object_or_404(Project, pk=project_pk)
+def daily_delete(request, pk):
+    plan = get_object_or_404(DailyPlan, pk=pk, user=request.user)
     if request.method == "POST":
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            task = form.save(commit=False)
-            task.project = project
-            task.save()
-            return redirect("project_detail", pk=project_pk)
+        plan.delete()
+    return redirect("daily_list")
+
+
+@login_required
+def daily_toggle_block(request, pk):
+    """看板式快速勾选某个时间盒组块"""
+    block = get_object_or_404(TimeBlock, pk=pk, daily_plan__user=request.user)
+    if request.method == "POST":
+        block.is_done = not block.is_done
+        block.save(update_fields=["is_done"])
+    return redirect("daily_list")
+
+
+# ---------------------------------------------------------------- 每周复盘清单
+
+@login_required
+def weekly_list(request):
+    reviews = WeeklyReview.objects.filter(user=request.user)
+    return render(request, "weekly/weekly_list.html", {"reviews": reviews})
+
+
+@login_required
+def weekly_create(request):
+    if request.method == "GET":
+        form = WeeklyReviewForm(initial={"week_start": _monday(timezone.localdate())})
+        domains = DomainReviewFormSet(prefix="domains", initial=DOMAIN_INITIAL)
+        flows = TaskFlowFormSet(prefix="flows")
     else:
-        form = TaskForm()
-    return render(
-        request,
-        "projects/task_form.html",
-        {"form": form, "project": project, "title": "新建任务"},
-    )
+        form = WeeklyReviewForm(request.POST)
+        domains = DomainReviewFormSet(request.POST, prefix="domains")
+        flows = TaskFlowFormSet(request.POST, prefix="flows")
+        if form.is_valid() and domains.is_valid() and flows.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.save()
+            domains.instance = review
+            domains.save()
+            flows.instance = review
+            flows.save()
+            return redirect("weekly_list")
+    return render(request, "weekly/weekly_form.html", {
+        "form": form, "domains": domains, "flows": flows, "title": "填写每周复盘清单",
+    })
 
 
 @login_required
-def task_update(request, pk):
-    """编辑任务"""
-    task = get_object_or_404(Task, pk=pk)
+def weekly_update(request, pk):
+    review = get_object_or_404(WeeklyReview, pk=pk, user=request.user)
     if request.method == "POST":
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
+        form = WeeklyReviewForm(request.POST, instance=review)
+        domains = DomainReviewFormSet(request.POST, instance=review, prefix="domains")
+        flows = TaskFlowFormSet(request.POST, instance=review, prefix="flows")
+        if form.is_valid() and domains.is_valid() and flows.is_valid():
             form.save()
-            return redirect("project_detail", pk=task.project.pk)
+            domains.save()
+            flows.save()
+            return redirect("weekly_list")
     else:
-        form = TaskForm(instance=task)
-    return render(
-        request,
-        "projects/task_form.html",
-        {"form": form, "project": task.project, "title": "编辑任务"},
-    )
+        form = WeeklyReviewForm(instance=review)
+        domains = DomainReviewFormSet(instance=review, prefix="domains")
+        flows = TaskFlowFormSet(instance=review, prefix="flows")
+    return render(request, "weekly/weekly_form.html", {
+        "form": form, "domains": domains, "flows": flows, "title": "编辑每周复盘清单", "review": review,
+    })
 
 
 @login_required
-def task_delete(request, pk):
-    """删除任务"""
-    task = get_object_or_404(Task, pk=pk)
-    project_pk = task.project.pk
-    task.delete()
-    return redirect("project_detail", pk=project_pk)
+def weekly_delete(request, pk):
+    review = get_object_or_404(WeeklyReview, pk=pk, user=request.user)
+    if request.method == "POST":
+        review.delete()
+    return redirect("weekly_list")
+
+
+# ---------------------------------------------------------------- 每月重构清单
+
+@login_required
+def monthly_list(request):
+    reviews = MonthlyReview.objects.filter(user=request.user)
+    return render(request, "monthly/monthly_list.html", {"reviews": reviews})
+
+
+@login_required
+def monthly_create(request):
+    if request.method == "GET":
+        form = MonthlyReviewForm(initial={"month": timezone.localdate().strftime("%Y-%m")})
+        health = HealthCheckFormSet(prefix="health", initial=HEALTH_INITIAL)
+    else:
+        form = MonthlyReviewForm(request.POST)
+        health = HealthCheckFormSet(request.POST, prefix="health")
+        if form.is_valid() and health.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.save()
+            health.instance = review
+            health.save()
+            return redirect("monthly_list")
+    return render(request, "monthly/monthly_form.html", {
+        "form": form, "health": health, "title": "填写每月重构清单",
+    })
+
+
+@login_required
+def monthly_update(request, pk):
+    review = get_object_or_404(MonthlyReview, pk=pk, user=request.user)
+    if request.method == "POST":
+        form = MonthlyReviewForm(request.POST, instance=review)
+        health = HealthCheckFormSet(request.POST, instance=review, prefix="health")
+        if form.is_valid() and health.is_valid():
+            form.save()
+            health.save()
+            return redirect("monthly_list")
+    else:
+        form = MonthlyReviewForm(instance=review)
+        health = HealthCheckFormSet(instance=review, prefix="health")
+    return render(request, "monthly/monthly_form.html", {
+        "form": form, "health": health, "title": "编辑每月重构清单", "review": review,
+    })
+
+
+@login_required
+def monthly_delete(request, pk):
+    review = get_object_or_404(MonthlyReview, pk=pk, user=request.user)
+    if request.method == "POST":
+        review.delete()
+    return redirect("monthly_list")

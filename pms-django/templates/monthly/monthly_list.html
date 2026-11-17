@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}每月重构 - 个人效能系统{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h3 class="mb-1">每月重构清单</h3>
+    <p class="text-muted mb-0">建议每月 45–60 分钟 · 季度可扩展为职业、学习和生活方向评估</p>
+  </div>
+  <a href="{% url 'monthly_create' %}" class="btn btn-primary">＋ 填写本月重构</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-hover align-middle list-table">
+    <thead>
+      <tr>
+        <th style="width:140px">月份</th>
+        <th>本月最重要成果</th>
+        <th style="width:130px">值得投入</th>
+        <th style="width:130px">系统健康</th>
+        <th class="text-end" style="width:150px">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in reviews %}
+      <tr>
+        <td><a href="{% url 'monthly_update' m.pk %}" class="fw-semibold">{{ m.month }}</a></td>
+        <td>{{ m.top_achievement|truncatechars:48|default:'<span class="text-muted">未填写</span>' }}</td>
+        <td><span class="badge badge-worth-{{ m.worth_continue }}">{{ m.get_worth_continue_display }}</span></td>
+        <td>
+          {% if m.avg_score %}
+            <span class="badge bg-soft-primary">{{ m.avg_score }} / 5</span>
+          {% else %}<span class="text-muted small">未评分</span>{% endif %}
+        </td>
+        <td class="text-end">
+          <a href="{% url 'monthly_update' m.pk %}" class="btn btn-sm btn-outline-primary">编辑</a>
+          <form method="post" action="{% url 'monthly_delete' m.pk %}" class="d-inline" onsubmit="return confirm('确定删除该月重构？');">
+            {% csrf_token %}<button class="btn btn-sm btn-outline-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted py-5">
+        还没有月重构。<a href="{% url 'monthly_create' %}">填写本月重构</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
