@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{fragments :: head('每周复盘 - 个人效能系统')}"></head>
+<body>
+<nav th:replace="~{fragments :: nav}"></nav>
+<main class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">每周复盘清单</h3>
+    <a th:href="@{/weekly/new/}" class="btn btn-primary">+ 填写本周复盘</a>
+  </div>
+  <p class="text-muted">一人一周一条：下周设计 + 5 问复盘 + 4 领域事实 + 任务流清理。</p>
+
+  <div class="card shadow-sm">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="table-light">
+        <tr><th>周</th><th>下周最重要成果</th><th>领域 / 任务流</th><th>深度时间</th><th style="width:170px"></th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="w : ${reviews}">
+          <td><a th:href="@{/weekly/{id}/edit/(id=${w.id})}" th:text="|${w.weekStart} ~ ${w.weekEnd}|"></a></td>
+          <td><span th:text="${#strings.abbreviate(w.nextMit1, 40)}"></span></td>
+          <td><small class="text-muted" th:text="|${#lists.size(w.domains)} 领域 / ${#lists.size(w.flows)} 条|"></small></td>
+          <td><span th:text="${#strings.abbreviate(w.deepWorkTime, 30)}"></span></td>
+          <td>
+            <a th:href="@{/weekly/{id}/edit/(id=${w.id})}" class="btn btn-sm btn-outline-secondary">编辑</a>
+            <form method="post" th:action="@{/weekly/{id}/delete/(id=${w.id})}" class="d-inline"
+                  onsubmit="return confirm('确定删除该周复盘吗？')">
+              <button class="btn btn-sm btn-outline-danger">删除</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(reviews)}">
+          <td colspan="5" class="text-center text-muted py-4">暂无每周复盘，<a th:href="@{/weekly/new/}">去填写</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+<div th:replace="~{fragments :: footer}"></div>
+</body>
+</html>

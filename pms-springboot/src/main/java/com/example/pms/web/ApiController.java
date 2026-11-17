@@ -1,84 +1,107 @@
 package com.example.pms.web;
 
-import com.example.pms.domain.User;
-import com.example.pms.repo.ProjectRepository;
-import com.example.pms.repo.TaskRepository;
+import com.example.pms.domain.*;
+import com.example.pms.repo.DailyRepository;
+import com.example.pms.repo.MonthlyRepository;
 import com.example.pms.repo.UserRepository;
+import com.example.pms.repo.WeeklyRepository;
 import com.example.pms.support.ApiToken;
 import com.example.pms.support.Views;
+import com.example.pms.web.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
- * 与 Gin 版、FastAPI 版共用同一份 db/API.md 契约的 REST API。
+ * 与 Gin / FastAPI 版共用 db/API.md 契约的 REST API（v2 个人效能系统）。
  * 页面仍走 Session + CSRF；/api/** 走 HMAC Token 并豁免 CSRF。
  */
 @RestController
 @RequestMapping("/api")
 public class ApiController {
 
+    private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
+
     private final UserRepository users;
-    private final ProjectRepository projects;
-    private final TaskRepository tasks;
+    private final DailyRepository daily;
+    private final WeeklyRepository weekly;
+    private final MonthlyRepository monthly;
     private final ApiToken tokens;
     private final PasswordEncoder encoder;
 
-    public ApiController(UserRepository users, ProjectRepository projects, TaskRepository tasks,
-                         ApiToken tokens, PasswordEncoder encoder) {
+    public ApiController(UserRepository users, DailyRepository daily, WeeklyRepository weekly,
+                         MonthlyRepository monthly, ApiToken tokens, PasswordEncoder encoder) {
         this.users = users;
-        this.projects = projects;
-        this.tasks = tasks;
+        this.daily = daily;
+        this.weekly = weekly;
+        this.monthly = monthly;
         this.tokens = tokens;
         this.encoder = encoder;
     }
 
-    // ------------------------------------------------------------------ 认证
+    // ------------------------------------------------------------------ 认证 / 用户
 
     @PostMapping("/auth/login")
-    public ResponseEntity<Object> login(@RequestBody(required = false) Map<String, Object> body) {
-        String username = str(field(body, "username")).trim();
-        String password = str(field(body, "password"));
+    public ResponseEntity<Object> login(@RequestBody(required = false) LoginIn body) {
+        String username = body == null ? "" : body.u();
+        String password = body == null ? "" : body.p();
         if (username.isEmpty() || password.isEmpty()) {
             return err(400, "用户名和密码不能为空");
         }
-        Optional<User> found = users.findByUsername(username);
-        if (found.isEmpty() || !encoder.matches(password, found.get().getPasswordHash())) {
-            return err(401, "用户名或密码错误");
-        }
-        User u = found.get();
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("token", tokens.issue(u.getId(), u.getUsername(), u.isStaff()));
-        out.put("user", userMap(users.findRowById(u.getId()).orElse(Map.of())));
-        return ResponseEntity.ok(out);
+        return users.findByUsername(username)
+                .filter(u -> encoder.matches(password, u.getPasswordHash()))
+                .<ResponseEntity<Object>>map(u -> {
+                    Map<String, Object> out = new LinkedHashMap<>();
+                    out.put("token", tokens.issue(u.getId(), u.getUsername(), u.isStaff()));
+                    out.put("user", users.findRowById(u.getId()).map(ApiController::userMap).orElse(Map.of()));
+                    return ResponseEntity.ok(out);
+                })
+                .orElseGet(() -> err(401, "用户名或密码错误"));
     }
 
     @GetMapping("/me")
     public ResponseEntity<Object> me(HttpServletRequest request) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        return ResponseEntity.ok(userMap(users.findRowById(u.getId()).orElse(Map.of())));
+        return u == null ? unauthorized()
+                : ResponseEntity.ok(users.findRowById(u.getId()).map(ApiController::userMap).orElse(Map.of()));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Object> listUsers(HttpServletRequest request) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (!u.isStaff()) return err(403, "仅管理员可操作");
+        return ResponseEntity.ok(users.findAllRows().stream().map(ApiController::userMap).toList());
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<Object> createUser(HttpServletRequest request,
+                                             @RequestBody(required = false) UserIn body) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (!u.isStaff()) return err(403, "仅管理员可操作");
+        if (body == null) return err(400, "用户名和密码不能为空");
+        String username = body.u();
+        String password = body.p();
+        if (username.isEmpty() || password.isEmpty()) return err(400, "用户名和密码不能为空");
+        if (username.length() > 150) return err(400, "用户名不能超过 150 字");
+        if (password.length() < 8 || password.length() > 72) return err(400, "密码长度需为 8-72 位");
+        if (users.existsByUsername(username)) return err(400, "用户名已存在");
+        users.create(username, encoder.encode(password), body.dn(), body.isStaff());
+        return ResponseEntity.status(201)
+                .body(users.findRowByUsername(username).map(ApiController::userMap).orElse(Map.of()));
     }
 
     // ------------------------------------------------------------------ 工作台
@@ -86,314 +109,425 @@ public class ApiController {
     @GetMapping("/dashboard")
     public ResponseEntity<Object> dashboard(HttpServletRequest request) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        Map<String, Long> byStatus = tasks.countByStatus();
+        if (u == null) return unauthorized();
+        long uid = u.getId();
+        LocalDate today = LocalDate.now();
+        String weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1L).toString();
+        String month = String.format("%04d-%02d", today.getYear(), today.getMonthValue());
+
+        List<DailyPlan> lastWeek = daily.findRecent(uid, 7);
+        int blockTotal = lastWeek.stream().mapToInt(DailyPlan::getBlocksTotal).sum();
+        int blockDone = lastWeek.stream().mapToInt(DailyPlan::getBlocksDone).sum();
+
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("project_count", projects.count());
-        out.put("task_count", tasks.count());
-        out.put("todo_count", byStatus.getOrDefault("todo", 0L));
-        out.put("doing_count", byStatus.getOrDefault("doing", 0L));
-        out.put("done_count", byStatus.getOrDefault("done", 0L));
-        out.put("my_projects", projectMaps(projects.findByOwner(u.getId(), 5)));
-        out.put("my_tasks", taskMaps(tasks.findByAssignee(u.getId(), 10)));
+        out.put("daily_count", daily.count(uid));
+        out.put("weekly_count", weekly.count(uid));
+        out.put("monthly_count", monthly.count(uid));
+        out.put("today_plan", daily.findByDate(uid, today.toString()).orElse(null));
+        out.put("week_review", weekly.findByWeek(uid, weekStart).orElse(null));
+        out.put("month_review", monthly.findByMonth(uid, month).orElse(null));
+        out.put("recent_daily", daily.findRecent(uid, 5));
+        out.put("recent_weekly", weekly.findRecent(uid, 5));
+        out.put("recent_monthly", monthly.findRecent(uid, 5));
+        out.put("block_total", blockTotal);
+        out.put("block_done", blockDone);
         return ResponseEntity.ok(out);
     }
 
-    // ------------------------------------------------------------------ 项目
+    // ------------------------------------------------------------------ 每日执行清单
 
-    @GetMapping("/projects")
-    public ResponseEntity<Object> listProjects(HttpServletRequest request,
-                                               @RequestParam(required = false, defaultValue = "") String status,
-                                               @RequestParam(required = false, defaultValue = "") String q) {
-        if (require(request) == null) {
-            return unauthorized();
-        }
-        if (!status.isEmpty() && !Views.in(status, "active", "paused", "done")) {
-            return err(400, "状态值非法");
-        }
-        return ResponseEntity.ok(projectMaps(projects.findAll(status, q)));
+    @GetMapping("/daily")
+    public ResponseEntity<Object> listDaily(HttpServletRequest request) {
+        User u = require(request);
+        return u == null ? unauthorized() : ResponseEntity.ok(daily.findAll(u.getId()));
     }
 
-    @PostMapping("/projects")
-    public ResponseEntity<Object> createProject(HttpServletRequest request,
-                                                @RequestBody(required = false) Map<String, Object> body) {
+    @PostMapping("/daily")
+    public ResponseEntity<Object> createDaily(HttpServletRequest request,
+                                              @RequestBody(required = false) DailyIn body) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        String name = str(field(body, "name")).trim();
-        if (name.isEmpty()) {
-            return err(400, "项目名称不能为空");
-        }
-        if (name.length() > 100) {
-            return err(400, "项目名称不能超过 100 字");
-        }
-        String status = str(field(body, "status"));
-        if (status.isEmpty()) {
-            status = "active";
-        }
-        if (!Views.in(status, "active", "paused", "done")) {
-            return err(400, "状态值非法");
-        }
-        LocalDate startDate;
-        LocalDate endDate;
+        if (u == null) return unauthorized();
+        DailyPlan p;
         try {
-            startDate = date(field(body, "start_date"));
-            endDate = date(field(body, "end_date"));
+            p = toDaily(body, u.getId());
         } catch (IllegalArgumentException e) {
-            return err(400, "日期格式应为 YYYY-MM-DD");
+            return err(400, e.getMessage());
         }
-        ResponseEntity<Object> memberError = validateMembers(field(body, "member_ids"));
-        if (memberError != null) {
-            return memberError;
+        if (daily.existsByDate(u.getId(), p.getPlanDate(), 0)) {
+            return err(400, "记录已存在");
         }
-        long id = projects.create(name, str(field(body, "description")), status, startDate, endDate,
-                u.getId(), ids(field(body, "member_ids")));
-        return ResponseEntity.status(201).body(projectDetail(id));
+        long id = daily.create(p);
+        return daily.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity.status(201)::body)
+                .orElseGet(() -> err(404, "记录不存在"));
     }
 
-    @GetMapping("/projects/{id}")
-    public ResponseEntity<Object> getProject(HttpServletRequest request, @PathVariable long id) {
-        if (require(request) == null) {
-            return unauthorized();
-        }
-        return projects.findById(id)
-                .<ResponseEntity<Object>>map(row -> ResponseEntity.ok(projectDetail(id)))
-                .orElseGet(() -> err(404, "项目不存在"));
-    }
-
-    @PutMapping("/projects/{id}")
-    public ResponseEntity<Object> updateProject(HttpServletRequest request, @PathVariable long id,
-                                                @RequestBody(required = false) Map<String, Object> body) {
+    @GetMapping("/daily/{id}")
+    public ResponseEntity<Object> getDaily(HttpServletRequest request, @PathVariable long id) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        Optional<Map<String, Object>> found = projects.findById(id);
-        if (found.isEmpty()) {
-            return err(404, "项目不存在");
-        }
-        if (!isOwner(found.get(), u)) {
-            return err(403, "仅负责人可操作");
-        }
-        Map<String, Object> row = found.get();
-        String name = field(body, "name") == null ? Views.str(row.get("name")) : str(field(body, "name")).trim();
-        if (name.isEmpty()) {
-            return err(400, "项目名称不能为空");
-        }
-        if (name.length() > 100) {
-            return err(400, "项目名称不能超过 100 字");
-        }
-        String status = field(body, "status") == null ? Views.str(row.get("status")) : str(field(body, "status"));
-        if (!Views.in(status, "active", "paused", "done")) {
-            return err(400, "状态值非法");
-        }
-        String description = field(body, "description") == null
-                ? Views.str(row.get("description")) : str(field(body, "description"));
-        LocalDate startDate;
-        LocalDate endDate;
+        if (u == null) return unauthorized();
+        return daily.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @PutMapping("/daily/{id}")
+    public ResponseEntity<Object> updateDaily(HttpServletRequest request, @PathVariable long id,
+                                              @RequestBody(required = false) DailyIn body) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (daily.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        DailyPlan p;
         try {
-            startDate = field(body, "start_date") == null ? Views.parseDate(Views.date(row.get("start_date")))
-                    : date(field(body, "start_date"));
-            endDate = field(body, "end_date") == null ? Views.parseDate(Views.date(row.get("end_date")))
-                    : date(field(body, "end_date"));
+            p = toDaily(body, u.getId());
         } catch (IllegalArgumentException e) {
-            return err(400, "日期格式应为 YYYY-MM-DD");
+            return err(400, e.getMessage());
         }
-        Object rawMembers = field(body, "member_ids");
-        if (rawMembers == null) {
-            rawMembers = projects.memberIds(id);
-        }
-        ResponseEntity<Object> memberError = validateMembers(rawMembers);
-        if (memberError != null) {
-            return memberError;
-        }
-        projects.update(id, name, description, status, startDate, endDate, ids(rawMembers));
-        return ResponseEntity.ok(projectDetail(id));
+        if (daily.existsByDate(u.getId(), p.getPlanDate(), id)) return err(400, "记录已存在");
+        p.setId(id);
+        daily.update(p);
+        return daily.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
     }
 
-    @DeleteMapping("/projects/{id}")
-    public ResponseEntity<Object> deleteProject(HttpServletRequest request, @PathVariable long id) {
+    @DeleteMapping("/daily/{id}")
+    public ResponseEntity<Object> deleteDaily(HttpServletRequest request, @PathVariable long id) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        Optional<Map<String, Object>> found = projects.findById(id);
-        if (found.isEmpty()) {
-            return err(404, "项目不存在");
-        }
-        if (!isOwner(found.get(), u)) {
-            return err(403, "仅负责人可操作");
-        }
-        projects.delete(id);
+        if (u == null) return unauthorized();
+        if (daily.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        daily.delete(id, u.getId());
         return ResponseEntity.noContent().build();
     }
 
-    // ------------------------------------------------------------------ 任务
+    // ------------------------------------------------------------------ 每周复盘清单
 
-    @PostMapping("/projects/{id}/tasks")
-    public ResponseEntity<Object> createTask(HttpServletRequest request, @PathVariable long id,
-                                             @RequestBody(required = false) Map<String, Object> body) {
-        if (require(request) == null) {
-            return unauthorized();
-        }
-        if (projects.findById(id).isEmpty()) {
-            return err(404, "项目不存在");
-        }
-        String title = str(field(body, "title")).trim();
-        if (title.isEmpty()) {
-            return err(400, "任务标题不能为空");
-        }
-        if (title.length() > 200) {
-            return err(400, "任务标题不能超过 200 字");
-        }
-        String status = str(field(body, "status"));
-        if (status.isEmpty()) {
-            status = "todo";
-        }
-        String priority = str(field(body, "priority"));
-        if (priority.isEmpty()) {
-            priority = "medium";
-        }
-        if (!Views.in(status, "todo", "doing", "done") || !Views.in(priority, "low", "medium", "high")) {
-            return err(400, "状态或优先级非法");
-        }
-        Long assigneeId = longValue(field(body, "assignee_id"));
-        if (assigneeId != null && users.findById(assigneeId).isEmpty()) {
-            return err(400, "执行人不存在");
-        }
-        LocalDate dueDate;
-        try {
-            dueDate = date(field(body, "due_date"));
-        } catch (IllegalArgumentException e) {
-            return err(400, "日期格式应为 YYYY-MM-DD");
-        }
-        long taskId = tasks.create(id, title, str(field(body, "description")), assigneeId,
-                status, priority, dueDate);
-        return tasks.findById(taskId)
-                .<ResponseEntity<Object>>map(t -> ResponseEntity.status(201).body(taskMap(t)))
-                .orElseGet(() -> err(404, "任务不存在"));
+    @GetMapping("/weekly")
+    public ResponseEntity<Object> listWeekly(HttpServletRequest request) {
+        User u = require(request);
+        return u == null ? unauthorized() : ResponseEntity.ok(weekly.findAll(u.getId()));
     }
 
-    @PutMapping("/tasks/{id}")
-    public ResponseEntity<Object> updateTask(HttpServletRequest request, @PathVariable long id,
-                                             @RequestBody(required = false) Map<String, Object> body) {
-        if (require(request) == null) {
-            return unauthorized();
-        }
-        Optional<Map<String, Object>> found = tasks.findById(id);
-        if (found.isEmpty()) {
-            return err(404, "任务不存在");
-        }
-        Map<String, Object> row = found.get();
-        String title = field(body, "title") == null ? Views.str(row.get("title")) : str(field(body, "title")).trim();
-        if (title.isEmpty()) {
-            return err(400, "任务标题不能为空");
-        }
-        if (title.length() > 200) {
-            return err(400, "任务标题不能超过 200 字");
-        }
-        String description = field(body, "description") == null
-                ? Views.str(row.get("description")) : str(field(body, "description"));
-        String status = field(body, "status") == null ? Views.str(row.get("status")) : str(field(body, "status"));
-        String priority = field(body, "priority") == null
-                ? Views.str(row.get("priority")) : str(field(body, "priority"));
-        if (!Views.in(status, "todo", "doing", "done") || !Views.in(priority, "low", "medium", "high")) {
-            return err(400, "状态或优先级非法");
-        }
-        Long assigneeId = field(body, "assignee_id") == null
-                ? longValue(row.get("assignee_id")) : longValue(field(body, "assignee_id"));
-        if (assigneeId != null && users.findById(assigneeId).isEmpty()) {
-            return err(400, "执行人不存在");
-        }
-        LocalDate dueDate;
+    @PostMapping("/weekly")
+    public ResponseEntity<Object> createWeekly(HttpServletRequest request,
+                                               @RequestBody(required = false) WeeklyIn body) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        WeeklyReview w;
         try {
-            dueDate = field(body, "due_date") == null ? Views.parseDate(Views.date(row.get("due_date")))
-                    : date(field(body, "due_date"));
+            w = toWeekly(body, u.getId());
         } catch (IllegalArgumentException e) {
-            return err(400, "日期格式应为 YYYY-MM-DD");
+            return err(400, e.getMessage());
         }
-        tasks.update(id, title, description, assigneeId, status, priority, dueDate);
-        return ResponseEntity.ok(taskMap(tasks.findById(id).orElse(row)));
+        if (weekly.existsByWeek(u.getId(), w.getWeekStart(), 0)) return err(400, "记录已存在");
+        long id = weekly.create(w);
+        return weekly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity.status(201)::body)
+                .orElseGet(() -> err(404, "记录不存在"));
     }
 
-    @DeleteMapping("/tasks/{id}")
-    public ResponseEntity<Object> deleteTask(HttpServletRequest request, @PathVariable long id) {
-        if (require(request) == null) {
-            return unauthorized();
+    @GetMapping("/weekly/{id}")
+    public ResponseEntity<Object> getWeekly(HttpServletRequest request, @PathVariable long id) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        return weekly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @PutMapping("/weekly/{id}")
+    public ResponseEntity<Object> updateWeekly(HttpServletRequest request, @PathVariable long id,
+                                                @RequestBody(required = false) WeeklyIn body) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (weekly.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        WeeklyReview w;
+        try {
+            w = toWeekly(body, u.getId());
+        } catch (IllegalArgumentException e) {
+            return err(400, e.getMessage());
         }
-        if (tasks.findById(id).isEmpty()) {
-            return err(404, "任务不存在");
-        }
-        tasks.delete(id);
+        if (weekly.existsByWeek(u.getId(), w.getWeekStart(), id)) return err(400, "记录已存在");
+        w.setId(id);
+        weekly.update(w);
+        return weekly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @DeleteMapping("/weekly/{id}")
+    public ResponseEntity<Object> deleteWeekly(HttpServletRequest request, @PathVariable long id) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (weekly.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        weekly.delete(id, u.getId());
         return ResponseEntity.noContent().build();
     }
 
-    // ------------------------------------------------------------------ 用户
+    // ------------------------------------------------------------------ 每月重构清单
 
-    @GetMapping("/users")
-    public ResponseEntity<Object> listUsers(HttpServletRequest request) {
+    @GetMapping("/monthly")
+    public ResponseEntity<Object> listMonthly(HttpServletRequest request) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
-        }
-        if (!u.isStaff()) {
-            return err(403, "仅管理员可操作用户");
-        }
-        return ResponseEntity.ok(users.findAllRows().stream().map(this::userMap).toList());
+        return u == null ? unauthorized() : ResponseEntity.ok(monthly.findAll(u.getId()));
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<Object> createUser(HttpServletRequest request,
-                                             @RequestBody(required = false) Map<String, Object> body) {
+    @PostMapping("/monthly")
+    public ResponseEntity<Object> createMonthly(HttpServletRequest request,
+                                                @RequestBody(required = false) MonthlyIn body) {
         User u = require(request);
-        if (u == null) {
-            return unauthorized();
+        if (u == null) return unauthorized();
+        MonthlyReview m;
+        try {
+            m = toMonthly(body, u.getId());
+        } catch (IllegalArgumentException e) {
+            return err(400, e.getMessage());
         }
-        if (!u.isStaff()) {
-            return err(403, "仅管理员可操作用户");
+        if (monthly.existsByMonth(u.getId(), m.getMonth(), 0)) return err(400, "记录已存在");
+        long id = monthly.create(m);
+        return monthly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity.status(201)::body)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @GetMapping("/monthly/{id}")
+    public ResponseEntity<Object> getMonthly(HttpServletRequest request, @PathVariable long id) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        return monthly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @PutMapping("/monthly/{id}")
+    public ResponseEntity<Object> updateMonthly(HttpServletRequest request, @PathVariable long id,
+                                                 @RequestBody(required = false) MonthlyIn body) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (monthly.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        MonthlyReview m;
+        try {
+            m = toMonthly(body, u.getId());
+        } catch (IllegalArgumentException e) {
+            return err(400, e.getMessage());
         }
-        String username = str(field(body, "username")).trim();
-        String password = str(field(body, "password"));
-        if (username.isEmpty() || password.isEmpty()) {
-            return err(400, "用户名和密码不能为空");
-        }
-        if (username.length() > 50) {
-            return err(400, "用户名不能超过 50 字");
-        }
-        if (password.length() < 8) {
-            return err(400, "密码至少 8 位");
-        }
-        if (users.existsByUsername(username)) {
-            return err(400, "用户名已存在");
-        }
-        Object rawStaff = field(body, "is_staff");
-        boolean staff = rawStaff instanceof Boolean b ? b
-                : rawStaff instanceof Number n && n.intValue() != 0;
-        users.create(username, encoder.encode(password), str(field(body, "display_name")), staff);
-        return ResponseEntity.status(201)
-                .body(userMap(users.findRowByUsername(username).orElse(Map.of())));
+        if (monthly.existsByMonth(u.getId(), m.getMonth(), id)) return err(400, "记录已存在");
+        m.setId(id);
+        monthly.update(m);
+        return monthly.findById(id, u.getId())
+                .<ResponseEntity<Object>>map(ResponseEntity::ok)
+                .orElseGet(() -> err(404, "记录不存在"));
+    }
+
+    @DeleteMapping("/monthly/{id}")
+    public ResponseEntity<Object> deleteMonthly(HttpServletRequest request, @PathVariable long id) {
+        User u = require(request);
+        if (u == null) return unauthorized();
+        if (monthly.findById(id, u.getId()).isEmpty()) return err(404, "记录不存在");
+        monthly.delete(id, u.getId());
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Object> badJson() {
-        return err(400, "请求体不是合法的 JSON");
+        return err(400, "请求体不是合法的 JSON 或字段类型错误");
     }
 
-    // ------------------------------------------------------------------ 辅助
+    // ------------------------------------------------------------------ In DTO → 实体
+
+    private static DailyPlan toDaily(DailyIn in, long uid) {
+        if (in == null) throw new IllegalArgumentException("请求体不能为空");
+        DailyPlan p = new DailyPlan();
+        p.setUserId(uid);
+        p.setPlanDate(requireDate(in.planDate()));
+        p.setSleepHours(in.sleepHours());
+        String energy = in.energyLevel() == null || in.energyLevel().isBlank() ? "medium" : in.energyLevel().trim();
+        if (!Views.in(energy, "low", "medium", "high")) throw new IllegalArgumentException("精力值非法");
+        p.setEnergyLevel(energy);
+        p.setMit(nvl(in.mit()));
+        p.setPreKnowOutput(in.preKnowOutput());
+        p.setPreMaterialsReady(in.preMaterialsReady());
+        p.setPrePhoneHandled(in.prePhoneHandled());
+        p.setDuringOneBlock(in.duringOneBlock());
+        p.setDuringShrinkStep(in.duringShrinkStep());
+        p.setDuringRecordDistraction(in.duringRecordDistraction());
+        p.setPostVisibleOutput(in.postVisibleOutput());
+        p.setPostRecall(in.postRecall());
+        p.setPostNextStep(in.postNextStep());
+        p.setLifeWaterFood(in.lifeWaterFood());
+        p.setLifeWalkExercise(in.lifeWalkExercise());
+        p.setLifeCleanTidy(in.lifeCleanTidy());
+        p.setLifeSocialOutdoor(in.lifeSocialOutdoor());
+        p.setReviewAccomplished(nvl(in.reviewAccomplished()));
+        p.setReviewResistance(nvl(in.reviewResistance()));
+        p.setReviewTomorrowStart(nvl(in.reviewTomorrowStart()));
+        p.setReviewGratitude(nvl(in.reviewGratitude()));
+
+        List<TimeBlock> blocks = new ArrayList<>();
+        for (BlockIn b : in.safeBlocks()) {
+            String name = b.bn();
+            if (name.isEmpty()) throw new IllegalArgumentException("组块名称不能为空");
+            if (name.length() > 200) throw new IllegalArgumentException("组块名称不能超过 200 字");
+            TimeBlock t = new TimeBlock();
+            t.setSeq(b.seq());
+            t.setBlockName(name);
+            t.setInputDesc(b.in());
+            t.setKeyAction(b.ka());
+            t.setDeliverable(b.de());
+            t.setTimeStart(hhmm(b.ts()));
+            t.setTimeEnd(hhmm(b.te()));
+            t.setDone(b.isDone());
+            blocks.add(t);
+        }
+        p.setBlocks(blocks);
+        return p;
+    }
+
+    private static WeeklyReview toWeekly(WeeklyIn in, long uid) {
+        if (in == null) throw new IllegalArgumentException("请求体不能为空");
+        WeeklyReview w = new WeeklyReview();
+        w.setUserId(uid);
+        w.setWeekStart(requireDate(in.weekStart()));
+        w.setNextMit1(nvl(in.nextMit1()));
+        w.setNextMit2(nvl(in.nextMit2()));
+        w.setNextMit3(nvl(in.nextMit3()));
+        w.setDeepWorkTime(nvl(in.deepWorkTime()));
+        w.setPrepEnvMaterials(nvl(in.prepEnvMaterials()));
+        w.setIfCondition(nvl(in.ifCondition()));
+        w.setThenAction(nvl(in.thenAction()));
+        w.setQSkilledBlock(in.qSkilledBlock());
+        w.setQLowValueTime(in.qLowValueTime());
+        w.setQEstimateGap(in.qEstimateGap());
+        w.setQRestConnection(in.qRestConnection());
+        w.setQNextAdjust(in.qNextAdjust());
+
+        List<WeeklyDomainReview> domains = new ArrayList<>();
+        for (DomainIn d : in.safeDomains()) {
+            if (!Views.in(d.domain(), "work", "study", "body", "relations")) {
+                throw new IllegalArgumentException("领域值非法");
+            }
+            if (!Views.in(d.st(), "smooth", "blocked", "paused")) {
+                throw new IllegalArgumentException("领域状态值非法");
+            }
+            if (domains.stream().anyMatch(x -> x.getDomain().equals(d.domain()))) {
+                throw new IllegalArgumentException("领域不能重复");
+            }
+            WeeklyDomainReview row = new WeeklyDomainReview();
+            row.setDomain(d.domain());
+            row.setFacts(d.fa());
+            row.setStatus(d.st());
+            domains.add(row);
+        }
+        w.setDomains(domains);
+
+        List<WeeklyTaskFlow> flows = new ArrayList<>();
+        for (FlowIn f : in.safeFlows()) {
+            if (!Views.in(f.bu(), "todo", "doing", "done", "remove")) {
+                throw new IllegalArgumentException("任务流分栏值非法");
+            }
+            WeeklyTaskFlow row = new WeeklyTaskFlow();
+            row.setBucket(f.bu());
+            row.setContent(f.co());
+            row.setSeq(f.seq());
+            flows.add(row);
+        }
+        w.setFlows(flows);
+        return w;
+    }
+
+    private static MonthlyReview toMonthly(MonthlyIn in, long uid) {
+        if (in == null) throw new IllegalArgumentException("请求体不能为空");
+        MonthlyReview m = new MonthlyReview();
+        m.setUserId(uid);
+        m.setMonth(requireMonth(in.month()));
+        m.setTopAchievement(nvl(in.topAchievement()));
+        String worth = in.wc();
+        if (!Views.in(worth, "yes", "adjust", "stop")) throw new IllegalArgumentException("价值判断值非法");
+        m.setWorthContinue(worth);
+        m.setWorthReason(nvl(in.worthReason()));
+        m.setMostValuableInput(nvl(in.mostValuableInput()));
+        m.setBiggestOpportunityCost(nvl(in.biggestOpportunityCost()));
+        m.setKeepItem(nvl(in.keepItem()));
+        m.setCutItem(nvl(in.cutItem()));
+        m.setExperimentItem(nvl(in.experimentItem()));
+        m.setQSkillPortfolio(in.qSkillPortfolio());
+        m.setQCareerAlignment(in.qCareerAlignment());
+        m.setQLifeAutonomy(in.qLifeAutonomy());
+        m.setQRecoveryRelations(in.qRecoveryRelations());
+        m.setQLongtermDecision(in.qLongtermDecision());
+
+        List<SystemHealthCheck> checks = new ArrayList<>();
+        for (HealthIn h : in.safeHealthChecks()) {
+            if (!Views.in(h.module(), "direction", "taskload", "blockquality",
+                    "timebox", "sleepenergy", "reviewquality")) {
+                throw new IllegalArgumentException("健康检查模块值非法");
+            }
+            if (checks.stream().anyMatch(x -> x.getModule().equals(h.module()))) {
+                throw new IllegalArgumentException("健康检查模块不能重复");
+            }
+            Integer score = h.score();
+            if (score != null && (score < 1 || score > 5)) {
+                throw new IllegalArgumentException("自评分应为 1-5");
+            }
+            SystemHealthCheck row = new SystemHealthCheck();
+            row.setModule(h.module());
+            row.setScore(score);
+            row.setNeededChange(h.nc());
+            checks.add(row);
+        }
+        m.setHealthChecks(checks);
+        return m;
+    }
+
+    // ------------------------------------------------------------------ 校验 / 辅助
+
+    private static String requireDate(String value) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException("日期格式应为 YYYY-MM-DD");
+        try {
+            return LocalDate.parse(value.trim()).toString();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("日期格式应为 YYYY-MM-DD");
+        }
+    }
+
+    private static String requireMonth(String value) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException("指标格式应为 YYYY-MM");
+        try {
+            return YearMonth.parse(value.trim()).toString();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("指标格式应为 YYYY-MM");
+        }
+    }
+
+    private static String hhmm(String value) {
+        if (value == null) return null;
+        try {
+            return LocalTime.parse(value, HHMM).toString();
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("时间格式应为 HH:MM");
+        }
+    }
+
+    private static String nvl(String v) { return v == null ? "" : v; }
 
     private User require(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            return null;
-        }
+        if (header == null || !header.startsWith("Bearer ")) return null;
         Map<String, Object> claims = tokens.verify(header.substring(7).trim());
-        if (claims == null || !(claims.get("uid") instanceof Number uid)) {
-            return null;
-        }
+        if (claims == null || !(claims.get("uid") instanceof Number uid)) return null;
         return users.findById(uid.longValue()).orElse(null);
+    }
+
+    private static Map<String, Object> userMap(Map<String, Object> row) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", Views.number(row.get("id")));
+        m.put("username", Views.str(row.get("username")));
+        m.put("display_name", Views.str(row.get("display_name")));
+        Object staff = row.get("is_staff");
+        m.put("is_staff", staff instanceof Number n ? n.intValue() : 0);
+        Object created = row.get("created_at");
+        m.put("created_at", Views.str(created).isEmpty() ? null : Views.datetime(created));
+        return m;
     }
 
     private static ResponseEntity<Object> unauthorized() {
@@ -402,143 +536,5 @@ public class ApiController {
 
     private static ResponseEntity<Object> err(int status, String message) {
         return ResponseEntity.status(status).body(Map.of("detail", message));
-    }
-
-    private static Object field(Map<String, Object> body, String key) {
-        return body == null ? null : body.get(key);
-    }
-
-    private static String str(Object value) {
-        return value == null ? "" : value.toString();
-    }
-
-    private static Long longValue(Object value) {
-        if (value instanceof Number n) {
-            return n.longValue();
-        }
-        if (value instanceof String s && !s.isBlank()) {
-            try {
-                return Long.parseLong(s.trim());
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private static LocalDate date(Object value) {
-        if (value == null || str(value).isBlank()) {
-            return null;
-        }
-        try {
-            return LocalDate.parse(str(value).trim());
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("bad date");
-        }
-    }
-
-    private static List<Long> ids(Object value) {
-        List<Long> result = new ArrayList<>();
-        if (value instanceof List<?> list) {
-            for (Object item : list) {
-                Long id = longValue(item);
-                if (id != null && !result.contains(id)) {
-                    result.add(id);
-                }
-            }
-        }
-        return result;
-    }
-
-    private ResponseEntity<Object> validateMembers(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (!(value instanceof List<?>)) {
-            return err(400, "member_ids 必须是整数数组");
-        }
-        for (Long id : ids(value)) {
-            if (users.findById(id).isEmpty()) {
-                return err(400, "成员不存在：" + id);
-            }
-        }
-        return null;
-    }
-
-    private static boolean isOwner(Map<String, Object> row, User user) {
-        return Views.number(row.get("owner_id")) == user.getId();
-    }
-
-    private List<Map<String, Object>> projectMaps(List<Map<String, Object>> rows) {
-        return rows.stream().map(this::projectMap).toList();
-    }
-
-    private List<Map<String, Object>> taskMaps(List<Map<String, Object>> rows) {
-        return rows.stream().map(this::taskMap).toList();
-    }
-
-    private Map<String, Object> projectDetail(long id) {
-        Map<String, Object> out = projects.findById(id).map(this::projectMap).orElse(new LinkedHashMap<>());
-        out.put("tasks", taskMaps(tasks.findByProject(id)));
-        return out;
-    }
-
-    private Map<String, Object> projectMap(Map<String, Object> row) {
-        long id = Views.number(row.get("id"));
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id", id);
-        m.put("name", Views.str(row.get("name")));
-        m.put("description", Views.str(row.get("description")));
-        m.put("status", Views.str(row.get("status")));
-        m.put("start_date", dateOrNull(row.get("start_date")));
-        m.put("end_date", dateOrNull(row.get("end_date")));
-        m.put("owner_id", Views.number(row.get("owner_id")));
-        m.put("owner_name", Views.str(row.get("owner_name")));
-        m.put("task_count", Views.number(row.get("task_count")));
-        m.put("done_task_count", Views.number(row.get("done_task_count")));
-        m.put("progress", Views.progress(row.get("done_task_count"), row.get("task_count")));
-        m.put("created_at", datetime(row.get("created_at")));
-        m.put("member_ids", projects.memberIds(id));
-        return m;
-    }
-
-    private Map<String, Object> taskMap(Map<String, Object> row) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id", Views.number(row.get("id")));
-        m.put("project_id", Views.number(row.get("project_id")));
-        m.put("title", Views.str(row.get("title")));
-        m.put("description", Views.str(row.get("description")));
-        m.put("assignee_id", longValue(row.get("assignee_id")));
-        m.put("assignee_name", Views.str(row.get("assignee_name")));
-        m.put("status", Views.str(row.get("status")));
-        m.put("priority", Views.str(row.get("priority")));
-        m.put("due_date", dateOrNull(row.get("due_date")));
-        m.put("created_at", datetime(row.get("created_at")));
-        m.put("updated_at", datetime(row.get("updated_at")));
-        return m;
-    }
-
-    private Map<String, Object> userMap(Map<String, Object> row) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id", Views.number(row.get("id")));
-        m.put("username", Views.str(row.get("username")));
-        m.put("display_name", Views.str(row.get("display_name")));
-        Object staff = row.get("is_staff");
-        m.put("is_staff", staff instanceof Number n ? n.intValue() : 0);
-        m.put("created_at", datetime(row.get("created_at")));
-        return m;
-    }
-
-    private static String dateOrNull(Object value) {
-        String s = Views.date(value);
-        return s.isEmpty() ? null : s;
-    }
-
-    private static String datetime(Object value) {
-        String s = Views.str(value);
-        if (s.isEmpty()) {
-            return null;
-        }
-        return s.length() >= 19 ? s.substring(0, 19).replace('T', ' ') : s;
     }
 }

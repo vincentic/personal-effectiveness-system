@@ -16,20 +16,30 @@ var funcMap = template.FuncMap{
 	"has":  has,
 	"eq64": eq64,
 	"safe": func(s string) template.HTML { return template.HTML(s) },
+	"energyLabel": models.EnergyLabel,
+	"domainLabel": models.DomainLabel,
+	"statusLabel": models.DomainStatusLabel,
+	"bucketLabel": models.BucketLabel,
+	"worthLabel":  models.WorthLabel,
+	"moduleLabel": models.ModuleLabel,
+	"list": func(vals ...any) []any { return vals },
+	"scoreSelected": func(p *int, n int) bool { return p != nil && *p == n },
 }
 
 // newTemplates 为每页构造独立的 template set，避免 define 冲突。
 // base.html 的 define 名为 "base.html"，恰与 ParseFS 按文件名生成的根模板名相同，
-// 故先用与任何 define 都不同的自定义根名 Parse(base.html 文本) 注册 "base.html" /
-// "taskCards"，再 ParseFS 加入页面文件（页面只 define "content"，与文件名不冲突）。
+// 故先用与任何 define 都不同的自定义根名 Parse(base.html 文本) 注册 "base.html"，
+// 再 ParseFS 加入页面文件（页面只 define "content"，与文件名不冲突）。
 func newTemplates(templatesFS fs.FS) (map[string]*template.Template, error) {
 	baseText, err := fs.ReadFile(templatesFS, "templates/base.html")
 	if err != nil {
 		return nil, err
 	}
 	pages := []string{
-		"login.html", "dashboard.html", "project_list.html", "project_detail.html",
-		"project_form.html", "task_form.html", "admin_users.html",
+		"login.html", "dashboard.html", "admin_users.html",
+		"daily_list.html", "daily_detail.html", "daily_form.html",
+		"weekly_list.html", "weekly_detail.html", "weekly_form.html",
+		"monthly_list.html", "monthly_detail.html", "monthly_form.html",
 	}
 	out := make(map[string]*template.Template, len(pages))
 	for _, page := range pages {

@@ -1,7 +1,12 @@
-"""PMS REST API：FastAPI 版（纯 API，与 Spring Boot / Gin 版共用数据库与 Token 契约）。"""
+"""个人效能系统 REST API：FastAPI 版（纯 API，与 Spring Boot / Gin 版共用数据库与 Token 契约）。
+
+日 / 周 / 月清单全部按当前用户隔离；明细子表在写请求内随主表整体替换。
+契约见 db/API.md。
+"""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from datetime import date, datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,24 +15,46 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from . import db, security
 from .config import settings
-from .schemas import LoginIn, ProjectIn, TaskIn, UserIn
+from .schemas import DailyIn, LoginIn, MonthlyIn, UserIn, WeeklyIn
 
-PROJECT_SELECT = """
-SELECT p.*, u.username AS owner_name,
-       (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) AS task_count,
-       (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id AND t.status = 'done') AS done_task_count
-FROM projects p JOIN users u ON u.id = p.owner_id
-"""
-TASK_SELECT = """
-SELECT t.*, a.username AS assignee_name
-FROM tasks t LEFT JOIN users a ON a.id = t.assignee_id
-"""
-TASK_ORDER = """
-ORDER BY FIELD(t.status, 'todo', 'doing', 'done'),
-         FIELD(t.priority, 'high', 'medium', 'low'),
-         t.due_date IS NULL, t.due_date, t.id
-"""
 USER_FIELDS = "id, username, display_name, is_staff, created_at"
+
+DAILY_BOOL_FIELDS = (
+    "pre_know_output", "pre_materials_ready", "pre_phone_handled",
+    "during_one_block", "during_shrink_step", "during_record_distraction",
+    "post_visible_output", "post_recall", "post_next_step",
+    "life_water_food", "life_walk_exercise", "life_clean_tidy", "life_social_outdoor",
+)
+DAILY_TEXT_FIELDS = (
+    "review_accomplished", "review_resistance", "review_tomorrow_start", "review_gratitude",
+)
+DAILY_COLS = ("plan_date", "sleep_hours", "energy_level", "mit") + DAILY_BOOL_FIELDS + DAILY_TEXT_FIELDS
+
+BLOCK_COLS = (
+    "seq", "block_name", "input_desc", "key_action", "deliverable",
+    "time_start", "time_end", "is_done",
+)
+
+WEEKLY_BOOL_FIELDS = (
+    "q_skilled_block", "q_low_value_time", "q_estimate_gap", "q_rest_connection", "q_next_adjust",
+)
+WEEKLY_COLS = (
+    "week_start", "next_mit_1", "next_mit_2", "next_mit_3", "deep_work_time",
+    "prep_env_materials", "if_condition", "then_action",
+) + WEEKLY_BOOL_FIELDS
+DOMAIN_COLS = ("domain", "facts", "status")
+FLOW_COLS = ("bucket", "content", "seq")
+
+MONTHLY_BOOL_FIELDS = (
+    "q_skill_portfolio", "q_career_alignment", "q_life_autonomy",
+    "q_recovery_relations", "q_longterm_decision",
+)
+MONTHLY_COLS = (
+    "month", "top_achievement", "worth_continue", "worth_reason",
+    "most_valuable_input", "biggest_opportunity_cost",
+    "keep_item", "cut_item", "experiment_item",
+) + MONTHLY_BOOL_FIELDS
+HEALTH_COLS = ("module", "score", "needed_change")
 
 
 @asynccontextmanager
@@ -37,9 +64,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="PMS API",
-    version="1.0.0",
-    description="项目管理系统 REST API（FastAPI 版）。契约见 db/API.md。",
+    title="个人效能系统 API",
+    version="2.0.0",
+    description="个人效能系统 REST API（FastAPI 版）。契约见 db/API.md。",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -69,63 +96,147 @@ def admin_user(user: dict = Depends(current_user)) -> dict:
     return user
 
 
-def user_out(row: dict | None) -> dict | None:
+# ------------------------------------------------------------------ 序列化 / 计算字段
+
+def _pick(row: dict, columns, bools=()) -> dict:
+    return {c: bool(row.get(c)) if c in bools else row.get(c) for c in columns}
+
+
+def _time_str(value) -> str | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, timedelta):
+        hours, rem = divmod(int(value.total_seconds()), 3600)
+        return f"{hours:02d}:{rem // 60:02d}"
+    return str(value)
+
+
+def _date_str(value) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        value = value.date()
+    if isinstance(value, date):
+        return value.isoformat()
+    return str(value)
+
+
+def _block_out(row: dict) -> dict:
+    out = {"id": row.get("id"), **_pick(row, BLOCK_COLS, bools=("is_done",))}
+    out["time_start"] = _time_str(row.get("time_start"))
+    out["time_end"] = _time_str(row.get("time_end"))
+    return out
+
+
+def _load_blocks(plan_id: int) -> list[dict]:
+    rows = db.query("SELECT * FROM time_blocks WHERE daily_plan_id=%s ORDER BY seq, id", (plan_id,))
+    return [_block_out(r) for r in rows]
+
+
+def daily_out(row: dict | None) -> dict | None:
     if not row:
         return None
-    return {k: row.get(k) for k in ["id", "username", "display_name", "is_staff", "created_at"]}
+    out = {"id": row["id"], "user_id": row["user_id"]}
+    out.update(_pick(row, DAILY_COLS, bools=DAILY_BOOL_FIELDS))
+    out["created_at"] = row.get("created_at")
+    out["blocks"] = _load_blocks(row["id"])
+
+    total = len(out["blocks"])
+    done = sum(1 for b in out["blocks"] if b["is_done"])
+    out["blocks_total"] = total
+    out["blocks_done"] = done
+    out["block_progress"] = round(done * 100 / total) if total else 0
+    out["checklist_total"] = 13
+    out["checklist_done"] = sum(1 for field in DAILY_BOOL_FIELDS if out[field])
+    return out
 
 
-def project_row(pid: int) -> dict | None:
-    return db.query_one(PROJECT_SELECT + " WHERE p.id = %s", (pid,))
-
-
-def project_out(row: dict | None) -> dict | None:
+def weekly_out(row: dict | None) -> dict | None:
     if not row:
         return None
-    out = dict(row)
-    total = int(out.get("task_count") or 0)
-    done = int(out.get("done_task_count") or 0)
-    out["task_count"] = total
-    out["done_task_count"] = done
-    out["progress"] = round(done * 100 / total) if total else 0
-    out["member_ids"] = [
-        r["user_id"] for r in db.query(
-            "SELECT user_id FROM project_members WHERE project_id=%s ORDER BY user_id",
-            (out["id"],),
+    out = {"id": row["id"], "user_id": row["user_id"]}
+    out.update(_pick(row, WEEKLY_COLS, bools=WEEKLY_BOOL_FIELDS))
+    out["created_at"] = row.get("created_at")
+    try:
+        out["week_end"] = (date.fromisoformat(_date_str(row.get("week_start"))) + timedelta(days=6)).isoformat()
+    except (TypeError, ValueError):
+        out["week_end"] = None
+    out["domains"] = [
+        {"id": r.get("id"), **_pick(r, DOMAIN_COLS)}
+        for r in db.query(
+            "SELECT * FROM weekly_domain_reviews WHERE weekly_review_id=%s ORDER BY id", (row["id"],)
+        )
+    ]
+    out["flows"] = [
+        {"id": r.get("id"), **_pick(r, FLOW_COLS)}
+        for r in db.query(
+            "SELECT * FROM weekly_task_flows WHERE weekly_review_id=%s ORDER BY bucket, seq, id", (row["id"],)
         )
     ]
     return out
 
 
-def task_out(row: dict | None) -> dict | None:
-    return dict(row) if row else None
+def monthly_out(row: dict | None) -> dict | None:
+    if not row:
+        return None
+    out = {"id": row["id"], "user_id": row["user_id"]}
+    out.update(_pick(row, MONTHLY_COLS, bools=MONTHLY_BOOL_FIELDS))
+    out["created_at"] = row.get("created_at")
+    out["health_checks"] = [
+        {"id": r.get("id"), **_pick(r, HEALTH_COLS)}
+        for r in db.query(
+            "SELECT * FROM system_health_checks WHERE monthly_review_id=%s ORDER BY id", (row["id"],)
+        )
+    ]
+    scores = [c["score"] for c in out["health_checks"] if c["score"] is not None]
+    out["avg_score"] = round(sum(scores) / len(scores), 1) if scores else None
+    return out
 
 
-def valid_ids(ids: list[int]) -> list[int]:
-    unique = list(dict.fromkeys(int(i) for i in ids))
-    if not unique:
-        return []
-    marks = ",".join(["%s"] * len(unique))
-    found = {r["id"] for r in db.query(f"SELECT id FROM users WHERE id IN ({marks})", unique)}
-    if len(found) != len(unique):
-        raise HTTPException(status_code=400, detail="包含不存在的用户")
-    return unique
+# ------------------------------------------------------------------ 通用读写 / 404
+
+def _not_found() -> None:
+    raise HTTPException(status_code=404, detail="记录不存在")
 
 
-def set_members(pid: int, ids: list[int]) -> None:
-    db.execute("DELETE FROM project_members WHERE project_id=%s", (pid,))
-    for uid in ids:
-        db.execute("INSERT IGNORE INTO project_members (project_id, user_id) VALUES (%s, %s)", (pid, uid))
+def _row(table: str, rid: int, uid: int) -> dict | None:
+    return db.query_one(f"SELECT * FROM {table} WHERE id=%s AND user_id=%s", (rid, uid))
 
 
-def owner_check(row: dict, user: dict) -> None:
-    if row["owner_id"] != user["id"]:
-        raise HTTPException(status_code=403, detail="仅负责人可操作")
+def _values(obj, columns, bools=()) -> tuple:
+    return tuple(int(getattr(obj, c)) if c in bools else getattr(obj, c) for c in columns)
 
 
-def not_found(name: str = "资源") -> None:
-    raise HTTPException(status_code=404, detail=f"资源不存在")
+def _insert(table: str, columns, values: tuple) -> int:
+    marks = ", ".join(["%s"] * len(columns))
+    return db.execute(f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({marks})", values)
 
+
+def _update(table: str, columns, values: tuple, rid: int, uid: int) -> None:
+    sets = ", ".join(f"{c}=%s" for c in columns)
+    db.execute(
+        f"UPDATE {table} SET {sets}, updated_at=CURRENT_TIMESTAMP WHERE id=%s AND user_id=%s",
+        (*values, rid, uid),
+    )
+
+
+def _replace_children(table: str, fk: str, parent_id: int, columns, rows) -> None:
+    """同一次写请求内整体替换明细：先删旧行，再逐条插入（autocommit=True）。"""
+    db.execute(f"DELETE FROM {table} WHERE {fk}=%s", (parent_id,))
+    marks = ", ".join(["%s"] * len(columns))
+    sql = f"INSERT INTO {table} ({fk}, {', '.join(columns)}) VALUES (%s, {marks})"
+    for row in rows:
+        db.execute(sql, (parent_id, *row))
+
+
+def _ensure_unique(table: str, uid: int, column: str, value, exclude: int = 0) -> None:
+    if db.query_one(
+        f"SELECT id FROM {table} WHERE user_id=%s AND {column}=%s AND id<>%s", (uid, value, exclude)
+    ):
+        raise HTTPException(status_code=400, detail="记录已存在")
+
+
+# ------------------------------------------------------------------ 系统 / 认证 / 用户（保持不变）
 
 @app.get("/", include_in_schema=False)
 def root():
@@ -153,122 +264,10 @@ def me(user: dict = Depends(current_user)):
     return user
 
 
-@app.get("/api/dashboard", tags=["dashboard"])
-def dashboard(user: dict = Depends(current_user)):
-    counts = db.query_one("""
-        SELECT (SELECT COUNT(*) FROM projects) AS project_count,
-               (SELECT COUNT(*) FROM tasks) AS task_count,
-               (SELECT COUNT(*) FROM tasks WHERE status='todo') AS todo_count,
-               (SELECT COUNT(*) FROM tasks WHERE status='doing') AS doing_count,
-               (SELECT COUNT(*) FROM tasks WHERE status='done') AS done_count
-    """)
-    my_projects = db.query(
-        PROJECT_SELECT + " WHERE p.owner_id=%s ORDER BY p.created_at DESC, p.id DESC LIMIT 5",
-        (user["id"],),
-    )
-    my_tasks = db.query(
-        TASK_SELECT + " WHERE t.assignee_id=%s AND t.status<>'done' "
-        + TASK_ORDER + " LIMIT 10",
-        (user["id"],),
-    )
-    return {**counts, "my_projects": [project_out(r) for r in my_projects],
-            "my_tasks": [task_out(r) for r in my_tasks]}
-
-
-@app.get("/api/projects", tags=["projects"])
-def list_projects(status: str = "", q: str = "", user: dict = Depends(current_user)):
-    rows = db.query(
-        PROJECT_SELECT + " WHERE (%s = '' OR p.status = %s) "
-        "AND (%s = '' OR p.name LIKE CONCAT('%%', %s, '%%')) "
-        "ORDER BY p.created_at DESC, p.id DESC",
-        (status, status, q, q),
-    )
-    return [project_out(r) for r in rows]
-
-
-@app.post("/api/projects", status_code=201, tags=["projects"])
-def create_project(body: ProjectIn, user: dict = Depends(current_user)):
-    ids = valid_ids(body.member_ids)
-    pid = db.execute(
-        "INSERT INTO projects (name, description, status, start_date, end_date, owner_id) "
-        "VALUES (%s, %s, %s, %s, %s, %s)",
-        (body.name, body.description, body.status, body.start_date, body.end_date, user["id"]),
-    )
-    set_members(pid, ids)
-    return project_out(project_row(pid))
-
-
-@app.get("/api/projects/{pid}", tags=["projects"])
-def get_project(pid: int, user: dict = Depends(current_user)):
-    row = project_row(pid)
+def user_out(row: dict | None) -> dict | None:
     if not row:
-        not_found("项目")
-    out = project_out(row)
-    out["tasks"] = [task_out(r) for r in db.query(TASK_SELECT + " WHERE t.project_id=%s " + TASK_ORDER, (pid,))]
-    return out
-
-
-@app.put("/api/projects/{pid}", tags=["projects"])
-def update_project(pid: int, body: ProjectIn, user: dict = Depends(current_user)):
-    row = project_row(pid)
-    if not row:
-        not_found("项目")
-    owner_check(row, user)
-    ids = valid_ids(body.member_ids)
-    db.execute(
-        "UPDATE projects SET name=%s, description=%s, status=%s, start_date=%s, end_date=%s, "
-        "updated_at=CURRENT_TIMESTAMP WHERE id=%s",
-        (body.name, body.description, body.status, body.start_date, body.end_date, pid),
-    )
-    set_members(pid, ids)
-    return project_out(project_row(pid))
-
-
-@app.delete("/api/projects/{pid}", status_code=204, tags=["projects"])
-def delete_project(pid: int, user: dict = Depends(current_user)):
-    row = project_row(pid)
-    if not row:
-        not_found("项目")
-    owner_check(row, user)
-    db.execute("DELETE FROM projects WHERE id=%s", (pid,))
-    return Response(status_code=204)
-
-
-@app.post("/api/projects/{pid}/tasks", status_code=201, tags=["tasks"])
-def create_task(pid: int, body: TaskIn, user: dict = Depends(current_user)):
-    if not project_row(pid):
-        not_found("项目")
-    if body.assignee_id is not None and not db.query_one("SELECT id FROM users WHERE id=%s", (body.assignee_id,)):
-        raise HTTPException(status_code=400, detail="执行人不存在")
-    tid = db.execute(
-        "INSERT INTO tasks (project_id, title, description, assignee_id, status, priority, due_date) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s)",
-        (pid, body.title, body.description, body.assignee_id, body.status, body.priority, body.due_date),
-    )
-    return task_out(db.query_one(TASK_SELECT + " WHERE t.id=%s", (tid,)))
-
-
-@app.put("/api/tasks/{tid}", tags=["tasks"])
-def update_task(tid: int, body: TaskIn, user: dict = Depends(current_user)):
-    row = db.query_one(TASK_SELECT + " WHERE t.id=%s", (tid,))
-    if not row:
-        not_found("任务")
-    if body.assignee_id is not None and not db.query_one("SELECT id FROM users WHERE id=%s", (body.assignee_id,)):
-        raise HTTPException(status_code=400, detail="执行人不存在")
-    db.execute(
-        "UPDATE tasks SET title=%s, description=%s, assignee_id=%s, status=%s, priority=%s, due_date=%s, "
-        "updated_at=CURRENT_TIMESTAMP WHERE id=%s",
-        (body.title, body.description, body.assignee_id, body.status, body.priority, body.due_date, tid),
-    )
-    return task_out(db.query_one(TASK_SELECT + " WHERE t.id=%s", (tid,)))
-
-
-@app.delete("/api/tasks/{tid}", status_code=204, tags=["tasks"])
-def delete_task(tid: int, user: dict = Depends(current_user)):
-    if not db.query_one("SELECT id FROM tasks WHERE id=%s", (tid,)):
-        not_found("任务")
-    db.execute("DELETE FROM tasks WHERE id=%s", (tid,))
-    return Response(status_code=204)
+        return None
+    return {k: row.get(k) for k in ["id", "username", "display_name", "is_staff", "created_at"]}
 
 
 @app.get("/api/users", tags=["users"])
@@ -286,3 +285,219 @@ def create_user(body: UserIn, admin: dict = Depends(admin_user)):
          body.display_name or body.username, int(body.is_staff)),
     )
     return user_out(db.query_one(f"SELECT {USER_FIELDS} FROM users WHERE id=%s", (uid,)))
+
+
+# ------------------------------------------------------------------ 工作台
+
+@app.get("/api/dashboard", tags=["dashboard"])
+def dashboard(user: dict = Depends(current_user)):
+    uid = user["id"]
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+    month = today.strftime("%Y-%m")
+
+    def count(table: str) -> int:
+        return int(db.query_one(f"SELECT COUNT(*) AS n FROM {table} WHERE user_id=%s", (uid,))["n"])
+
+    today_plan = db.query_one(
+        "SELECT * FROM daily_plans WHERE user_id=%s AND plan_date=%s", (uid, today.isoformat())
+    )
+    week_review = db.query_one(
+        "SELECT * FROM weekly_reviews WHERE user_id=%s AND week_start=%s", (uid, monday.isoformat())
+    )
+    month_review = db.query_one(
+        "SELECT * FROM monthly_reviews WHERE user_id=%s AND month=%s", (uid, month)
+    )
+    recent_daily = db.query(
+        "SELECT * FROM daily_plans WHERE user_id=%s ORDER BY plan_date DESC, id DESC LIMIT 5", (uid,)
+    )
+    recent_weekly = db.query(
+        "SELECT * FROM weekly_reviews WHERE user_id=%s ORDER BY week_start DESC, id DESC LIMIT 5", (uid,)
+    )
+    recent_monthly = db.query(
+        "SELECT * FROM monthly_reviews WHERE user_id=%s ORDER BY month DESC, id DESC LIMIT 5", (uid,)
+    )
+    last_week = db.query(
+        "SELECT * FROM daily_plans WHERE user_id=%s ORDER BY plan_date DESC, id DESC LIMIT 7", (uid,)
+    )
+    block_total = block_done = 0
+    for row in last_week:
+        blocks = _load_blocks(row["id"])
+        block_total += len(blocks)
+        block_done += sum(1 for b in blocks if b["is_done"])
+
+    return {
+        "daily_count": count("daily_plans"),
+        "weekly_count": count("weekly_reviews"),
+        "monthly_count": count("monthly_reviews"),
+        "today_plan": daily_out(today_plan),
+        "week_review": weekly_out(week_review),
+        "month_review": monthly_out(month_review),
+        "recent_daily": [daily_out(r) for r in recent_daily],
+        "recent_weekly": [weekly_out(r) for r in recent_weekly],
+        "recent_monthly": [monthly_out(r) for r in recent_monthly],
+        "block_total": block_total,
+        "block_done": block_done,
+    }
+
+
+# ------------------------------------------------------------------ 每日执行清单
+
+@app.get("/api/daily", tags=["daily"])
+def list_daily(user: dict = Depends(current_user)):
+    rows = db.query(
+        "SELECT * FROM daily_plans WHERE user_id=%s ORDER BY plan_date DESC, id DESC", (user["id"],)
+    )
+    return [daily_out(r) for r in rows]
+
+
+@app.post("/api/daily", status_code=201, tags=["daily"])
+def create_daily(body: DailyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    _ensure_unique("daily_plans", uid, "plan_date", body.plan_date)
+    did = _insert(
+        "daily_plans", ("user_id",) + DAILY_COLS, (uid,) + _values(body, DAILY_COLS, DAILY_BOOL_FIELDS)
+    )
+    _replace_children(
+        "time_blocks", "daily_plan_id", did, BLOCK_COLS,
+        [_values(b, BLOCK_COLS, ("is_done",)) for b in body.blocks],
+    )
+    return daily_out(_row("daily_plans", did, uid))
+
+
+@app.get("/api/daily/{did}", tags=["daily"])
+def get_daily(did: int, user: dict = Depends(current_user)):
+    row = _row("daily_plans", did, user["id"])
+    if not row:
+        _not_found()
+    return daily_out(row)
+
+
+@app.put("/api/daily/{did}", tags=["daily"])
+def update_daily(did: int, body: DailyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    if not _row("daily_plans", did, uid):
+        _not_found()
+    _ensure_unique("daily_plans", uid, "plan_date", body.plan_date, exclude=did)
+    _update(
+        "daily_plans", DAILY_COLS, _values(body, DAILY_COLS, DAILY_BOOL_FIELDS), did, uid
+    )
+    _replace_children(
+        "time_blocks", "daily_plan_id", did, BLOCK_COLS,
+        [_values(b, BLOCK_COLS, ("is_done",)) for b in body.blocks],
+    )
+    return daily_out(_row("daily_plans", did, uid))
+
+
+@app.delete("/api/daily/{did}", status_code=204, tags=["daily"])
+def delete_daily(did: int, user: dict = Depends(current_user)):
+    if not _row("daily_plans", did, user["id"]):
+        _not_found()
+    db.execute("DELETE FROM daily_plans WHERE id=%s AND user_id=%s", (did, user["id"]))
+    return Response(status_code=204)
+
+
+# ------------------------------------------------------------------ 每周复盘清单
+
+@app.get("/api/weekly", tags=["weekly"])
+def list_weekly(user: dict = Depends(current_user)):
+    rows = db.query(
+        "SELECT * FROM weekly_reviews WHERE user_id=%s ORDER BY week_start DESC, id DESC", (user["id"],)
+    )
+    return [weekly_out(r) for r in rows]
+
+
+@app.post("/api/weekly", status_code=201, tags=["weekly"])
+def create_weekly(body: WeeklyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    _ensure_unique("weekly_reviews", uid, "week_start", body.week_start)
+    rid = _insert(
+        "weekly_reviews", ("user_id",) + WEEKLY_COLS,
+        (uid,) + _values(body, WEEKLY_COLS, WEEKLY_BOOL_FIELDS),
+    )
+    _replace_children("weekly_domain_reviews", "weekly_review_id", rid, DOMAIN_COLS,
+                      [_values(d, DOMAIN_COLS) for d in body.domains])
+    _replace_children("weekly_task_flows", "weekly_review_id", rid, FLOW_COLS,
+                      [_values(f, FLOW_COLS) for f in body.flows])
+    return weekly_out(_row("weekly_reviews", rid, uid))
+
+
+@app.get("/api/weekly/{rid}", tags=["weekly"])
+def get_weekly(rid: int, user: dict = Depends(current_user)):
+    row = _row("weekly_reviews", rid, user["id"])
+    if not row:
+        _not_found()
+    return weekly_out(row)
+
+
+@app.put("/api/weekly/{rid}", tags=["weekly"])
+def update_weekly(rid: int, body: WeeklyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    if not _row("weekly_reviews", rid, uid):
+        _not_found()
+    _ensure_unique("weekly_reviews", uid, "week_start", body.week_start, exclude=rid)
+    _update("weekly_reviews", WEEKLY_COLS, _values(body, WEEKLY_COLS, WEEKLY_BOOL_FIELDS), rid, uid)
+    _replace_children("weekly_domain_reviews", "weekly_review_id", rid, DOMAIN_COLS,
+                      [_values(d, DOMAIN_COLS) for d in body.domains])
+    _replace_children("weekly_task_flows", "weekly_review_id", rid, FLOW_COLS,
+                      [_values(f, FLOW_COLS) for f in body.flows])
+    return weekly_out(_row("weekly_reviews", rid, uid))
+
+
+@app.delete("/api/weekly/{rid}", status_code=204, tags=["weekly"])
+def delete_weekly(rid: int, user: dict = Depends(current_user)):
+    if not _row("weekly_reviews", rid, user["id"]):
+        _not_found()
+    db.execute("DELETE FROM weekly_reviews WHERE id=%s AND user_id=%s", (rid, user["id"]))
+    return Response(status_code=204)
+
+
+# ------------------------------------------------------------------ 每月重构清单
+
+@app.get("/api/monthly", tags=["monthly"])
+def list_monthly(user: dict = Depends(current_user)):
+    rows = db.query(
+        "SELECT * FROM monthly_reviews WHERE user_id=%s ORDER BY month DESC, id DESC", (user["id"],)
+    )
+    return [monthly_out(r) for r in rows]
+
+
+@app.post("/api/monthly", status_code=201, tags=["monthly"])
+def create_monthly(body: MonthlyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    _ensure_unique("monthly_reviews", uid, "month", body.month)
+    rid = _insert(
+        "monthly_reviews", ("user_id",) + MONTHLY_COLS,
+        (uid,) + _values(body, MONTHLY_COLS, MONTHLY_BOOL_FIELDS),
+    )
+    _replace_children("system_health_checks", "monthly_review_id", rid, HEALTH_COLS,
+                      [_values(h, HEALTH_COLS) for h in body.health_checks])
+    return monthly_out(_row("monthly_reviews", rid, uid))
+
+
+@app.get("/api/monthly/{rid}", tags=["monthly"])
+def get_monthly(rid: int, user: dict = Depends(current_user)):
+    row = _row("monthly_reviews", rid, user["id"])
+    if not row:
+        _not_found()
+    return monthly_out(row)
+
+
+@app.put("/api/monthly/{rid}", tags=["monthly"])
+def update_monthly(rid: int, body: MonthlyIn, user: dict = Depends(current_user)):
+    uid = user["id"]
+    if not _row("monthly_reviews", rid, uid):
+        _not_found()
+    _ensure_unique("monthly_reviews", uid, "month", body.month, exclude=rid)
+    _update("monthly_reviews", MONTHLY_COLS, _values(body, MONTHLY_COLS, MONTHLY_BOOL_FIELDS), rid, uid)
+    _replace_children("system_health_checks", "monthly_review_id", rid, HEALTH_COLS,
+                      [_values(h, HEALTH_COLS) for h in body.health_checks])
+    return monthly_out(_row("monthly_reviews", rid, uid))
+
+
+@app.delete("/api/monthly/{rid}", status_code=204, tags=["monthly"])
+def delete_monthly(rid: int, user: dict = Depends(current_user)):
+    if not _row("monthly_reviews", rid, user["id"]):
+        _not_found()
+    db.execute("DELETE FROM monthly_reviews WHERE id=%s AND user_id=%s", (rid, user["id"]))
+    return Response(status_code=204)

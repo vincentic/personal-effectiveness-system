@@ -1,0 +1,134 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">{{.Title}}</h3>
+  <a href="{{.CancelURL}}" class="btn btn-outline-secondary btn-sm">返回列表</a>
+</div>
+
+{{with index .Errors "detail"}}<div class="alert alert-danger py-2">{{.}}</div>{{end}}
+
+<form method="post" action="{{.Action}}">
+  <input type="hidden" name="_csrf" value="{{.CSRF}}">
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">基本信息</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">日期</label>
+          <input type="date" class="form-control" name="plan_date" value="{{.Form.PlanDate}}" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">睡眠小时</label>
+          <input type="number" step="0.1" min="0" max="24" class="form-control" name="sleep_hours"
+                 value="{{if .Form.SleepHours}}{{.Form.SleepHours}}{{end}}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">精力</label>
+          <select class="form-select" name="energy_level">
+            {{range $.EnergyOptions}}
+            <option value="{{.Code}}" {{if eq $.Form.EnergyLevel .Code}}selected{{end}}>{{.Label}}</option>
+            {{end}}
+          </select>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">今日最重要的成果（MIT）</label>
+          <input type="text" class="form-control" name="mit" value="{{.Form.MIT}}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">执行前后检查（13 项）</div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="pre_know_output" id="c1" {{if .Form.PreKnowOutput}}checked{{end}}><label class="form-check-label" for="c1">启动前：知道本轮交付什么</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="pre_materials_ready" id="c2" {{if .Form.PreMaterialsReady}}checked{{end}}><label class="form-check-label" for="c2">启动前：材料已准备</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="pre_phone_handled" id="c3" {{if .Form.PrePhoneHandled}}checked{{end}}><label class="form-check-label" for="c3">启动前：手机/通知已处理</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="during_one_block" id="c4" {{if .Form.DuringOneBlock}}checked{{end}}><label class="form-check-label" for="c4">执行中：一次只做一个组块</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="during_shrink_step" id="c5" {{if .Form.DuringShrinkStep}}checked{{end}}><label class="form-check-label" for="c5">执行中：卡住先缩小下一步</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="during_record_distraction" id="c6" {{if .Form.DuringRecordDistraction}}checked{{end}}><label class="form-check-label" for="c6">执行中：记录干扰</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="post_visible_output" id="c7" {{if .Form.PostVisibleOutput}}checked{{end}}><label class="form-check-label" for="c7">结束后：有可见产出</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="post_recall" id="c8" {{if .Form.PostRecall}}checked{{end}}><label class="form-check-label" for="c8">结束后：主动回忆/复述</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="post_next_step" id="c9" {{if .Form.PostNextStep}}checked{{end}}><label class="form-check-label" for="c9">结束后：标记下一步</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="life_water_food" id="c10" {{if .Form.LifeWaterFood}}checked{{end}}><label class="form-check-label" for="c10">生活：饮水/正常饮食</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="life_walk_exercise" id="c11" {{if .Form.LifeWalkExercise}}checked{{end}}><label class="form-check-label" for="c11">生活：走路/运动</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="life_clean_tidy" id="c12" {{if .Form.LifeCleanTidy}}checked{{end}}><label class="form-check-label" for="c12">生活：清洁/整理</label></div></div>
+        <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" name="life_social_outdoor" id="c13" {{if .Form.LifeSocialOutdoor}}checked{{end}}><label class="form-check-label" for="c13">生活：真实交流/户外</label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">时间盒组块</div>
+    <div class="card-body">
+      <input type="hidden" name="block_count" id="block_count" value="{{len .Form.Blocks}}">
+      <div id="blockRows">
+        {{range $i, $b := .Form.Blocks}}
+        <div class="row g-2 dyn-row border rounded p-2 mb-2">
+          <div class="col-md-1"><label class="form-label small">序号</label><input type="number" class="form-control form-control-sm" name="blocks[{{$i}}].seq" value="{{$b.Seq}}"></div>
+          <div class="col-md-3"><label class="form-label small">组块/任务</label><input type="text" class="form-control form-control-sm" name="blocks[{{$i}}].block_name" value="{{$b.BlockName}}"></div>
+          <div class="col-md-2"><label class="form-label small">开始</label><input type="time" class="form-control form-control-sm" name="blocks[{{$i}}].time_start" value="{{if $b.TimeStart}}{{$b.TimeStart}}{{end}}"></div>
+          <div class="col-md-2"><label class="form-label small">结束</label><input type="time" class="form-control form-control-sm" name="blocks[{{$i}}].time_end" value="{{if $b.TimeEnd}}{{$b.TimeEnd}}{{end}}"></div>
+          <div class="col-md-2"><label class="form-label small">完成</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="blocks[{{$i}}].is_done" {{if $b.IsDone}}checked{{end}}></div></div>
+          <div class="col-md-2"><label class="form-label small">操作</label><div><button type="button" class="btn btn-sm btn-outline-danger py-0" onclick="removeRow(this)">删除本行</button></div></div>
+          <div class="col-md-4"><label class="form-label small">输入</label><input type="text" class="form-control form-control-sm" name="blocks[{{$i}}].input_desc" value="{{$b.InputDesc}}"></div>
+          <div class="col-md-4"><label class="form-label small">关键动作</label><input type="text" class="form-control form-control-sm" name="blocks[{{$i}}].key_action" value="{{$b.KeyAction}}"></div>
+          <div class="col-md-4"><label class="form-label small">可验收输出</label><input type="text" class="form-control form-control-sm" name="blocks[{{$i}}].deliverable" value="{{$b.Deliverable}}"></div>
+        </div>
+        {{end}}
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">+ 添加组块</button>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">晚间 5 分钟复盘</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">今天真正完成了什么</label><textarea class="form-control" rows="2" name="review_accomplished">{{.Form.ReviewAccomplished}}</textarea></div>
+        <div class="col-md-6"><label class="form-label">今天最大的阻力</label><textarea class="form-control" rows="2" name="review_resistance">{{.Form.ReviewResistance}}</textarea></div>
+        <div class="col-md-6"><label class="form-label">明天最小的启动动作</label><textarea class="form-control" rows="2" name="review_tomorrow_start">{{.Form.ReviewTomorrowStart}}</textarea></div>
+        <div class="col-md-6"><label class="form-label">今天值得感谢/享受的事</label><textarea class="form-control" rows="2" name="review_gratitude">{{.Form.ReviewGratitude}}</textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a href="{{.CancelURL}}" class="btn btn-outline-secondary">取消</a>
+  </div>
+</form>
+
+<template id="rowTpl">
+  <div class="row g-2 dyn-row border rounded p-2 mb-2">
+    <div class="col-md-1"><label class="form-label small">序号</label><input type="number" class="form-control form-control-sm" name="blocks[__I__].seq" value="__I__"></div>
+    <div class="col-md-3"><label class="form-label small">组块/任务</label><input type="text" class="form-control form-control-sm" name="blocks[__I__].block_name"></div>
+    <div class="col-md-2"><label class="form-label small">开始</label><input type="time" class="form-control form-control-sm" name="blocks[__I__].time_start"></div>
+    <div class="col-md-2"><label class="form-label small">结束</label><input type="time" class="form-control form-control-sm" name="blocks[__I__].time_end"></div>
+    <div class="col-md-2"><label class="form-label small">完成</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" name="blocks[__I__].is_done"></div></div>
+    <div class="col-md-2"><label class="form-label small">操作</label><div><button type="button" class="btn btn-sm btn-outline-danger py-0" onclick="removeRow(this)">删除本行</button></div></div>
+    <div class="col-md-4"><label class="form-label small">输入</label><input type="text" class="form-control form-control-sm" name="blocks[__I__].input_desc"></div>
+    <div class="col-md-4"><label class="form-label small">关键动作</label><input type="text" class="form-control form-control-sm" name="blocks[__I__].key_action"></div>
+    <div class="col-md-4"><label class="form-label small">可验收输出</label><input type="text" class="form-control form-control-sm" name="blocks[__I__].deliverable"></div>
+  </div>
+</template>
+
+<script>
+  (function () {
+    var box = document.getElementById('blockRows');
+    var count = document.getElementById('block_count');
+    function sync() { count.value = box.querySelectorAll('.dyn-row').length; }
+    window.addRow = function () {
+      var html = document.getElementById('rowTpl').innerHTML.replace(/__I__/g, box.querySelectorAll('.dyn-row').length);
+      box.insertAdjacentHTML('beforeend', html);
+      sync();
+    };
+    window.removeRow = function (btn) {
+      var rows = box.querySelectorAll('.dyn-row');
+      if (rows.length > 1) { btn.closest('.dyn-row').remove(); sync(); }
+    };
+    sync();
+  })();
+</script>
+{{end}}

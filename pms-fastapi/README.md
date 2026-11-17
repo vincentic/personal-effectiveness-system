@@ -1,6 +1,6 @@
-# PMS FastAPI 版
+# 个人效能系统 · FastAPI 版
 
-纯 REST API 实现，与 Spring Boot 版、Gin 版共用同一套数据库表（`db/schema.sql`）和 API 契约（`db/API.md`），Token 三版互通。
+纯 REST API 实现，与 Spring Boot 版、Gin 版共用同一套 v2 效能表（`db/schema.sql`）和 API 契约（`db/API.md`），Token 三版互通。数据按当前用户隔离，日/周/月清单的明细子表随主表整体替换。
 
 ## 启动
 
@@ -35,15 +35,18 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 POST /api/auth/login
 GET  /api/me
 GET  /api/dashboard
-GET|POST     /api/projects
-GET|PUT|DELETE /api/projects/{id}
-POST /api/projects/{id}/tasks
-PUT|DELETE   /api/tasks/{id}
-GET|POST     /api/users
+GET|POST          /api/daily          # 每日执行清单（含 blocks 时间盒）
+GET|PUT|DELETE    /api/daily/{id}
+GET|POST          /api/weekly         # 每周复盘（含 domains 领域 + flows 任务流）
+GET|PUT|DELETE    /api/weekly/{id}
+GET|POST          /api/monthly        # 每月重构（含 health_checks 系统健康）
+GET|PUT|DELETE    /api/monthly/{id}
+GET|POST          /api/users          # 仅管理员
 ```
 
 ## 测试记录
 
 - 登录返回 Token：✅
-- 三版 Token 交叉验证（9 组合）：✅
-- 跨版本 CRUD：✅
+- 日/周/月清单 CRUD + 明细整体替换（真实 MySQL）：✅
+- dashboard / 401 鉴权：✅
+- 三版 Token 交叉验证与跨版本 CRUD：见仓库根 README 的联调结果。

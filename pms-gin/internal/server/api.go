@@ -91,33 +91,15 @@ func apiUser(c *gin.Context) map[string]any {
 	return row
 }
 
-func isStaff(row map[string]any) bool {
-	return models.ToInt64(row["is_staff"]) != 0
-}
+func apiUID(c *gin.Context) int64 { return models.ToInt64(apiUser(c)["id"]) }
+
+func isStaff(row map[string]any) bool { return models.ToInt64(row["is_staff"]) != 0 }
 
 // ---------- 请求体与校验 ----------
 
 type loginIn struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-type projectIn struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Status      string  `json:"status"`
-	StartDate   *string `json:"start_date"`
-	EndDate     *string `json:"end_date"`
-	MemberIDs   []int64 `json:"member_ids"`
-}
-
-type taskIn struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	AssigneeID  *int64  `json:"assignee_id"`
-	Status      string  `json:"status"`
-	Priority    string  `json:"priority"`
-	DueDate     *string `json:"due_date"`
 }
 
 type userIn struct {
@@ -135,70 +117,177 @@ func decodeJSON(c *gin.Context, dst any) bool {
 	return true
 }
 
-func dateFromPtr(p *string) (any, error) {
-	if p == nil {
-		return nil, nil
-	}
-	return models.ParseDate(*p)
+func apiID(c *gin.Context) (int64, bool) {
+	n, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	return n, err == nil && n > 0
 }
 
-func normalizeProjectIn(b *projectIn) string {
-	b.Name = strings.TrimSpace(b.Name)
-	if b.Name == "" {
-		return "项目名称不能为空"
+func apiNotFound(c *gin.Context) { apiFail(c, http.StatusNotFound, "记录不存在") }
+
+// trimVarchar 归一化 VARCHAR(255) 字段并校验长度。
+func trimVarchar(field, value string, max int) (string, string) {
+	value = strings.TrimSpace(value)
+	if len([]rune(value)) > max {
+		return value, field + "不能超过 " + strconv.Itoa(max) + " 字"
 	}
-	if len([]rune(b.Name)) > 100 {
-		return "项目名称不能超过 100 字"
+	return value, ""
+}
+
+func normalizeDailyIn(b *models.DailyIn) string {
+	b.PlanDate = strings.TrimSpace(b.PlanDate)
+	if b.PlanDate == "" {
+		return "日期不能为空"
 	}
-	if b.Status == "" {
-		b.Status = "active"
-	}
-	if !models.ValidProjectStatus(b.Status) {
-		return "状态值非法"
-	}
-	if _, err := dateFromPtr(b.StartDate); err != nil {
+	if _, err := models.ParseDate(b.PlanDate); err != nil {
 		return err.Error()
 	}
-	if _, err := dateFromPtr(b.EndDate); err != nil {
-		return err.Error()
+	if b.EnergyLevel == "" {
+		b.EnergyLevel = "medium"
 	}
-	if _, err := models.ValidUserIDs(b.MemberIDs); err != nil {
-		return err.Error()
+	if !models.ValidEnergy(b.EnergyLevel) {
+		return "精力值非法"
+	}
+	if b.SleepHours != nil && (*b.SleepHours < 0 || *b.SleepHours > 24) {
+		return "睡眠小时应在 0-24 之间"
+	}
+	b.MIT = strings.TrimSpace(b.MIT)
+	for _, p := range []*string{&b.ReviewAccomplished, &b.ReviewResistance,
+		&b.ReviewTomorrowStart, &b.ReviewGratitude} {
+		*p = strings.TrimSpace(*p)
+	}
+	for i := range b.Blocks {
+		blk := &b.Blocks[i]
+		blk.BlockName = strings.TrimSpace(blk.BlockName)
+		if blk.BlockName == "" {
+			continue // 空行忽略
+		}
+		if len([]rune(blk.BlockName)) > 200 {
+			return "组块名称不能超过 200 字"
+		}
+		for _, p := range []*string{&blk.InputDesc, &blk.KeyAction, &blk.Deliverable} {
+			var msg string
+			*p, msg = trimVarchar("组块字段", *p, 255)
+			if msg != "" {
+				return msg
+			}
+		}
+		if blk.TimeStart != nil {
+			v, err := models.ParseHM(*blk.TimeStart)
+			if err != nil {
+				return err.Error()
+			}
+			if v == nil {
+				blk.TimeStart = nil
+			}
+		}
+		if blk.TimeEnd != nil {
+			v, err := models.ParseHM(*blk.TimeEnd)
+			if err != nil {
+				return err.Error()
+			}
+			if v == nil {
+				blk.TimeEnd = nil
+			}
+		}
 	}
 	return ""
 }
 
-func normalizeTaskIn(b *taskIn) string {
-	b.Title = strings.TrimSpace(b.Title)
-	if b.Title == "" {
-		return "任务标题不能为空"
+func normalizeWeeklyIn(b *models.WeeklyIn) string {
+	b.WeekStart = strings.TrimSpace(b.WeekStart)
+	if b.WeekStart == "" {
+		return "周起始日期不能为空"
 	}
-	if len([]rune(b.Title)) > 200 {
-		return "任务标题不能超过 200 字"
-	}
-	if b.Status == "" {
-		b.Status = "todo"
-	}
-	if b.Priority == "" {
-		b.Priority = "medium"
-	}
-	if !models.ValidTaskStatus(b.Status) {
-		return "状态值非法"
-	}
-	if !models.ValidPriority(b.Priority) {
-		return "优先级值非法"
-	}
-	if _, err := dateFromPtr(b.DueDate); err != nil {
+	if _, err := models.ParseDate(b.WeekStart); err != nil {
 		return err.Error()
 	}
-	if b.AssigneeID != nil {
-		ok, err := models.UserExists([]int64{*b.AssigneeID})
-		if err != nil {
-			return "执行人校验失败"
+	for _, p := range []*string{&b.NextMIT1, &b.NextMIT2, &b.NextMIT3,
+		&b.DeepWorkTime, &b.IfCondition, &b.ThenAction} {
+		var msg string
+		*p, msg = trimVarchar("字段", *p, 255)
+		if msg != "" {
+			return msg
 		}
-		if !ok {
-			return "执行人不存在"
+	}
+	b.PrepEnvMaterials = strings.TrimSpace(b.PrepEnvMaterials)
+	if len(b.Domains) > 4 {
+		return "领域回顾最多 4 条"
+	}
+	seen := map[string]bool{}
+	for i := range b.Domains {
+		d := &b.Domains[i]
+		if !models.ValidDomain(d.Domain) {
+			return "领域值非法"
 		}
+		if seen[d.Domain] {
+			return "领域不能重复"
+		}
+		seen[d.Domain] = true
+		if d.Status == "" {
+			d.Status = "smooth"
+		}
+		if !models.ValidDomainStatus(d.Status) {
+			return "领域状态值非法"
+		}
+		d.Facts = strings.TrimSpace(d.Facts)
+	}
+	for i := range b.Flows {
+		f := &b.Flows[i]
+		if f.Bucket == "" {
+			f.Bucket = "todo"
+		}
+		if !models.ValidBucket(f.Bucket) {
+			return "任务流分栏值非法"
+		}
+		var msg string
+		f.Content, msg = trimVarchar("任务流内容", f.Content, 255)
+		if msg != "" {
+			return msg
+		}
+		if f.Seq == 0 {
+			f.Seq = i + 1
+		}
+	}
+	return ""
+}
+
+func normalizeMonthlyIn(b *models.MonthlyIn) string {
+	month, err := models.ParseMonth(b.Month)
+	if err != nil {
+		return err.Error()
+	}
+	b.Month = month
+	if b.WorthContinue == "" {
+		b.WorthContinue = "yes"
+	}
+	if !models.ValidWorth(b.WorthContinue) {
+		return "投入判断值非法"
+	}
+	var msg string
+	b.WorthReason, msg = trimVarchar("原因", b.WorthReason, 255)
+	if msg != "" {
+		return msg
+	}
+	for _, p := range []*string{&b.TopAchievement, &b.MostValuableInput,
+		&b.BiggestOpportunityCost, &b.KeepItem, &b.CutItem, &b.ExperimentItem} {
+		*p = strings.TrimSpace(*p)
+	}
+	if len(b.HealthChecks) > 6 {
+		return "健康检查最多 6 条"
+	}
+	seen := map[string]bool{}
+	for _, h := range b.HealthChecks {
+		if !models.ValidHealthModule(h.Module) {
+			return "健康检查模块值非法"
+		}
+		if seen[h.Module] {
+			return "健康检查模块不能重复"
+		}
+		seen[h.Module] = true
+		if h.Score != nil && (*h.Score < 1 || *h.Score > 5) {
+			return "自评分应为 1-5"
+		}
+		h.NeededChange = strings.TrimSpace(h.NeededChange)
 	}
 	return ""
 }
@@ -221,22 +310,6 @@ func normalizeUserIn(b *userIn) string {
 		b.DisplayName = b.Username
 	}
 	return ""
-}
-
-func projectOutWithMembers(row map[string]any) (map[string]any, error) {
-	if row == nil {
-		return nil, nil
-	}
-	ids, err := models.ProjectMemberIDs(models.ToInt64(row["id"]))
-	if err != nil {
-		return nil, err
-	}
-	return models.ProjectOut(row, ids), nil
-}
-
-func apiID(c *gin.Context) (int64, bool) {
-	n, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	return n, err == nil && n > 0
 }
 
 // ---------- 端点 ----------
@@ -263,252 +336,342 @@ func (s *Server) apiMe(c *gin.Context) {
 }
 
 func (s *Server) apiDashboard(c *gin.Context) {
-	uid := models.ToInt64(apiUser(c)["id"])
-	counts, err := models.DashboardCounts()
-	if err != nil {
+	uid := apiUID(c)
+	out := models.DashboardOut{}
+	var err error
+	if out.DailyCount, out.WeeklyCount, out.MonthlyCount, err = models.DashboardCounts(uid); err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	out := gin.H{}
-	for k, v := range counts {
-		out[k] = v
-	}
-	myP, _ := models.MyProjects(uid)
-	projects := make([]map[string]any, 0, len(myP))
-	for _, r := range myP {
-		o, err := projectOutWithMembers(r)
-		if err != nil {
-			apiFail(c, http.StatusBadRequest, err.Error())
-			return
-		}
-		projects = append(projects, o)
-	}
-	myT, _ := models.MyTasks(uid)
-	tasks := make([]map[string]any, 0, len(myT))
-	for _, r := range myT {
-		tasks = append(tasks, models.TaskOut(r))
-	}
-	out["my_projects"] = projects
-	out["my_tasks"] = tasks
-	c.JSON(http.StatusOK, out)
-}
-
-func (s *Server) apiProjectsList(c *gin.Context) {
-	rows, err := models.Projects(c.Query("status"), c.Query("q"))
-	if err != nil {
+	if out.RecentDaily, err = models.DailyPlans(uid, 5); err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	out := make([]map[string]any, 0, len(rows))
-	for _, r := range rows {
-		o, err := projectOutWithMembers(r)
-		if err != nil {
-			apiFail(c, http.StatusBadRequest, err.Error())
-			return
-		}
-		out = append(out, o)
+	if out.RecentWeekly, err = models.WeeklyReviews(uid, 5); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if out.RecentMonthly, err = models.MonthlyReviews(uid, 5); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if out.BlockTotal, out.BlockDone, err = models.BlockTotals(uid); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if today := models.CurrentDate(); today != "" {
+		out.TodayPlan, _ = models.DailyPlanByDate(uid, today)
+	}
+	if week := models.CurrentWeekStart(); week != "" {
+		out.WeekReview, _ = models.WeeklyReviewByWeek(uid, week)
+	}
+	if month := models.CurrentMonth(); month != "" {
+		out.MonthReview, _ = models.MonthlyReviewByMonth(uid, month)
 	}
 	c.JSON(http.StatusOK, out)
 }
 
-func (s *Server) apiProjectsCreate(c *gin.Context) {
-	var body projectIn
+// ---------- 日清单 ----------
+
+func (s *Server) apiDailyList(c *gin.Context) {
+	out, err := models.DailyPlans(apiUID(c), 0)
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiDailyCreate(c *gin.Context) {
+	var body models.DailyIn
 	if !decodeJSON(c, &body) {
 		return
 	}
-	if msg := normalizeProjectIn(&body); msg != "" {
+	if msg := normalizeDailyIn(&body); msg != "" {
 		apiFail(c, http.StatusBadRequest, msg)
 		return
 	}
-	startDate, _ := dateFromPtr(body.StartDate)
-	endDate, _ := dateFromPtr(body.EndDate)
-	ids, _ := models.ValidUserIDs(body.MemberIDs)
-	pid, err := models.InsertProject(body.Name, body.Description, body.Status,
-		startDate, endDate, models.ToInt64(apiUser(c)["id"]))
+	id, err := models.InsertDaily(apiUID(c), &body)
 	if err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err = models.SetMembers(pid, ids); err != nil {
-		apiFail(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	row, _ := models.Project(pid)
-	out, _ := projectOutWithMembers(row)
+	out, _ := models.DailyPlanByID(id, apiUID(c))
 	c.JSON(http.StatusCreated, out)
 }
 
-func (s *Server) apiProjectGet(c *gin.Context) {
+func (s *Server) apiDailyGet(c *gin.Context) {
 	id, ok := apiID(c)
 	if !ok {
-		apiFail(c, http.StatusNotFound, "项目不存在")
+		apiNotFound(c)
 		return
 	}
-	row, err := models.Project(id)
-	if err != nil || row == nil {
-		apiFail(c, http.StatusNotFound, "项目不存在")
-		return
-	}
-	out, err := projectOutWithMembers(row)
+	out, err := models.DailyPlanByID(id, apiUID(c))
 	if err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	tasks, _ := models.TasksByProject(id)
-	ts := make([]map[string]any, 0, len(tasks))
-	for _, t := range tasks {
-		ts = append(ts, models.TaskOut(t))
+	if out == nil {
+		apiNotFound(c)
+		return
 	}
-	out["tasks"] = ts
 	c.JSON(http.StatusOK, out)
 }
 
-func (s *Server) apiProjectUpdate(c *gin.Context) {
+func (s *Server) apiDailyUpdate(c *gin.Context) {
 	id, ok := apiID(c)
 	if !ok {
-		apiFail(c, http.StatusNotFound, "项目不存在")
+		apiNotFound(c)
 		return
 	}
-	row, err := models.Project(id)
-	if err != nil || row == nil {
-		apiFail(c, http.StatusNotFound, "项目不存在")
+	old, err := models.DailyPlanByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if models.ToInt64(row["owner_id"]) != models.ToInt64(apiUser(c)["id"]) {
-		apiFail(c, http.StatusForbidden, "仅负责人可操作")
+	if old == nil {
+		apiNotFound(c)
 		return
 	}
-	var body projectIn
+	var body models.DailyIn
 	if !decodeJSON(c, &body) {
 		return
 	}
-	if msg := normalizeProjectIn(&body); msg != "" {
+	if msg := normalizeDailyIn(&body); msg != "" {
 		apiFail(c, http.StatusBadRequest, msg)
 		return
 	}
-	startDate, _ := dateFromPtr(body.StartDate)
-	endDate, _ := dateFromPtr(body.EndDate)
-	ids, _ := models.ValidUserIDs(body.MemberIDs)
-	if err = models.UpdateProject(id, body.Name, body.Description, body.Status,
-		startDate, endDate); err != nil {
+	if err = models.UpdateDaily(id, apiUID(c), &body); err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err = models.SetMembers(id, ids); err != nil {
-		apiFail(c, http.StatusBadRequest, err.Error())
-		return
-	}
-	updated, _ := models.Project(id)
-	out, _ := projectOutWithMembers(updated)
+	out, _ := models.DailyPlanByID(id, apiUID(c))
 	c.JSON(http.StatusOK, out)
 }
 
-func (s *Server) apiProjectDelete(c *gin.Context) {
+func (s *Server) apiDailyDelete(c *gin.Context) {
 	id, ok := apiID(c)
 	if !ok {
-		apiFail(c, http.StatusNotFound, "项目不存在")
+		apiNotFound(c)
 		return
 	}
-	row, err := models.Project(id)
-	if err != nil || row == nil {
-		apiFail(c, http.StatusNotFound, "项目不存在")
+	out, err := models.DailyPlanByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if models.ToInt64(row["owner_id"]) != models.ToInt64(apiUser(c)["id"]) {
-		apiFail(c, http.StatusForbidden, "仅负责人可操作")
+	if out == nil {
+		apiNotFound(c)
 		return
 	}
-	if err = models.DeleteProject(id); err != nil {
+	if err = models.DeleteDaily(id, apiUID(c)); err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
 
-func (s *Server) apiTaskCreate(c *gin.Context) {
-	pid, ok := apiID(c)
-	if !ok {
-		apiFail(c, http.StatusNotFound, "项目不存在")
-		return
-	}
-	exists, err := models.ProjectExists(pid)
-	if err != nil || !exists {
-		apiFail(c, http.StatusNotFound, "项目不存在")
-		return
-	}
-	var body taskIn
-	if !decodeJSON(c, &body) {
-		return
-	}
-	if msg := normalizeTaskIn(&body); msg != "" {
-		apiFail(c, http.StatusBadRequest, msg)
-		return
-	}
-	dueDate, _ := dateFromPtr(body.DueDate)
-	var assignee any
-	if body.AssigneeID != nil {
-		assignee = *body.AssigneeID
-	}
-	tid, err := models.InsertTask(pid, body.Title, body.Description, assignee,
-		body.Status, body.Priority, dueDate)
+// ---------- 周清单 ----------
+
+func (s *Server) apiWeeklyList(c *gin.Context) {
+	out, err := models.WeeklyReviews(apiUID(c), 0)
 	if err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	row, _ := models.Task(tid)
-	c.JSON(http.StatusCreated, models.TaskOut(row))
+	c.JSON(http.StatusOK, out)
 }
 
-func (s *Server) apiTaskUpdate(c *gin.Context) {
-	id, ok := apiID(c)
-	if !ok {
-		apiFail(c, http.StatusNotFound, "任务不存在")
-		return
-	}
-	row, err := models.Task(id)
-	if err != nil || row == nil {
-		apiFail(c, http.StatusNotFound, "任务不存在")
-		return
-	}
-	var body taskIn
+func (s *Server) apiWeeklyCreate(c *gin.Context) {
+	var body models.WeeklyIn
 	if !decodeJSON(c, &body) {
 		return
 	}
-	if msg := normalizeTaskIn(&body); msg != "" {
+	if msg := normalizeWeeklyIn(&body); msg != "" {
 		apiFail(c, http.StatusBadRequest, msg)
 		return
 	}
-	dueDate, _ := dateFromPtr(body.DueDate)
-	var assignee any
-	if body.AssigneeID != nil {
-		assignee = *body.AssigneeID
-	}
-	if err = models.UpdateTask(id, body.Title, body.Description, assignee,
-		body.Status, body.Priority, dueDate); err != nil {
+	id, err := models.InsertWeekly(apiUID(c), &body)
+	if err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	updated, _ := models.Task(id)
-	c.JSON(http.StatusOK, models.TaskOut(updated))
+	out, _ := models.WeeklyReviewByID(id, apiUID(c))
+	c.JSON(http.StatusCreated, out)
 }
 
-func (s *Server) apiTaskDelete(c *gin.Context) {
+func (s *Server) apiWeeklyGet(c *gin.Context) {
 	id, ok := apiID(c)
 	if !ok {
-		apiFail(c, http.StatusNotFound, "任务不存在")
+		apiNotFound(c)
 		return
 	}
-	exists, err := models.TaskExists(id)
-	if err != nil || !exists {
-		apiFail(c, http.StatusNotFound, "任务不存在")
+	out, err := models.WeeklyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	if err = models.DeleteTask(id); err != nil {
+	if out == nil {
+		apiNotFound(c)
+		return
+	}
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiWeeklyUpdate(c *gin.Context) {
+	id, ok := apiID(c)
+	if !ok {
+		apiNotFound(c)
+		return
+	}
+	old, err := models.WeeklyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if old == nil {
+		apiNotFound(c)
+		return
+	}
+	var body models.WeeklyIn
+	if !decodeJSON(c, &body) {
+		return
+	}
+	if msg := normalizeWeeklyIn(&body); msg != "" {
+		apiFail(c, http.StatusBadRequest, msg)
+		return
+	}
+	if err = models.UpdateWeekly(id, apiUID(c), &body); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	out, _ := models.WeeklyReviewByID(id, apiUID(c))
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiWeeklyDelete(c *gin.Context) {
+	id, ok := apiID(c)
+	if !ok {
+		apiNotFound(c)
+		return
+	}
+	out, err := models.WeeklyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if out == nil {
+		apiNotFound(c)
+		return
+	}
+	if err = models.DeleteWeekly(id, apiUID(c)); err != nil {
 		apiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// ---------- 月清单 ----------
+
+func (s *Server) apiMonthlyList(c *gin.Context) {
+	out, err := models.MonthlyReviews(apiUID(c), 0)
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiMonthlyCreate(c *gin.Context) {
+	var body models.MonthlyIn
+	if !decodeJSON(c, &body) {
+		return
+	}
+	if msg := normalizeMonthlyIn(&body); msg != "" {
+		apiFail(c, http.StatusBadRequest, msg)
+		return
+	}
+	id, err := models.InsertMonthly(apiUID(c), &body)
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	out, _ := models.MonthlyReviewByID(id, apiUID(c))
+	c.JSON(http.StatusCreated, out)
+}
+
+func (s *Server) apiMonthlyGet(c *gin.Context) {
+	id, ok := apiID(c)
+	if !ok {
+		apiNotFound(c)
+		return
+	}
+	out, err := models.MonthlyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if out == nil {
+		apiNotFound(c)
+		return
+	}
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiMonthlyUpdate(c *gin.Context) {
+	id, ok := apiID(c)
+	if !ok {
+		apiNotFound(c)
+		return
+	}
+	old, err := models.MonthlyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if old == nil {
+		apiNotFound(c)
+		return
+	}
+	var body models.MonthlyIn
+	if !decodeJSON(c, &body) {
+		return
+	}
+	if msg := normalizeMonthlyIn(&body); msg != "" {
+		apiFail(c, http.StatusBadRequest, msg)
+		return
+	}
+	if err = models.UpdateMonthly(id, apiUID(c), &body); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	out, _ := models.MonthlyReviewByID(id, apiUID(c))
+	c.JSON(http.StatusOK, out)
+}
+
+func (s *Server) apiMonthlyDelete(c *gin.Context) {
+	id, ok := apiID(c)
+	if !ok {
+		apiNotFound(c)
+		return
+	}
+	out, err := models.MonthlyReviewByID(id, apiUID(c))
+	if err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	if out == nil {
+		apiNotFound(c)
+		return
+	}
+	if err = models.DeleteMonthly(id, apiUID(c)); err != nil {
+		apiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// ---------- 用户管理（仅管理员） ----------
 
 func (s *Server) apiUsersList(c *gin.Context) {
 	if !isStaff(apiUser(c)) {

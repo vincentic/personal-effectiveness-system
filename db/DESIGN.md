@@ -1,6 +1,6 @@
 # 个人效能系统 · 表结构设计（v2）
 
-本设计依据附件《个人效能系统 · 可手写打印 · 版本 1.0》的三张 A4 清单，把原 PMS（项目/任务）数据模型整体替换为效能模型。Django 版已按此模型改造为参照实现。
+本设计依据附件《个人效能系统 · 可手写打印 · 版本 1.0》的三张 A4 清单，把原 PMS（项目/任务）数据模型整体替换为效能模型。四个版本（Django / Spring Boot / Gin / FastAPI）均已按此模型实现，共用同一套表结构与 REST API 契约。
 
 ## 一、PDF 清单 → 数据表映射
 
@@ -45,10 +45,12 @@ users ─┬─< daily_plans ──< time_blocks
 
 | 版本 | 数据模型 | 界面 | 说明 |
 |---|---|---|---|
-| Django | v2 效能模型（`projects/models.py` + `0001_initial.py`） | ✅ 已改造为日/周/月三张清单 | 参照实现，完整 CRUD |
-| Spring Boot / Gin / FastAPI | 代码仍为 v1（users/projects/tasks） | 旧界面 | 本轮未改；其 `sql/schema.sql` 已随共享结构更新为 v2，如需让这三版独立运行，请用 `db/schema.v1-legacy.sql` 建表 |
+| Django | v2 效能模型（`projects/models.py` + `0001_initial.py`） | ✅ 日/周/月三张清单 | 参照实现，完整 CRUD，Session 页面 |
+| Spring Boot | v2 效能模型（JdbcTemplate repo） | ✅ 日/周/月三张清单 | Security + CSRF + `/api/**` |
+| Gin | v2 效能模型（database/sql store） | ✅ 日/周/月三张清单 | 签名 Cookie + CSRF + `/api/**` |
+| FastAPI | v2 效能模型（PyMySQL） | 纯 API | 全部 `/api/**` + OpenAPI 文档 |
 
-> `db/schema.v1-legacy.sql` 保存了 v1 的 `users / projects / project_members / tasks` 建表语句，供未迁移版本及其历史数据库使用。
+> `db/schema.v1-legacy.sql` 保存了 v1 的 `users / projects / project_members / tasks` 建表语句，仅供历史数据库归档使用；v3 所有版本统一用 `db/schema.sql`。
 
 ## 五、Django 参照实现要点
 

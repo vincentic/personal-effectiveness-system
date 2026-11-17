@@ -1,0 +1,124 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">{{.Title}}</h3>
+  <a href="{{.CancelURL}}" class="btn btn-outline-secondary btn-sm">返回列表</a>
+</div>
+
+{{with index .Errors "detail"}}<div class="alert alert-danger py-2">{{.}}</div>{{end}}
+
+<form method="post" action="{{.Action}}">
+  <input type="hidden" name="_csrf" value="{{.CSRF}}">
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">下周设计：少而明确</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">周起始日（周一）</label>
+          <input type="date" class="form-control" name="week_start" value="{{.Form.WeekStart}}" required>
+        </div>
+        <div class="col-md-3"><label class="form-label">深度时间（要保护）</label><input type="text" class="form-control" name="deep_work_time" value="{{.Form.DeepWorkTime}}"></div>
+        <div class="col-md-4"><label class="form-label">下周重要成果 1</label><input type="text" class="form-control" name="next_mit_1" value="{{.Form.NextMIT1}}"></div>
+        <div class="col-md-4"><label class="form-label">下周重要成果 2</label><input type="text" class="form-control" name="next_mit_2" value="{{.Form.NextMIT2}}"></div>
+        <div class="col-md-4"><label class="form-label">下周重要成果 3</label><input type="text" class="form-control" name="next_mit_3" value="{{.Form.NextMIT3}}"></div>
+        <div class="col-md-6"><label class="form-label">提前准备的环境/材料</label><textarea class="form-control" rows="2" name="prep_env_materials">{{.Form.PrepEnvMaterials}}</textarea></div>
+        <div class="col-md-3"><label class="form-label">If-Then：如果……</label><input type="text" class="form-control" name="if_condition" value="{{.Form.IfCondition}}"></div>
+        <div class="col-md-3"><label class="form-label">那么我就……</label><input type="text" class="form-control" name="then_action" value="{{.Form.ThenAction}}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">本周领域回顾（4 行）</div>
+    <div class="card-body">
+      {{range $i, $d := .Form.Domains}}
+      <div class="row g-2 border rounded p-2 mb-2">
+        <input type="hidden" name="domains[{{$d.Domain}}].domain" value="{{$d.Domain}}">
+        <div class="col-md-2"><label class="form-label small">领域</label><input type="text" class="form-control form-control-sm" value="{{domainLabel $d.Domain}}" disabled></div>
+        <div class="col-md-8"><label class="form-label small">本周事实 / 产出</label><input type="text" class="form-control form-control-sm" name="domains[{{$d.Domain}}].facts" value="{{$d.Facts}}"></div>
+        <div class="col-md-2"><label class="form-label small">状态</label>
+          <select class="form-select form-select-sm" name="domains[{{$d.Domain}}].status">
+            {{range $.StatusOptions}}
+            <option value="{{.Code}}" {{if eq $d.Status .Code}}selected{{end}}>{{.Label}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">任务流清理（GTD + Kanban）</div>
+    <div class="card-body">
+      <input type="hidden" name="flow_count" id="flow_count" value="{{len .Form.Flows}}">
+      <div id="flowRows">
+        {{range $i, $f := .Form.Flows}}
+        <div class="row g-2 dyn-row border rounded p-2 mb-2">
+          <div class="col-md-1"><label class="form-label small">序号</label><input type="number" class="form-control form-control-sm" name="flows[{{$i}}].seq" value="{{$f.Seq}}"></div>
+          <div class="col-md-3"><label class="form-label small">分栏</label>
+            <select class="form-select form-select-sm" name="flows[{{$i}}].bucket">
+              {{range $.BucketOptions}}
+              <option value="{{.Code}}" {{if eq $f.Bucket .Code}}selected{{end}}>{{.Label}}</option>
+              {{end}}
+            </select>
+          </div>
+          <div class="col-md-6"><label class="form-label small">内容</label><input type="text" class="form-control form-control-sm" name="flows[{{$i}}].content" value="{{$f.Content}}"></div>
+          <div class="col-md-2"><label class="form-label small">操作</label><div><button type="button" class="btn btn-sm btn-outline-danger py-0" onclick="removeRow(this)">删除本行</button></div></div>
+        </div>
+        {{end}}
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">+ 添加条目</button>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">复盘五问</div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="q_skilled_block" id="q1" {{if .Form.QSkilledBlock}}checked{{end}}><label class="form-check-label" for="q1">哪个组块本周变得更熟练</label></div></div>
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="q_low_value_time" id="q2" {{if .Form.QLowValueTime}}checked{{end}}><label class="form-check-label" for="q2">哪件事耗时多但价值很低</label></div></div>
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="q_estimate_gap" id="q3" {{if .Form.QEstimateGap}}checked{{end}}><label class="form-check-label" for="q3">哪个时间盒估算偏差最大</label></div></div>
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="q_rest_connection" id="q4" {{if .Form.QRestConnection}}checked{{end}}><label class="form-check-label" for="q4">有没有休息、快乐和真实连接</label></div></div>
+        <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="q_next_adjust" id="q5" {{if .Form.QNextAdjust}}checked{{end}}><label class="form-check-label" for="q5">下周要继续、调整、停止什么</label></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-primary">保存</button>
+    <a href="{{.CancelURL}}" class="btn btn-outline-secondary">取消</a>
+  </div>
+</form>
+
+<template id="rowTpl">
+  <div class="row g-2 dyn-row border rounded p-2 mb-2">
+    <div class="col-md-1"><label class="form-label small">序号</label><input type="number" class="form-control form-control-sm" name="flows[__I__].seq" value="__I__"></div>
+    <div class="col-md-3"><label class="form-label small">分栏</label>
+      <select class="form-select form-select-sm" name="flows[__I__].bucket">
+        {{range .BucketOptions}}<option value="{{.Code}}">{{.Label}}</option>{{end}}
+      </select>
+    </div>
+    <div class="col-md-6"><label class="form-label small">内容</label><input type="text" class="form-control form-control-sm" name="flows[__I__].content"></div>
+    <div class="col-md-2"><label class="form-label small">操作</label><div><button type="button" class="btn btn-sm btn-outline-danger py-0" onclick="removeRow(this)">删除本行</button></div></div>
+  </div>
+</template>
+
+<script>
+  (function () {
+    var box = document.getElementById('flowRows');
+    var count = document.getElementById('flow_count');
+    function sync() { count.value = box.querySelectorAll('.dyn-row').length; }
+    window.addRow = function () {
+      var html = document.getElementById('rowTpl').innerHTML.replace(/__I__/g, box.querySelectorAll('.dyn-row').length);
+      box.insertAdjacentHTML('beforeend', html);
+      sync();
+    };
+    window.removeRow = function (btn) {
+      var rows = box.querySelectorAll('.dyn-row');
+      if (rows.length > 1) { btn.closest('.dyn-row').remove(); sync(); }
+    };
+    sync();
+  })();
+</script>
+{{end}}

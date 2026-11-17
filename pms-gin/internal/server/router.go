@@ -41,8 +41,8 @@ func New(cfg config.Config, templatesFS, staticFS fs.FS) (*Server, error) {
 }
 
 // Router 注册页面路由与 /api/ 路由。
-// 说明：gin 路由树不允许同一层既有静态段又有通配段，因此 /projects/new/ 合并进
-// /projects/:id/ 内部分流（id == "new"），行为与独立路由完全一致。
+// 说明：gin 路由树不允许同一层既有静态段又有通配段，因此 /xxx/new/ 合并进
+// /xxx/:id/ 内部分流（id == "new"），行为与独立路由完全一致。
 func (s *Server) Router() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
@@ -58,17 +58,28 @@ func (s *Server) Router() *gin.Engine {
 	page := r.Group("")
 	page.Use(s.requireLogin)
 	page.GET("/", s.dashboardGET)
-	page.GET("/projects/", s.projectListGET)
-	page.GET("/projects/:id/", s.projectEntryGET)
-	page.POST("/projects/:id/", s.projectEntryPOST)
-	page.GET("/projects/:id/edit/", s.projectEditGET)
-	page.POST("/projects/:id/edit/", s.projectEditPOST)
-	page.GET("/projects/:id/delete/", s.projectDeleteGET)
-	page.GET("/projects/:id/tasks/new/", s.taskNewGET)
-	page.POST("/projects/:id/tasks/new/", s.taskNewPOST)
-	page.GET("/tasks/:id/edit/", s.taskEditGET)
-	page.POST("/tasks/:id/edit/", s.taskEditPOST)
-	page.GET("/tasks/:id/delete/", s.taskDeleteGET)
+
+	page.GET("/daily/", s.dailyListGET)
+	page.GET("/daily/:id/", s.dailyEntryGET)
+	page.POST("/daily/:id/", s.dailyNewPOST)
+	page.GET("/daily/:id/edit/", s.dailyEditGET)
+	page.POST("/daily/:id/edit/", s.dailyEditPOST)
+	page.GET("/daily/:id/delete/", s.dailyDeleteGET)
+
+	page.GET("/weekly/", s.weeklyListGET)
+	page.GET("/weekly/:id/", s.weeklyEntryGET)
+	page.POST("/weekly/:id/", s.weeklyNewPOST)
+	page.GET("/weekly/:id/edit/", s.weeklyEditGET)
+	page.POST("/weekly/:id/edit/", s.weeklyEditPOST)
+	page.GET("/weekly/:id/delete/", s.weeklyDeleteGET)
+
+	page.GET("/monthly/", s.monthlyListGET)
+	page.GET("/monthly/:id/", s.monthlyEntryGET)
+	page.POST("/monthly/:id/", s.monthlyNewPOST)
+	page.GET("/monthly/:id/edit/", s.monthlyEditGET)
+	page.POST("/monthly/:id/edit/", s.monthlyEditPOST)
+	page.GET("/monthly/:id/delete/", s.monthlyDeleteGET)
+
 	page.GET("/admin/users/", s.adminUsersGET)
 	page.POST("/admin/users/", s.adminUsersPOST)
 
@@ -79,14 +90,25 @@ func (s *Server) Router() *gin.Engine {
 	authed.Use(s.apiAuth)
 	authed.GET("/me", s.apiMe)
 	authed.GET("/dashboard", s.apiDashboard)
-	authed.GET("/projects", s.apiProjectsList)
-	authed.POST("/projects", s.apiProjectsCreate)
-	authed.GET("/projects/:id", s.apiProjectGet)
-	authed.PUT("/projects/:id", s.apiProjectUpdate)
-	authed.DELETE("/projects/:id", s.apiProjectDelete)
-	authed.POST("/projects/:id/tasks", s.apiTaskCreate)
-	authed.PUT("/tasks/:id", s.apiTaskUpdate)
-	authed.DELETE("/tasks/:id", s.apiTaskDelete)
+
+	authed.GET("/daily", s.apiDailyList)
+	authed.POST("/daily", s.apiDailyCreate)
+	authed.GET("/daily/:id", s.apiDailyGet)
+	authed.PUT("/daily/:id", s.apiDailyUpdate)
+	authed.DELETE("/daily/:id", s.apiDailyDelete)
+
+	authed.GET("/weekly", s.apiWeeklyList)
+	authed.POST("/weekly", s.apiWeeklyCreate)
+	authed.GET("/weekly/:id", s.apiWeeklyGet)
+	authed.PUT("/weekly/:id", s.apiWeeklyUpdate)
+	authed.DELETE("/weekly/:id", s.apiWeeklyDelete)
+
+	authed.GET("/monthly", s.apiMonthlyList)
+	authed.POST("/monthly", s.apiMonthlyCreate)
+	authed.GET("/monthly/:id", s.apiMonthlyGet)
+	authed.PUT("/monthly/:id", s.apiMonthlyUpdate)
+	authed.DELETE("/monthly/:id", s.apiMonthlyDelete)
+
 	authed.GET("/users", s.apiUsersList)
 	authed.POST("/users", s.apiUsersCreate)
 
