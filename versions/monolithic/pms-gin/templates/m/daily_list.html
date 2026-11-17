@@ -1,0 +1,28 @@
+{{define "content"}}
+<div class="m-page-head">
+  <h3>每日执行清单</h3>
+  <a href="/daily/new/" class="m-btn m-btn-primary">+ 新建日清单</a>
+</div>
+
+{{range .Plans}}
+<div class="m-card m-record">
+  <div class="m-card-head m-between">
+    <a href="/daily/{{.ID}}/" class="m-record-title">{{.PlanDate}}</a>
+    <span class="m-badge m-badge-info">{{energyLabel .EnergyLevel}}</span>
+  </div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">今日成果（MIT）</span><span>{{if .MIT}}{{.MIT}}{{else}}<span class="m-muted">—</span>{{end}}</span></p>
+    <div class="m-progress"><div class="m-progress-bar" style="width:{{.BlockProgress}}%"></div></div>
+    <p class="m-sub">组块 {{.BlocksDone}}/{{.BlocksTotal}} · 清单 {{.ChecklistDone}}/{{.ChecklistTotal}}</p>
+    <div class="m-actions">
+      <a href="/daily/{{.ID}}/" class="m-btn m-btn-sm m-btn-outline">查看</a>
+      <a href="/daily/{{.ID}}/edit/" class="m-btn m-btn-sm m-btn-outline">编辑</a>
+      <a href="/daily/{{.ID}}/delete/" class="m-btn m-btn-sm m-btn-danger"
+         onclick="return confirm('确定删除该日清单及其时间盒吗？')">删除</a>
+    </div>
+  </div>
+</div>
+{{else}}
+<div class="m-card"><div class="m-empty">暂无日清单，<a href="/daily/new/" class="m-link">去创建一份</a></div></div>
+{{end}}
+{{end}}

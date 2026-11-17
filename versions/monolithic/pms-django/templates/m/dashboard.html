@@ -1,0 +1,125 @@
+{% extends "m/base.html" %}
+{% block title %}工作台 - 个人效能系统{% endblock %}
+{% block page_title %}工作台{% endblock %}
+{% block content %}
+
+<div class="m-hero">
+  <div class="m-hero-label">今日最重要成果 · MIT</div>
+  {% if today_plan and today_plan.mit %}
+    <div class="m-hero-mit">{{ today_plan.mit }}</div>
+  {% else %}
+    <div class="m-hero-mit m-muted">还没写下今天最重要的成果</div>
+  {% endif %}
+  <a class="m-btn m-btn-primary m-btn-block" href="{% if today_plan %}{% url 'daily_update' today_plan.pk %}{% else %}{% url 'daily_create' %}{% endif %}">
+    {% if today_plan %}编辑今日清单{% else %}填写今日清单{% endif %}
+  </a>
+</div>
+
+{% if today_plan %}
+<div class="m-mini-grid">
+  <div class="m-mini"><span>精力</span><strong>{{ today_plan.get_energy_level_display }}</strong></div>
+  <div class="m-mini"><span>组块进度</span><strong>{{ today_plan.blocks_done }}/{{ today_plan.blocks_total }}</strong></div>
+  <div class="m-mini"><span>检查完成</span><strong>{{ today_plan.checklist_done }}/{{ today_plan.checklist_total }}</strong></div>
+  <div class="m-mini"><span>睡眠</span><strong>{% if today_plan.sleep_hours %}{{ today_plan.sleep_hours }}h{% else %}—{% endif %}</strong></div>
+</div>
+{% endif %}
+
+<div class="m-section-title">我的清单</div>
+<div class="m-stat-grid">
+  <a class="m-stat m-stat-daily" href="{% url 'daily_list' %}">
+    <span class="m-stat-label">每日执行清单</span>
+    <strong class="m-stat-num">{{ daily_count }}</strong>
+    <span class="m-stat-link">查看全部 →</span>
+  </a>
+  <a class="m-stat m-stat-weekly" href="{% url 'weekly_list' %}">
+    <span class="m-stat-label">每周复盘</span>
+    <strong class="m-stat-num">{{ weekly_count }}</strong>
+    <span class="m-stat-link">查看全部 →</span>
+  </a>
+  <a class="m-stat m-stat-monthly" href="{% url 'monthly_list' %}">
+    <span class="m-stat-label">每月重构</span>
+    <strong class="m-stat-num">{{ monthly_count }}</strong>
+    <span class="m-stat-link">查看全部 →</span>
+  </a>
+</div>
+
+<div class="m-section-title">本周 / 本月</div>
+<div class="m-card">
+  <div class="m-card-head">
+    <span>本周复盘</span>
+    {% if week_review %}
+      <a href="{% url 'weekly_update' week_review.pk %}">编辑</a>
+    {% else %}
+      <a href="{% url 'weekly_create' %}">去填写</a>
+    {% endif %}
+  </div>
+  <div class="m-card-body">
+    {% if week_review %}
+      <div class="m-meta">{{ week_review.week_start|date:"m/d" }} – {{ week_review.week_end|date:"m/d" }}</div>
+      <div class="m-badge-row">
+        {% if week_review.next_mit_1 %}<span class="m-badge m-badge-primary">{{ week_review.next_mit_1 }}</span>{% endif %}
+        {% if week_review.next_mit_2 %}<span class="m-badge m-badge-primary">{{ week_review.next_mit_2 }}</span>{% endif %}
+        {% if week_review.next_mit_3 %}<span class="m-badge m-badge-primary">{{ week_review.next_mit_3 }}</span>{% endif %}
+      </div>
+    {% else %}
+      <div class="m-muted">本周还没有复盘，建议用 30–45 分钟回顾事实、定下周承诺。</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">
+    <span>本月重构</span>
+    {% if month_review %}
+      <a href="{% url 'monthly_update' month_review.pk %}">编辑</a>
+    {% else %}
+      <a href="{% url 'monthly_create' %}">去填写</a>
+    {% endif %}
+  </div>
+  <div class="m-card-body">
+    {% if month_review %}
+      <div>{{ month_review.top_achievement|truncatechars:80|default:"（未填写成果）" }}</div>
+      <div class="m-meta">系统健康均分：{% if month_review.avg_score %}{{ month_review.avg_score }} / 5{% else %}未评分{% endif %}</div>
+    {% else %}
+      <div class="m-muted">本月还没有重构，建议用 45–60 分钟检查目标、系统健康与三项改进。</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="m-section-title">最近记录</div>
+<div class="m-card">
+  <div class="m-card-head"><span>最近每日清单</span><a href="{% url 'daily_list' %}">全部</a></div>
+  <div class="m-list">
+    {% for p in recent_daily %}
+      <a class="m-list-item" href="{% url 'daily_update' p.pk %}">
+        <span class="m-list-main">{{ p.plan_date|date:"m月d日" }} · {{ p.mit|truncatechars:18|default:"（未写 MIT）" }}</span>
+        <span class="m-badge m-badge-primary">{{ p.blocks_done }}/{{ p.blocks_total }}</span>
+      </a>
+    {% empty %}
+      <div class="m-list-item m-muted">暂无记录，<a href="{% url 'daily_create' %}">填写今日清单</a></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head"><span>最近复盘与重构</span></div>
+  <div class="m-list">
+    {% for w in recent_weekly %}
+      <a class="m-list-item" href="{% url 'weekly_update' w.pk %}">
+        <span class="m-list-main">周复盘 · {{ w.week_start|date:"m/d" }}</span>
+        <span class="m-badge m-badge-secondary">每周</span>
+      </a>
+    {% endfor %}
+    {% for m in recent_monthly %}
+      <a class="m-list-item" href="{% url 'monthly_update' m.pk %}">
+        <span class="m-list-main">月重构 · {{ m.month }}</span>
+        <span class="m-badge m-badge-success">每月</span>
+      </a>
+    {% endfor %}
+    {% if not recent_weekly and not recent_monthly %}
+      <div class="m-list-item m-muted">暂无记录</div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

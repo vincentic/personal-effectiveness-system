@@ -1,0 +1,50 @@
+{{define "content"}}
+<div class="m-page-head">
+  <div>
+    <h3 class="m-mb-1">{{.Plan.PlanDate}} · 每日执行清单</h3>
+    <span class="m-badge m-badge-info">{{energyLabel .Plan.EnergyLevel}}</span>
+    <span class="m-sub">完成 {{.Plan.ChecklistDone}}/{{.Plan.ChecklistTotal}} 项 · 组块 {{.Plan.BlocksDone}}/{{.Plan.BlocksTotal}}</span>
+  </div>
+</div>
+<div class="m-actions m-actions-top">
+  <a href="/daily/{{.Plan.ID}}/edit/" class="m-btn m-btn-sm m-btn-outline">编辑</a>
+  <a href="/daily/{{.Plan.ID}}/delete/" class="m-btn m-btn-sm m-btn-danger"
+     onclick="return confirm('确定删除该日清单吗？')">删除</a>
+  <a href="/daily/" class="m-btn m-btn-sm m-btn-outline">返回列表</a>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">今日概览</div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">今日成果（MIT）</span><span>{{if .Plan.MIT}}{{.Plan.MIT}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">睡眠</span><span>{{if .Plan.SleepHours}}{{.Plan.SleepHours}} 小时{{else}}—{{end}}</span></p>
+    <div class="m-progress"><div class="m-progress-bar" style="width:{{.Plan.BlockProgress}}%"></div></div>
+    <p class="m-sub">组块完成度 {{.Plan.BlockProgress}}%</p>
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">时间盒组块（{{.Plan.BlocksTotal}}）</div>
+  {{range .Plan.Blocks}}
+  <div class="m-row-card">
+    <div class="m-between"><strong>#{{.Seq}} {{.BlockName}}</strong>{{if .IsDone}}<span class="m-badge m-badge-success">✓ 完成</span>{{else}}<span class="m-badge">未完成</span>{{end}}</div>
+    <p class="m-kv"><span class="m-kv-label">时间盒</span><span>{{if .TimeStart}}{{.TimeStart}}{{if .TimeEnd}} ~ {{.TimeEnd}}{{end}}{{else}}未设定{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">输入</span><span>{{if .InputDesc}}{{.InputDesc}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">关键动作</span><span>{{if .KeyAction}}{{.KeyAction}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">可验收输出</span><span>{{if .Deliverable}}{{.Deliverable}}{{else}}—{{end}}</span></p>
+  </div>
+  {{else}}
+  <div class="m-empty">暂无时间盒组块</div>
+  {{end}}
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">晚间复盘</div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">真正完成了什么</span><span>{{if .Plan.ReviewAccomplished}}{{.Plan.ReviewAccomplished}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">最大的阻力</span><span>{{if .Plan.ReviewResistance}}{{.Plan.ReviewResistance}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">明天最小的启动动作</span><span>{{if .Plan.ReviewTomorrowStart}}{{.Plan.ReviewTomorrowStart}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">值得感谢/享受的事</span><span>{{if .Plan.ReviewGratitude}}{{.Plan.ReviewGratitude}}{{else}}—{{end}}</span></p>
+  </div>
+</div>
+{{end}}

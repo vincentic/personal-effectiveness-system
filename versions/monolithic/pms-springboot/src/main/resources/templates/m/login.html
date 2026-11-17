@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{m/fragments :: head('登录')}"></head>
+<body>
+<header th:replace="~{m/fragments :: header('登录')}"></header>
+
+<main class="m-content">
+  <div class="m-login-wrap">
+    <h2 class="m-login-title">登录</h2>
+    <div class="m-card">
+      <div class="m-card-body">
+        <div class="m-alert error" th:if="${loginError}">用户名或密码错误</div>
+        <form method="post" th:action="@{/login}" class="m-form">
+          <div class="m-field">
+            <label class="m-label">用户名</label>
+            <input type="text" name="username" class="m-input" required autofocus autocomplete="username">
+          </div>
+          <div class="m-field">
+            <label class="m-label">密码</label>
+            <input type="password" name="password" class="m-input" required autocomplete="current-password">
+          </div>
+          <div class="m-field" style="margin-top:18px">
+            <button type="submit" class="m-btn m-btn-primary m-btn-block">登 录</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div th:replace="~{m/fragments :: footswitch}"></div>
+  </div>
+</main>
+</body>
+</html>

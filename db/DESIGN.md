@@ -48,7 +48,7 @@ users ─┬─< daily_plans ──< time_blocks
 | Django | v2 效能模型（`projects/models.py` + `0001_initial.py`） | ✅ 日/周/月三张清单 | 参照实现，完整 CRUD，Session 页面 |
 | Spring Boot | v2 效能模型（JdbcTemplate repo） | ✅ 日/周/月三张清单 | Security + CSRF + `/api/**` |
 | Gin | v2 效能模型（database/sql store） | ✅ 日/周/月三张清单 | 签名 Cookie + CSRF + `/api/**` |
-| FastAPI | v2 效能模型（PyMySQL） | 纯 API | 全部 `/api/**` + OpenAPI 文档 |
+| FastAPI | v2 效能模型（PyMySQL） | Vue 3 响应式页面 + REST API | 同源提供页面、全部 `/api/**` + OpenAPI 文档 |
 
 > `db/schema.v1-legacy.sql` 保存了 v1 的 `users / projects / project_members / tasks` 建表语句，仅供历史数据库归档使用；v3 所有版本统一用 `db/schema.sql`。
 

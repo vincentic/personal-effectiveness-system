@@ -1,0 +1,27 @@
+{{define "content"}}
+<div class="m-page-head">
+  <h3>每月重构清单</h3>
+  <a href="/monthly/new/" class="m-btn m-btn-primary">+ 新建月重构</a>
+</div>
+
+{{range .Reviews}}
+<div class="m-card m-record">
+  <div class="m-card-head m-between">
+    <a href="/monthly/{{.ID}}/" class="m-record-title">{{.Month}}</a>
+    <span class="m-badge">{{worthLabel .WorthContinue}}</span>
+  </div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">本月最重要成果</span><span>{{if .TopAchievement}}{{.TopAchievement}}{{else}}<span class="m-muted">—</span>{{end}}</span></p>
+    <p class="m-sub">健康均分：{{if .AvgScore}}<span class="m-badge m-badge-primary">{{.AvgScore}}</span>{{else}}<span class="m-muted">未评分</span>{{end}}</p>
+    <div class="m-actions">
+      <a href="/monthly/{{.ID}}/" class="m-btn m-btn-sm m-btn-outline">查看</a>
+      <a href="/monthly/{{.ID}}/edit/" class="m-btn m-btn-sm m-btn-outline">编辑</a>
+      <a href="/monthly/{{.ID}}/delete/" class="m-btn m-btn-sm m-btn-danger"
+         onclick="return confirm('确定删除该月重构吗？')">删除</a>
+    </div>
+  </div>
+</div>
+{{else}}
+<div class="m-card"><div class="m-empty">暂无月重构，<a href="/monthly/new/" class="m-link">去创建一份</a></div></div>
+{{end}}
+{{end}}

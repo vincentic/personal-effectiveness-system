@@ -1,149 +1,146 @@
-# 个人效能系统（原 PMS 项目管理系统）· 四版本实现
+# 个人效能系统 · 四版本实现
 
-> **v3（当前）**：四版本全部迁移到「个人效能系统」——依据《个人效能系统 · 版本 1.0》三张清单（每日执行 / 每周复盘 / 每月重构），数据模型整体替换为效能模型。四版共用同一套 v2 表结构、同一套 REST API 契约、BCrypt 密码与 HMAC Token，**同一个库、账号、Token 跨版本互通**。
+> **v4（当前）**：四版本全部基于「个人效能系统」v2 数据模型；Django / Spring Boot / Gin 三版提供 **PC / Mobile 双端界面**（独立模板 + UA 自动识别 + 手动切换），FastAPI 提供 **Vue 3 响应式页面 + REST API**。四版共用数据表与账号数据；Spring Boot / Gin / FastAPI 共用 REST API 契约与 HMAC Token。
 >
-> **v1（历史基线）**：四版本 PMS（项目/任务/成员管理）。提交 `a702875` 为 v1 基线，旧建表语句见 [db/schema.v1-legacy.sql](db/schema.v1-legacy.sql)。
+> 历史版本：v3 = 三版业务迁移到效能模型（`af45fbf`）；v2 = 按 PDF 重设计表结构与 Django 界面（`00850f2`）；v1 = 原 PMS 项目/任务系统基线（`a702875`），旧建表语句见 [db/schema.v1-legacy.sql](db/schema.v1-legacy.sql)。
 
-## 版本与数据模型对照（v3）
+---
 
-| 版本 | 技术栈 | 默认端口 | 数据模型 | 界面 | REST API |
-|------|--------|---------|---------|------|---------|
-| Django | Django 4.2 + MySQL | 8000 | ✅ 效能模型 | ✅ 日/周/月清单 | —（Session 页面） |
-| Spring Boot | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ 效能模型 | ✅ 日/周/月清单 | ✅ `/api/**` |
-| Gin | Gin + database/sql + html/template | 8081 | ✅ 效能模型 | ✅ 日/周/月清单 | ✅ `/api/**` |
-| FastAPI | FastAPI + PyMySQL | 8000 | ✅ 效能模型 | 纯 API | ✅ 全部 |
+## 一、这是一个什么系统（业务场景）
 
-**效能系统三张清单 ↔ 数据表**：每日执行（`daily_plans` + `time_blocks`）、每周复盘（`weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`）、每月重构（`monthly_reviews` + `system_health_checks`）。完整字段映射与设计说明见 [db/DESIGN.md](db/DESIGN.md)；统一 API 契约见 [db/API.md](db/API.md)。
+这是一个把「个人效能方法论」落到可执行、可复盘、可数字化 tracking 的系统。它源自附件《个人效能系统 · 可手写打印 · 版本 1.0》的三张 A4 清单，把它们变成可以在电脑和手机上填写、保存、统计的工具。
 
-### Django 版快速体验（v2）
+核心闭环是 **「日执行 → 周复盘 → 月重构」** 三层节奏：
 
-```bash
-cd pms-django
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-# 按 .env 配置好 MySQL 后：
-python manage.py migrate
-python manage.py runserver 8000
-# 登录后依次进入：每日执行 / 每周复盘 / 每月重构
-```
+| 节奏 | 解决的问题 | 系统里的载体 |
+|------|-----------|------------|
+| **每日执行** | 今天到底要先做出什么成果？如何把注意力切成可交付的组块？ | 今日 MIT、时间盒组块（输入/关键动作/可验收输出）、执行前后 9 项检查、生活维护 4 项、晚间 5 分钟复盘 |
+| **每周复盘** | 这一周的事实是什么？任务流有没有堆积？下周少而明确的承诺是什么？ | 4 领域事实与状态、任务流四栏清理（待办/进行中/已完成/删除委托延后）、下周 1–3 项成果、深度时间、If-Then 计划、5 个复盘问题 |
+| **每月重构** | 目标还值得投入吗？系统本身健康吗？下月只改哪三件事？ | 目标与价值检查、6 模块系统健康自评（1–5 分）、三项改进（保留/删减/实验）、季度方向校准 |
 
-> 迁移说明：Django 版的 `0001_initial.py` 已重建为 v2 效能模型。若数据库已有 v1 的 Django 表（auth_user / projects_project 等），需在全新库上使用，或自行编写数据迁移。其余三版直接执行 `db/schema.sql`（/`sql/schema.sql`）幂等建表即可；v1 库需新建库或用 `db/schema.v1-legacy.sql` 另行维护。
+典型使用场景：
 
-## 目录结构
+- **晨间启动**：打开手机端「每日执行」，写下今天最重要的一个成果（MIT），把上午/下午切成 2–4 个时间盒，每个盒子写清「输入 / 关键动作 / 可验收输出」。
+- **执行中**：一次只做一个组块；卡住时先缩小下一步；结束一个盒子就勾选完成，并检查「有可见产出 / 做了主动回忆 / 标记下一步」。
+- **晚间复盘**：花 5 分钟回答四个问题——真正完成了什么、最大阻力、明天最小启动动作、值得感谢的一件事。
+- **周末复盘**：用 30–45 分钟按事实回顾工作/学习/身体/关系四领域，清理任务流，定下周最多 3 项成果与要保护的深度时间。
+- **月末重构**：用 45–60 分钟检查目标是否仍值得投入、给系统健康打分、只挑三件事改进。
 
-```
-pms/                      仓库根目录
-├── pms-django/           Django 4.2 版（原项目，服务端渲染页面）
-├── pms-springboot/       Spring Boot 3.2 版（Thymeleaf 页面 + REST API）
-├── pms-gin/              Gin 版（Go 1.27，html/template 页面 + REST API）
-├── pms-fastapi/          FastAPI 版（纯 REST API + OpenAPI 文档）
-├── db/                   四版共享：schema.sql（建表）+ API.md（API 契约）
-└── README.md             本文件
-```
+## 二、目标人群
 
-## 版本对照
+- **知识工作者 / 研发 / 产品 / 设计**：任务多、干扰多，需要把「忙碌」转化为「可见成果」的人。
+- **自由职业者 / 远程工作者**：没有外部节奏约束，需要自建日周月节奏与注意力保护区。
+- **学生 / 备考者 / 研究者**：需要时间盒与主动回忆、阶段性复盘的深度学习者。
+- **管理者 / 团队负责人**：既要管团队项目，也要管自己的注意力与节奏；系统按用户隔离，可一人一套。
+- **方法论实践者**：已经在用 GTD、时间块、PDCA、OKR，希望有一个轻量工具把清单数字化、可检索、可统计的人。
 
-| 版本 | 技术栈 | 默认端口 | 页面 | REST API | 会话方式 | 状态 |
-|------|--------|----------|------|----------|----------|------|
-| Django | Django 4.2 + MySQL | 8000 | ✅ 完整 | ❌ | Django Session | 原版 |
-| Spring Boot | Spring Boot 3.2 + Thymeleaf + Spring Security + JdbcTemplate | 8080 | ✅ 完整 | ✅ `/api/**` | Spring Session + CSRF | 已编译并实测 |
-| Gin | Gin 1.10 + database/sql + html/template | 8081 | ✅ 完整 | ✅ `/api/**` | 签名 Cookie + CSRF | 已编译并实测 |
-| FastAPI | FastAPI + PyMySQL + BCrypt | 8000 | ❌ 纯 API | ✅ 全部 | HMAC Token | 已实测 |
+## 三、痛点与解法
 
-> Django 与 FastAPI 默认都是 8000，同时启动时需用环境变量（如 `SERVER_PORT`）错开。
+| 痛点 | 传统做法的困境 | 本系统的解法 |
+|------|--------------|------------|
+| **忙了一天却说不出成果** | 待办清单只记录"做了什么"，不区分重要成果与杂事 | 每天强制先写 **MIT**，组块必须写「可验收输出」，晚上复盘"真正完成了什么" |
+| **任务越堆越多、永远清不完** | Todo 列表只增不减，没有退出机制 | 每周复盘设「删除/委托/延后」栏，任务流有明确的 outflow |
+| **计划排得太满、总是失败** | 排满时间表，一被打断就全盘崩溃 | 时间盒"结束检查进度，不要求强行做完"；下周成果限 1–3 项；深度时间只保护少量 |
+| **没有复盘，重复踩坑** | 只有计划没有回顾，偏差无法修正 | 日/周/月三层复盘，问题固定化（阻力、估算偏差、继续/调整/停止） |
+| **系统本身变成负担** | 工具越来越复杂，维护工具本身耗时 | 三张清单字段固定、填写快；系统健康自评专门检查"系统是否成为负担" |
+| **只顾产出、忽略生活基本盘** | 效率工具常把人当机器 | 每日「生活维护」4 项（饮水饮食/运动/清洁/真实交流），不追求满分只保持基本盘 |
+| **纸质清单无法统计与检索** | 手写卡片不可搜索、不可回溯趋势 | 数字化存储，进度读时计算，可按日期/周/月回溯，系统健康分数可比对 |
+| **电脑和手机切换割裂** | 一套界面在手机上缩放难用 | 三版提供 PC / Mobile 独立模板：手机端卡片流 + 底部 Tab + 大按钮，切回电脑数据一致 |
 
-## 部署文档
+## 四、版本与技术栈
 
-每个版本都有独立的部署文档，涵盖环境准备、建库、配置、开发启动、生产部署（systemd + Nginx）与故障排查：
+| 版本 | 技术栈 | 默认端口 | 界面 | REST API | 会话方式 |
+|------|--------|---------|------|----------|---------|
+| Django | Django 4.2 + MySQL | 8000 | ✅ PC / Mobile 双端 | — | Django Session |
+| Spring Boot | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | ✅ `/api/**` | Spring Session + CSRF |
+| Gin | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | ✅ `/api/**` | 签名 Cookie + CSRF |
+| FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
 
-| 版本 | 部署文档 |
-|------|---------|
-| Django | [pms-django/部署文档.md](pms-django/部署文档.md)（另有 [热部署文档.md](pms-django/热部署文档.md)，不停机发布） |
-| Spring Boot | [pms-springboot/部署文档.md](pms-springboot/部署文档.md) |
-| Gin | [pms-gin/部署文档.md](pms-gin/部署文档.md) |
-| FastAPI | [pms-fastapi/部署文档.md](pms-fastapi/部署文档.md) |
+> Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。
 
-> 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需保持一致才能跨版本互认 Token。
+**共享数据层**
 
-## 共享数据层
+- 建表脚本 [db/schema.sql](db/schema.sql)（5 处副本一致）；效能表：每日 `daily_plans` + `time_blocks`，每周 `weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`，每月 `monthly_reviews` + `system_health_checks`。
+- 字段映射与设计说明见 [db/DESIGN.md](db/DESIGN.md)；REST API 契约见 [db/API.md](db/API.md)。
+- 密码统一 BCrypt。默认管理员首次启动且 users 为空时自动创建，生产环境务必用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖。
+- 双端实现规范见 [docs/DUAL_VIEW.md](docs/DUAL_VIEW.md)。
 
-- **建表脚本**：`db/schema.sql`（四份副本内容一致，分别位于各版本的 `sql/` 目录与 Spring Boot 的 `src/main/resources/`）。
-- **表**：`users`、`projects`、`project_members`、`tasks`。
-- **密码**：全部使用 BCrypt 哈希。
-- **默认管理员**：`admin / admin123`（首次启动且 users 表为空时自动创建，生产环境务必用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖）。
-- **API 契约**：见 `db/API.md`。Token 格式为 `base64url(JSON claims) + "." + hex(HMAC-SHA256(API_SECRET, payload))`，三版互通。
+**使用指南（多语言）**：[简体中文](docs/user_guide.md) · [English](docs/user_guide.en.md) · [繁體中文](docs/user_guide.zh-TW.md) · [日本語](docs/user_guide.ja.md)
 
-## 快速开始
+## 五、快速开始
 
-### 公共前提：MySQL
+公共前提：MySQL（各版首次启动会幂等执行 `schema.sql` 建表）
 
 ```bash
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS pms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-若本机 `.env` 中已有 pms 库配置，四版会自动读取。
-
-### Django 版
-
 ```bash
-cd pms-django
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver 8000
+# Django
+cd versions/monolithic/pms-django && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && python manage.py migrate && python manage.py runserver 8000
+
+# Spring Boot（默认 8080）
+cd versions/monolithic/pms-springboot && export JAVA_HOME=$(/usr/libexec/java_home -v 17) && mvn spring-boot:run
+
+# Gin（默认 8081）
+cd versions/monolithic/pms-gin && export GOPROXY=https://goproxy.cn,direct && go mod tidy && go run .
+
+# FastAPI + Vue（默认 8000，构建后访问 /，API 文档 /docs）
+cd versions/separated/pms-fastapi && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && (test -f .env || cp .env.example .env)
+npm --prefix frontend install && npm --prefix frontend run build
+uvicorn app.main:app --reload --port 8000
 ```
 
-### Spring Boot 版
+> 迁移说明：请在新库上使用 v2/v3 表结构；若数据库已有 v1 的 Django 表（`auth_user` / `projects_project` 等），需自行编写数据迁移或另建库。
 
-```bash
-cd pms-springboot
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # macOS
-mvn spring-boot:run                                # 默认 8080
+## 六、目录结构
+
+```
+pms/
+├── versions/
+│   ├── monolithic/
+│   │   ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
+│   │   ├── pms-springboot/   Spring Boot 3.2（PC/Mobile 双端页面 + REST API）
+│   │   └── pms-gin/          Gin（PC/Mobile 双端页面 + REST API）
+│   └── separated/
+│       └── pms-fastapi/      FastAPI + Vue 3（同源响应式页面 + REST API）
+├── db/                   共享：schema.sql、schema.v1-legacy.sql、API.md、DESIGN.md
+├── docs/                 双端规范 DUAL_VIEW.md + 四语言 user_guide.md
+└── README.md             本文件
 ```
 
-### Gin 版
+## 七、部署文档
 
-```bash
-cd pms-gin
-export GOPROXY=https://goproxy.cn,direct
-go mod tidy && go run .                            # 默认 8081
-```
+| 版本 | 部署文档 |
+|------|---------|
+| Django | [部署文档.md](versions/monolithic/pms-django/部署文档.md) · [热部署文档.md](versions/monolithic/pms-django/热部署文档.md)（不停机发布） |
+| Spring Boot | [部署文档.md](versions/monolithic/pms-springboot/部署文档.md) |
+| Gin | [部署文档.md](versions/monolithic/pms-gin/部署文档.md) |
+| FastAPI | [部署文档.md](versions/separated/pms-fastapi/部署文档.md) |
 
-### FastAPI 版
+> 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
 
-```bash
-cd pms-fastapi
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000          # 文档：/docs
-```
-
-## API 互通验证
+## 八、API 互通验证
 
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8080/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"admin123"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')
 
-# 同一个 Token 可访问另外两版
 curl -s http://127.0.0.1:8081/api/me -H "Authorization: Bearer $TOKEN"
 curl -s http://127.0.0.1:8000/api/me -H "Authorization: Bearer $TOKEN"
 ```
 
-## 构建与实测状态
+## 九、构建与实测状态
 
 | 检查项 | 结果 |
 |--------|------|
+| Django `manage.py check` / 模板编译 / 迁移检查 | ✅ 无问题 |
 | Spring Boot `mvn test` | ✅ 通过 |
-| Gin `go mod tidy && go build ./...`（Go 1.27.4 via gvm） | ✅ 通过 |
-| FastAPI 登录 / CRUD / Token 互通 | ✅ 通过 |
+| Gin `go build ./...` + `go vet ./...` | ✅ 通过 |
+| FastAPI `compileall` + 路由注册 | ✅ 通过 |
 | 三版 Token 交叉验证（3×3 = 9 组合） | ✅ 全部 200 |
-| 跨版本 CRUD（FastAPI 建 → 三版读，Spring 改 → 三版统计） | ✅ 通过 |
-| Django `manage.py check`（迁移到 pms-django 后） | ✅ 无问题 |
-
-## 迁移说明
-
-原 Django 项目的全部文件已移入 `pms-django/`，与其余三版同级。移动前已做完整备份：
-`/Users/new/Documents/pms-backup-20261117-115251`。
-
-Django 虚拟环境在新位置重建（路径已更新）；`热部署文档.md` 中的工作目录示例已同步改为 `pms/pms-django`。
+| 跨版本 CRUD（FastAPI 建 → 三版读、跨版更新三版可见） | ✅ 通过 |
+| 真实 MySQL 上端到端 CRUD（日/周/月 + 明细替换 + 用户隔离） | ✅ 通过 |

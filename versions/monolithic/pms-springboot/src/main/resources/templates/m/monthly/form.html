@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{m/fragments :: head(${title} + ' - 每月重构')}"></head>
+<body>
+<header th:replace="~{m/fragments :: header(${title})}"></header>
+
+<main class="m-content">
+  <h3 class="m-page-title" th:text="${title}"></h3>
+  <form method="post" th:action="${action}" th:object="${form}" class="m-form">
+
+    <div class="m-card">
+      <div class="m-card-head">目标与价值检查</div>
+      <div class="m-card-body">
+        <div class="m-field">
+          <label class="m-label">月份（YYYY-MM）</label>
+          <input type="text" class="m-input" th:field="*{month}" placeholder="2026-11" required>
+          <div class="m-error" th:errors="*{month}"></div>
+        </div>
+        <div class="m-field"><label class="m-label">本月最重要的成果</label>
+          <textarea class="m-textarea" th:field="*{topAchievement}"></textarea></div>
+        <div class="m-field"><label class="m-label">是否仍值得投入</label>
+          <select class="m-select" th:field="*{worthContinue}">
+            <option value="yes">是</option><option value="adjust">调整</option><option value="stop">停止</option>
+          </select>
+          <div class="m-error" th:errors="*{worthContinue}"></div>
+        </div>
+        <div class="m-field"><label class="m-label">原因</label>
+          <input type="text" class="m-input" th:field="*{worthReason}"></div>
+        <div class="m-field"><label class="m-label">本月最有价值的投入</label>
+          <textarea class="m-textarea" th:field="*{mostValuableInput}"></textarea></div>
+        <div class="m-field"><label class="m-label">本月最大的机会成本</label>
+          <textarea class="m-textarea" th:field="*{biggestOpportunityCost}"></textarea></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">下月只做三项系统改进</div>
+      <div class="m-card-body">
+        <div class="m-field"><label class="m-label">保留（有效的）</label>
+          <textarea class="m-textarea" th:field="*{keepItem}"></textarea></div>
+        <div class="m-field"><label class="m-label">删减（低价值的）</label>
+          <textarea class="m-textarea" th:field="*{cutItem}"></textarea></div>
+        <div class="m-field"><label class="m-label">实验（新的最小改变）</label>
+          <textarea class="m-textarea" th:field="*{experimentItem}"></textarea></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">系统健康检查（6 模块，自评 1–5，留空表示未评）</div>
+      <div class="m-card-body">
+        <div class="m-repeat" th:each="i : ${#numbers.sequence(0, 5)}">
+          <div class="m-repeat-head"><span>检查项 <span th:text="${i + 1}"></span></span></div>
+          <input type="hidden" th:field="*{healthChecks[__${i}__].module}">
+          <div class="m-field">
+            <label class="m-label">模块</label>
+            <select class="m-select" th:id="|mModuleSel${i}|" disabled>
+              <option value="direction">方向清晰度</option>
+              <option value="taskload">任务负荷</option>
+              <option value="blockquality">组块质量</option>
+              <option value="timebox">时间盒现实度</option>
+              <option value="sleepenergy">睡眠 / 体能 / 情绪</option>
+              <option value="reviewquality">复盘质量</option>
+            </select>
+          </div>
+          <div class="m-field">
+            <label class="m-label">评分（1–5）</label>
+            <input type="number" min="1" max="5" class="m-input" th:field="*{healthChecks[__${i}__].score}">
+          </div>
+          <div class="m-field">
+            <label class="m-label">需要的改变</label>
+            <input type="text" class="m-input" th:field="*{healthChecks[__${i}__].neededChange}">
+          </div>
+        </div>
+        <div class="m-error" th:errors="*{healthChecks}"></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">季度方向校准（可选）</div>
+      <div class="m-card-body">
+        <label class="m-check"><input type="checkbox" th:field="*{qSkillPortfolio}" th:id="|mM1|"><span>技能是否形成可展示作品？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qCareerAlignment}" th:id="|mM2|"><span>工作是否更接近长期方向？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qLifeAutonomy}" th:id="|mM3|"><span>生活是否更有自主性？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qRecoveryRelations}" th:id="|mM4|"><span>是否有足够的恢复与关系投入？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qLongtermDecision}" th:id="|mM5|"><span>是否应该继续、转向或停止某项长期投资？</span></label>
+      </div>
+    </div>
+
+    <div class="m-submit-bar">
+      <div class="m-btn-row">
+        <button type="submit" class="m-btn m-btn-primary">保存</button>
+        <a th:href="${cancelUrl}" class="m-btn m-btn-outline">取消</a>
+      </div>
+    </div>
+  </form>
+
+  <div th:replace="~{m/fragments :: footswitch}"></div>
+</main>
+
+<nav th:replace="~{m/fragments :: tabs('monthly')}"></nav>
+</body>
+</html>
