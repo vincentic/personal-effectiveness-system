@@ -76,6 +76,16 @@ npm run dev
 
 访问 Vite 显示的地址；`/api` 与 `/health` 会代理到 FastAPI。部署前执行 `npm run build`，生成的 `app/web` 由 FastAPI 提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
 
+前端单元测试与生产构建可在 `frontend` 目录执行：
+
+```bash
+npm ci
+npm test
+npm run build
+```
+
+GitHub Actions 会在 FastAPI 前端相关改动时自动运行上述测试和构建。
+
 ## 配置
 
 复制 `.env.example` 为 `.env`，主要变量：
