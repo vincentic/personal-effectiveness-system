@@ -4,7 +4,7 @@
 
 ## 1. 工程边界
 
-这是一个独立的 React 19 + TypeScript 单页前端，不包含业务 API、数据库或服务端页面模板。登录与日 / 周 / 月数据操作由 [`src/api.ts`](../../../../versions/react/pms-react/src/api.ts) 调用共享 REST API。React 与 Vue 的输入字段和 API 路径遵循同一份[契约](../../../data/api-contract.md)。
+这是一个独立的 React 19 + TypeScript 单页前端，不包含业务 API、数据库或服务端页面模板。登录与日 / 周 / 月数据操作由 [`src/api.ts`](../../../../versions/react/pms-react/src/api.ts) 调用共享 REST API。React 与 React 的输入字段和 API 路径遵循同一份契约。
 
 `package.json` 定义运行脚本和依赖，`pnpm-lock.yaml` 锁定依赖解析结果，`vite.config.ts` 配置 React 插件、开发代理和默认开发端口 5174。
 
@@ -33,7 +33,7 @@ pnpm run build
 - `lint` 使用 ESLint 检查 TypeScript、React Hooks 与组件刷新约束。
 - `build` 先执行 TypeScript 项目检查，再由 Vite 编译 JSX、打包依赖并生成带哈希名称的静态资源。
 
-构建产物默认位于 `dist/`，不会写入 Python 项目或 Vue 目录；也不会自动复制到 FastAPI 的静态目录。
+构建产物默认位于 `dist/`，不会写入 Python 项目或 React 目录；也不会自动复制到 FastAPI 的静态目录。
 
 ## 4. API 地址如何确定
 

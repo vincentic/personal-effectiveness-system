@@ -31,7 +31,7 @@ server {
 
 ## 3. 反向代理 API
 
-也可以由 Nginx 同时提供前端并转发 API 请求。将 `/api/` 和 `/health` 路径代理到所选 API 服务，其他路径回退到 React 的 `index.html`。Nginx 与 API 代理示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+也可以由 Nginx 同时提供前端并转发 API 请求。将 `/api/` 和 `/health` 路径代理到所选 API 服务，其他路径回退到 React 的 `index.html`。Nginx 与 API 代理示例见多语言 Docker + Kubernetes 部署指南。
 
 ## 4. 发布验证
 
@@ -43,4 +43,4 @@ curl -I https://pms.example.com/
 
 ## 5. Docker 与 Kubernetes
 
-React 可构建为 Nginx 静态镜像，通过 Ingress 将 `/` 发往 React Service、将 `/api` 发往所选 API Service。镜像与 Ingress 配置示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+React 可构建为 Nginx 静态镜像，通过 Ingress 将 `/` 发往 React Service、将 `/api` 发往所选 API Service。镜像与 Ingress 配置示例见多语言 Docker + Kubernetes 部署指南。
