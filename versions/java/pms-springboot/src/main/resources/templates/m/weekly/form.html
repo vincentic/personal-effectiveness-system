@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head th:replace="~{m/fragments :: head(${title} + ' - 每周复盘')}"></head>
+<body>
+<header th:replace="~{m/fragments :: header(${title})}"></header>
+
+<main class="m-content">
+  <h3 class="m-page-title" th:text="${title}"></h3>
+  <form method="post" th:action="${action}" th:object="${form}" class="m-form">
+
+    <div class="m-card">
+      <div class="m-card-head">本周起始日与下周设计（少而明确）</div>
+      <div class="m-card-body">
+        <div class="m-field">
+          <label class="m-label">本周起始日（建议周一）</label>
+          <input type="date" class="m-input" th:field="*{weekStart}" required>
+          <div class="m-error" th:errors="*{weekStart}"></div>
+        </div>
+        <div class="m-field"><label class="m-label">下周最重要成果 1</label>
+          <input type="text" class="m-input" th:field="*{nextMit1}"></div>
+        <div class="m-field"><label class="m-label">下周最重要成果 2</label>
+          <input type="text" class="m-input" th:field="*{nextMit2}"></div>
+        <div class="m-field"><label class="m-label">下周最重要成果 3</label>
+          <input type="text" class="m-input" th:field="*{nextMit3}"></div>
+        <div class="m-field"><label class="m-label">要保护的深度时间（日期 / 时段）</label>
+          <input type="text" class="m-input" th:field="*{deepWorkTime}"></div>
+        <div class="m-field"><label class="m-label">If-Then：如果……</label>
+          <input type="text" class="m-input" th:field="*{ifCondition}"></div>
+        <div class="m-field"><label class="m-label">If-Then：那么我就……</label>
+          <input type="text" class="m-input" th:field="*{thenAction}"></div>
+        <div class="m-field"><label class="m-label">需要提前准备的环境 / 材料</label>
+          <textarea class="m-textarea" th:field="*{prepEnvMaterials}"></textarea></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">本周领域回顾（4 领域，事实与状态）</div>
+      <div class="m-card-body">
+        <div class="m-repeat" th:each="i : ${#numbers.sequence(0, 3)}">
+          <div class="m-repeat-head"><span>领域 <span th:text="${i + 1}"></span></span></div>
+          <input type="hidden" th:field="*{domains[__${i}__].domain}">
+          <div class="m-field">
+            <label class="m-label">领域</label>
+            <select class="m-select" th:id="|mDomainSel${i}|" disabled>
+              <option value="work" th:selected="${form.domains[i].domain == 'work'}">工作 / 项目</option>
+              <option value="study" th:selected="${form.domains[i].domain == 'study'}">学习 / 技能</option>
+              <option value="body" th:selected="${form.domains[i].domain == 'body'}">身体 / 精力</option>
+              <option value="relations" th:selected="${form.domains[i].domain == 'relations'}">关系 / 生活</option>
+            </select>
+          </div>
+          <div class="m-field">
+            <label class="m-label">本周事实 / 产出</label>
+            <textarea class="m-textarea" th:field="*{domains[__${i}__].facts}"></textarea>
+          </div>
+          <div class="m-field">
+            <label class="m-label">状态</label>
+            <select class="m-select" th:field="*{domains[__${i}__].status}">
+              <option value="smooth">顺利</option>
+              <option value="blocked">受阻</option>
+              <option value="paused">暂停</option>
+            </select>
+          </div>
+        </div>
+        <div class="m-error" th:errors="*{domains}"></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">任务流清理（最多 8 条）</div>
+      <div class="m-card-body">
+        <div class="m-repeat" th:each="i : ${#numbers.sequence(0, 7)}">
+          <div class="m-repeat-head"><span>任务 <span th:text="${i + 1}"></span></span></div>
+          <input type="hidden" th:field="*{flows[__${i}__].seq}">
+          <div class="m-field">
+            <label class="m-label">分栏</label>
+            <select class="m-select" th:field="*{flows[__${i}__].bucket}">
+              <option value="todo">待办</option>
+              <option value="doing">进行中</option>
+              <option value="done">已完成</option>
+              <option value="remove">删除 / 委托 / 延后</option>
+            </select>
+          </div>
+          <div class="m-field">
+            <label class="m-label">内容（留空则不保存）</label>
+            <input type="text" class="m-input" th:field="*{flows[__${i}__].content}">
+          </div>
+        </div>
+        <div class="m-error" th:errors="*{flows}"></div>
+      </div>
+    </div>
+
+    <div class="m-card">
+      <div class="m-card-head">复盘 5 问</div>
+      <div class="m-card-body">
+        <label class="m-check"><input type="checkbox" th:field="*{qSkilledBlock}" th:id="|mQ1|"><span>哪个组块本周变得更熟练？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qLowValueTime}" th:id="|mQ2|"><span>哪件事耗时很多但价值很低？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qEstimateGap}" th:id="|mQ3|"><span>哪个时间盒估算偏差最大？为什么？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qRestConnection}" th:id="|mQ4|"><span>本周有没有休息、快乐和真实连接？</span></label>
+        <label class="m-check"><input type="checkbox" th:field="*{qNextAdjust}" th:id="|mQ5|"><span>下周要继续、调整、停止什么？</span></label>
+      </div>
+    </div>
+
+    <div class="m-submit-bar">
+      <div class="m-btn-row">
+        <button type="submit" class="m-btn m-btn-primary">保存</button>
+        <a th:href="${cancelUrl}" class="m-btn m-btn-outline">取消</a>
+      </div>
+    </div>
+  </form>
+
+  <div th:replace="~{m/fragments :: footswitch}"></div>
+</main>
+
+<nav th:replace="~{m/fragments :: tabs('weekly')}"></nav>
+</body>
+</html>

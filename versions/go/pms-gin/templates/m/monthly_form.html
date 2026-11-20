@@ -1,0 +1,71 @@
+{{define "content"}}
+<div class="m-page-head">
+  <h3 class="m-mb-0">{{.Title}}</h3>
+  <a href="{{.CancelURL}}" class="m-btn m-btn-sm m-btn-outline">返回列表</a>
+</div>
+{{with index .Errors "detail"}}<div class="m-alert m-alert-danger">{{.}}</div>{{end}}
+
+<form method="post" action="{{.Action}}" class="m-form">
+  <input type="hidden" name="_csrf" value="{{.CSRF}}">
+
+  <div class="m-card">
+    <div class="m-card-head">目标与价值检查</div>
+    <div class="m-card-body">
+      <div class="m-field"><label>月份（YYYY-MM）</label><input type="text" class="form-control" name="month" value="{{.Form.Month}}" placeholder="2026-11" required></div>
+      <div class="m-field"><label>是否仍值得投入</label>
+        <select class="form-select" name="worth_continue">
+          {{range $.WorthOptions}}<option value="{{.Code}}" {{if eq $.Form.WorthContinue .Code}}selected{{end}}>{{.Label}}</option>{{end}}
+        </select>
+      </div>
+      <div class="m-field"><label>原因</label><input type="text" class="form-control" name="worth_reason" value="{{.Form.WorthReason}}"></div>
+      <div class="m-field"><label>本月最重要的成果</label><textarea class="form-control" rows="2" name="top_achievement">{{.Form.TopAchievement}}</textarea></div>
+      <div class="m-field"><label>本月最有价值的投入</label><textarea class="form-control" rows="2" name="most_valuable_input">{{.Form.MostValuableInput}}</textarea></div>
+      <div class="m-field"><label>本月最大的机会成本</label><textarea class="form-control" rows="2" name="biggest_opportunity_cost">{{.Form.BiggestOpportunityCost}}</textarea></div>
+    </div>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-head">下月只做三项系统改进</div>
+    <div class="m-card-body">
+      <div class="m-field"><label>保留（有效的）</label><textarea class="form-control" rows="2" name="keep_item">{{.Form.KeepItem}}</textarea></div>
+      <div class="m-field"><label>删减（低价值的）</label><textarea class="form-control" rows="2" name="cut_item">{{.Form.CutItem}}</textarea></div>
+      <div class="m-field"><label>实验（新的最小改变）</label><textarea class="form-control" rows="2" name="experiment_item">{{.Form.ExperimentItem}}</textarea></div>
+    </div>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-head">系统健康检查（6 项，自评 1-5）</div>
+    <div class="m-card-body">
+      {{range $i, $h := .Form.HealthChecks}}
+      <div class="m-row-card">
+        <input type="hidden" name="checks[{{$h.Module}}].module" value="{{$h.Module}}">
+        <strong class="m-domain-label">{{moduleLabel $h.Module}}</strong>
+        <div class="m-field"><label>自评</label>
+          <select class="form-select" name="checks[{{$h.Module}}].score">
+            <option value="">未评</option>
+            {{range $score := (list 1 2 3 4 5)}}<option value="{{$score}}" {{if scoreSelected $h.Score $score}}selected{{end}}>{{$score}}</option>{{end}}
+          </select>
+        </div>
+        <div class="m-field"><label>需要的改变</label><input type="text" class="form-control" name="checks[{{$h.Module}}].needed_change" value="{{$h.NeededChange}}"></div>
+      </div>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="m-card">
+    <div class="m-card-head">季度方向校准</div>
+    <div class="m-card-body">
+      <label class="m-check"><input type="checkbox" name="q_skill_portfolio" {{if .Form.QSkillPortfolio}}checked{{end}}><span>技能形成可展示作品</span></label>
+      <label class="m-check"><input type="checkbox" name="q_career_alignment" {{if .Form.QCareerAlignment}}checked{{end}}><span>工作更接近长期方向</span></label>
+      <label class="m-check"><input type="checkbox" name="q_life_autonomy" {{if .Form.QLifeAutonomy}}checked{{end}}><span>生活更有自主性</span></label>
+      <label class="m-check"><input type="checkbox" name="q_recovery_relations" {{if .Form.QRecoveryRelations}}checked{{end}}><span>有足够的恢复与关系投入</span></label>
+      <label class="m-check"><input type="checkbox" name="q_longterm_decision" {{if .Form.QLongtermDecision}}checked{{end}}><span>某项长期投资需继续/转向/停止</span></label>
+    </div>
+  </div>
+
+  <div class="m-sticky-submit">
+    <a href="{{.CancelURL}}" class="m-btn m-btn-outline">取消</a>
+    <button type="submit" class="m-btn m-btn-primary">保存</button>
+  </div>
+</form>
+{{end}}

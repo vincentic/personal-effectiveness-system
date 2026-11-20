@@ -1,0 +1,70 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-1">{{.Review.Month}} · 每月重构</h3>
+    <span class="badge bg-secondary">{{worthLabel .Review.WorthContinue}}</span>
+    <span class="text-muted small">系统健康均分：{{if .Review.AvgScore}}{{.Review.AvgScore}}{{else}}未评分{{end}}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/monthly/{{.Review.ID}}/edit/" class="btn btn-outline-secondary">编辑</a>
+    <a href="/monthly/{{.Review.ID}}/delete/" class="btn btn-outline-danger"
+       onclick="return confirm('确定删除该月重构吗？')">删除</a>
+    <a href="/monthly/" class="btn btn-outline-primary">返回列表</a>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header">目标与价值检查</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6"><h6 class="text-muted small">本月最重要成果</h6><p>{{if .Review.TopAchievement}}{{.Review.TopAchievement}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">仍值得投入的原因</h6><p>{{if .Review.WorthReason}}{{.Review.WorthReason}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">最有价值的投入</h6><p>{{if .Review.MostValuableInput}}{{.Review.MostValuableInput}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">最大的机会成本</h6><p>{{if .Review.BiggestOpportunityCost}}{{.Review.BiggestOpportunityCost}}{{else}}—{{end}}</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header">下月三项系统改进</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4"><h6 class="text-muted small">保留</h6><p>{{if .Review.KeepItem}}{{.Review.KeepItem}}{{else}}—{{end}}</p></div>
+      <div class="col-md-4"><h6 class="text-muted small">删减</h6><p>{{if .Review.CutItem}}{{.Review.CutItem}}{{else}}—{{end}}</p></div>
+      <div class="col-md-4"><h6 class="text-muted small">实验</h6><p>{{if .Review.ExperimentItem}}{{.Review.ExperimentItem}}{{else}}—{{end}}</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header">系统健康检查</div>
+  <table class="table table-hover mb-0 align-middle">
+    <thead class="table-light"><tr><th>模块</th><th>自评</th><th>需要的改变</th></tr></thead>
+    <tbody>
+      {{range .Review.HealthChecks}}
+      <tr>
+        <td>{{moduleLabel .Module}}</td>
+        <td>{{if .Score}}<span class="badge bg-primary">{{.Score}} / 5</span>{{else}}<span class="text-muted">未评</span>{{end}}</td>
+        <td>{{if .NeededChange}}{{.NeededChange}}{{else}}—{{end}}</td>
+      </tr>
+      {{else}}
+      <tr><td colspan="3" class="text-center text-muted py-4">暂无健康检查记录</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header">季度方向校准</div>
+  <div class="card-body">
+    <p>
+      {{if .Review.QSkillPortfolio}}<span class="badge bg-primary me-1">技能作品</span>{{end}}
+      {{if .Review.QCareerAlignment}}<span class="badge bg-primary me-1">长期方向</span>{{end}}
+      {{if .Review.QLifeAutonomy}}<span class="badge bg-primary me-1">生活自主</span>{{end}}
+      {{if .Review.QRecoveryRelations}}<span class="badge bg-primary me-1">恢复关系</span>{{end}}
+      {{if .Review.QLongtermDecision}}<span class="badge bg-primary me-1">长期投资决策</span>{{end}}
+      {{if not .Review.QSkillPortfolio}}{{if not .Review.QCareerAlignment}}{{if not .Review.QLifeAutonomy}}{{if not .Review.QRecoveryRelations}}{{if not .Review.QLongtermDecision}}<span class="text-muted">暂无勾选</span>{{end}}{{end}}{{end}}{{end}}{{end}}
+    </p>
+  </div>
+</div>
+{{end}}

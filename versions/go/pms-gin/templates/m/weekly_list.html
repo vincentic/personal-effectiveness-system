@@ -1,0 +1,26 @@
+{{define "content"}}
+<div class="m-page-head">
+  <h3>每周复盘清单</h3>
+  <a href="/weekly/new/" class="m-btn m-btn-primary">+ 新建周复盘</a>
+</div>
+
+{{range .Reviews}}
+<div class="m-card m-record">
+  <div class="m-card-head m-between">
+    <a href="/weekly/{{.ID}}/" class="m-record-title">{{.WeekStart}} ~ {{.WeekEnd}}</a>
+  </div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">下周最重要成果</span><span>{{if .NextMIT1}}{{.NextMIT1}}{{else}}<span class="m-muted">—</span>{{end}}</span></p>
+    <p class="m-sub">领域 {{len .Domains}} 项 · 任务流 {{len .Flows}} 条 · {{.CreatedAt}}</p>
+    <div class="m-actions">
+      <a href="/weekly/{{.ID}}/" class="m-btn m-btn-sm m-btn-outline">查看</a>
+      <a href="/weekly/{{.ID}}/edit/" class="m-btn m-btn-sm m-btn-outline">编辑</a>
+      <a href="/weekly/{{.ID}}/delete/" class="m-btn m-btn-sm m-btn-danger"
+         onclick="return confirm('确定删除该周复盘吗？')">删除</a>
+    </div>
+  </div>
+</div>
+{{else}}
+<div class="m-card"><div class="m-empty">暂无周复盘，<a href="/weekly/new/" class="m-link">去创建一份</a></div></div>
+{{end}}
+{{end}}

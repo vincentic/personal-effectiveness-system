@@ -1,0 +1,69 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h3 class="mb-1">{{.Review.WeekStart}} ~ {{.Review.WeekEnd}} · 每周复盘</h3>
+    <span class="text-muted small">领域 {{len .Review.Domains}} 项 · 任务流 {{len .Review.Flows}} 条</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/weekly/{{.Review.ID}}/edit/" class="btn btn-outline-secondary">编辑</a>
+    <a href="/weekly/{{.Review.ID}}/delete/" class="btn btn-outline-danger"
+       onclick="return confirm('确定删除该周复盘吗？')">删除</a>
+    <a href="/weekly/" class="btn btn-outline-primary">返回列表</a>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-header">下周设计</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4"><h6 class="text-muted small">重要成果 1</h6><p>{{if .Review.NextMIT1}}{{.Review.NextMIT1}}{{else}}—{{end}}</p></div>
+      <div class="col-md-4"><h6 class="text-muted small">重要成果 2</h6><p>{{if .Review.NextMIT2}}{{.Review.NextMIT2}}{{else}}—{{end}}</p></div>
+      <div class="col-md-4"><h6 class="text-muted small">重要成果 3</h6><p>{{if .Review.NextMIT3}}{{.Review.NextMIT3}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">要保护的深度时间</h6><p>{{if .Review.DeepWorkTime}}{{.Review.DeepWorkTime}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">提前准备</h6><p>{{if .Review.PrepEnvMaterials}}{{.Review.PrepEnvMaterials}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">If-Then</h6><p>{{if .Review.IfCondition}}如果 {{.Review.IfCondition}}，那么 {{.Review.ThenAction}}{{else}}—{{end}}</p></div>
+      <div class="col-md-6"><h6 class="text-muted small">复盘五问</h6>
+        <p>
+          {{if .Review.QSkilledBlock}}<span class="badge bg-primary me-1">熟练组块</span>{{end}}
+          {{if .Review.QLowValueTime}}<span class="badge bg-warning text-dark me-1">低价值耗时</span>{{end}}
+          {{if .Review.QEstimateGap}}<span class="badge bg-warning text-dark me-1">估算偏差</span>{{end}}
+          {{if .Review.QRestConnection}}<span class="badge bg-success me-1">休息连接</span>{{end}}
+          {{if .Review.QNextAdjust}}<span class="badge bg-info text-dark me-1">调整计划</span>{{end}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">领域回顾</div>
+      <ul class="list-group list-group-flush">
+        {{range .Review.Domains}}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between"><strong>{{domainLabel .Domain}}</strong><span class="badge bg-secondary">{{statusLabel .Status}}</span></div>
+          <p class="small text-muted mb-0">{{if .Facts}}{{.Facts}}{{else}}—{{end}}</p>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无领域回顾</li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">任务流</div>
+      <ul class="list-group list-group-flush">
+        {{range .Review.Flows}}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{.Content}}</span><span class="badge bg-secondary">{{bucketLabel .Bucket}}</span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无任务流条目</li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+</div>
+{{end}}

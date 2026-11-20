@@ -1,0 +1,35 @@
+name: Shared React frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "versions/react/pms-react/**"
+      - ".github/workflows/react-frontend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "versions/react/pms-react/**"
+      - ".github/workflows/react-frontend.yml"
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: versions/react/pms-react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: versions/react/pms-react/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm run lint
+      - run: pnpm run build

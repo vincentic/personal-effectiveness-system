@@ -1,0 +1,58 @@
+{{define "content"}}
+<h3 class="mb-3">用户管理</h3>
+{{if .Msg}}<div class="alert alert-success py-2">用户创建成功</div>{{end}}
+
+<div class="card shadow-sm mb-4">
+  <table class="table table-hover mb-0 align-middle">
+    <thead class="table-light">
+      <tr><th>用户名</th><th>显示名称</th><th>角色</th><th>创建时间</th></tr>
+    </thead>
+    <tbody>
+      {{range .Users}}
+      <tr>
+        <td>{{.Username}}</td>
+        <td>{{.DisplayName}}</td>
+        <td><span class="badge {{.StaffBadge}}">{{.StaffLabel}}</span></td>
+        <td><small>{{.CreatedDate}}</small></td>
+      </tr>
+      {{else}}
+      <tr><td colspan="4" class="text-center text-muted py-4">暂无用户</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header">新增用户</div>
+      <div class="card-body">
+        <form method="post" action="/admin/users/">
+          <input type="hidden" name="_csrf" value="{{.CSRF}}">
+          <div class="mb-3">
+            <label class="form-label">用户名</label>
+            <input type="text" class="form-control" name="username" value="{{.Form.Username}}" required>
+            {{with index $.Errors "username"}}<div class="text-danger small">{{.}}</div>{{end}}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">密码（至少 8 位）</label>
+            <input type="password" class="form-control" name="password" required>
+            {{with index $.Errors "password"}}<div class="text-danger small">{{.}}</div>{{end}}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">显示名称</label>
+            <input type="text" class="form-control" name="display_name" value="{{.Form.DisplayName}}">
+            {{with index $.Errors "display_name"}}<div class="text-danger small">{{.}}</div>{{end}}
+          </div>
+          <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="staff" name="is_staff" value="1"
+                   {{if .Form.IsStaff}}checked{{end}}>
+            <label class="form-check-label" for="staff">管理员（可进入用户管理页）</label>
+          </div>
+          <button type="submit" class="btn btn-primary">创建用户</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,6 +1,6 @@
 # PMS FastAPI + Vue 构建过程讲解
 
-本文说明 Python API 服务和独立 Vue 前端如何分别准备、构建并组合为同源应用。环境准备见[搭建指南](setup.md)，生产发布见[部署指南](deployment.md)；请求字段和认证约定见API 契约。
+本文说明 Python API 服务和独立 Vue 前端如何分别准备、构建并组合为同源应用。环境准备见[搭建指南](setup.md)，生产发布见[部署指南](deployment.md)；请求字段和认证约定见[API 契约](../../../data/api-contract.md)。
 
 ## 1. 两个工程、两个构建阶段
 

@@ -1,0 +1,59 @@
+{% extends "m/base.html" %}
+{% block title %}每日执行清单 - 个人效能系统{% endblock %}
+{% block page_title %}每日执行清单{% endblock %}
+{% block content %}
+
+<a class="m-btn m-btn-primary m-btn-block m-new-btn" href="{% url 'daily_create' %}">＋ 填写今日清单</a>
+
+{% for p in plans %}
+<div class="m-card">
+  <div class="m-card-head">
+    <a href="{% url 'daily_update' p.pk %}" class="m-card-title">{{ p.plan_date|date:"Y-m-d" }}</a>
+    <span class="m-badge m-badge-{{ p.energy_level }}">{{ p.get_energy_level_display }}</span>
+  </div>
+  <div class="m-card-body">
+    <div class="m-field-label">今日最重要成果（MIT）</div>
+    <div class="m-mit">{{ p.mit|default:"未填写" }}</div>
+
+    <div class="m-progress-row">
+      <span>组块进度 {{ p.blocks_done }}/{{ p.blocks_total }}</span>
+      <span>检查 {{ p.checklist_done }}/{{ p.checklist_total }}</span>
+    </div>
+    <div class="m-progress"><div class="m-progress-bar" style="width:{{ p.block_progress }}%"></div></div>
+    <div class="m-progress m-progress-alt"><div class="m-progress-bar" style="width:{% widthratio p.checklist_done p.checklist_total 100 %}%"></div></div>
+
+    {% if p.blocks.all %}
+      <div class="m-field-label m-blocks-title">时间盒组块（点选勾选）</div>
+      <div class="m-block-list">
+        {% for b in p.blocks.all %}
+        <div class="m-block-item {% if b.is_done %}is-done{% endif %}">
+          <form method="post" action="{% url 'daily_toggle_block' b.pk %}" class="m-inline-form">
+            {% csrf_token %}
+            <button type="submit" class="m-check-btn {% if b.is_done %}is-done{% endif %}" aria-label="切换完成">{% if b.is_done %}✓{% endif %}</button>
+          </form>
+          <div class="m-block-info">
+            <div class="m-block-name">{{ b.block_name }}</div>
+            <div class="m-meta">{{ b.time_box }}{% if b.deliverable %} · {{ b.deliverable|truncatechars:20 }}{% endif %}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="m-btn-row">
+      <a class="m-btn m-btn-ghost" href="{% url 'daily_update' p.pk %}">编辑</a>
+      <form method="post" action="{% url 'daily_delete' p.pk %}" class="m-inline-form" onsubmit="return confirm('确定删除该日清单？');">
+        {% csrf_token %}<button class="m-btn m-btn-danger" type="submit">删除</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="m-empty">
+  <div class="m-empty-ico">✓</div>
+  <p>还没有每日清单。</p>
+  <a class="m-btn m-btn-primary" href="{% url 'daily_create' %}">填写今日清单</a>
+</div>
+{% endfor %}
+
+{% endblock %}
