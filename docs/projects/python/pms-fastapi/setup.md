@@ -52,7 +52,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 - Vue 页面：<http://127.0.0.1:8000/>
 - OpenAPI 交互文档：<http://127.0.0.1:8000/docs>
-- API 契约：API 契约
+- API 契约：[API 契约](../../../data/api-contract.md)
 
 如果前端尚未构建，页面入口会提示构建缺失，但 API 文档仍可访问。
 

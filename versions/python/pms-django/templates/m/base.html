@@ -1,0 +1,50 @@
+{% load static %}<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}个人效能系统{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+</head>
+<body class="m-body">
+<header class="m-header">
+  <div class="m-header-top">
+    <a class="m-brand" href="{% url 'dashboard' %}">◈ 个人效能系统</a>
+    <div class="m-header-actions">
+      <a class="m-switch" href="{% url 'switch_view' 'pc' %}?next={{ request.get_full_path|urlencode }}">🖥 PC版</a>
+    </div>
+  </div>
+  <div class="m-header-sub">
+    <span class="m-page-title">{% block page_title %}工作台{% endblock %}</span>
+    <span class="m-mode-tag">移动版</span>
+  </div>
+</header>
+
+<main class="m-main">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="m-alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<nav class="m-tabbar" aria-label="主导航">
+  <div class="m-tab-row">
+    <a class="m-tab {% if active_tab == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">
+      <span class="m-tab-ico">◈</span><span>工作台</span>
+    </a>
+    <a class="m-tab {% if active_tab == 'daily' %}is-active{% endif %}" href="{% url 'daily_list' %}">
+      <span class="m-tab-ico">✓</span><span>每日</span>
+    </a>
+    <a class="m-tab {% if active_tab == 'weekly' %}is-active{% endif %}" href="{% url 'weekly_list' %}">
+      <span class="m-tab-ico">↻</span><span>每周</span>
+    </a>
+    <a class="m-tab {% if active_tab == 'monthly' %}is-active{% endif %}" href="{% url 'monthly_list' %}">
+      <span class="m-tab-ico">◇</span><span>每月</span>
+    </a>
+  </div>
+  <a class="m-auto-link" href="{% url 'switch_view' 'auto' %}?next={{ request.get_full_path|urlencode }}">自动</a>
+</nav>
+</body>
+</html>

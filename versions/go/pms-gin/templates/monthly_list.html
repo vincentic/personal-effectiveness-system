@@ -1,0 +1,31 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3>每月重构清单</h3>
+  <a href="/monthly/new/" class="btn btn-primary">+ 新建月重构</a>
+</div>
+
+<div class="card shadow-sm">
+  <table class="table table-hover mb-0 align-middle">
+    <thead class="table-light">
+      <tr><th>月份</th><th>本月最重要成果</th><th>是否值得投入</th><th>健康均分</th><th></th></tr>
+    </thead>
+    <tbody>
+      {{range .Reviews}}
+      <tr>
+        <td><a href="/monthly/{{.ID}}/">{{.Month}}</a></td>
+        <td>{{if .TopAchievement}}{{.TopAchievement}}{{else}}<span class="text-muted">—</span>{{end}}</td>
+        <td><span class="badge bg-secondary">{{worthLabel .WorthContinue}}</span></td>
+        <td>{{if .AvgScore}}<span class="badge bg-primary">{{.AvgScore}}</span>{{else}}<span class="text-muted">—</span>{{end}}</td>
+        <td>
+          <a href="/monthly/{{.ID}}/edit/" class="btn btn-sm btn-outline-secondary">编辑</a>
+          <a href="/monthly/{{.ID}}/delete/" class="btn btn-sm btn-outline-danger"
+             onclick="return confirm('确定删除该月重构吗？')">删除</a>
+        </td>
+      </tr>
+      {{else}}
+      <tr><td colspan="5" class="text-center text-muted py-4">暂无月重构，<a href="/monthly/new/">去创建一份</a></td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

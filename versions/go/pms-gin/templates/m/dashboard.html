@@ -1,0 +1,59 @@
+{{define "content"}}
+<div class="m-stats">
+  <div class="m-stat m-stat-primary"><span class="m-stat-label">日 / 周 / 月清单</span><strong>{{.DailyCount}} / {{.WeeklyCount}} / {{.MonthlyCount}}</strong></div>
+  <div class="m-stat m-stat-success"><span class="m-stat-label">组块完成（近 7 日）</span><strong>{{.BlockDone}} / {{.BlockTotal}}</strong></div>
+  <div class="m-stat m-stat-info"><span class="m-stat-label">今日清单</span><strong>{{if .TodayPlan}}已记录{{else}}待填写{{end}}</strong></div>
+  <div class="m-stat m-stat-warn"><span class="m-stat-label">本周 / 本月</span><strong>{{if .WeekReview}}✓{{else}}—{{end}} / {{if .MonthReview}}✓{{else}}—{{end}}</strong></div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head m-between"><span>最近每日清单</span><a href="/daily/new/" class="m-link">+ 新建</a></div>
+  <div class="m-list">
+    {{range .RecentDaily}}
+    <a class="m-list-item" href="/daily/{{.ID}}/">
+      <span><strong>{{.PlanDate}}</strong><small class="m-sub">{{.BlocksDone}}/{{.BlocksTotal}} 组块完成</small></span>
+      <span class="m-badge">{{.BlocksDone}}/{{.BlocksTotal}}</span>
+    </a>
+    {{else}}
+    <div class="m-empty">暂无记录，<a href="/daily/new/" class="m-link">去填写今日清单</a></div>
+    {{end}}
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head m-between"><span>最近每周复盘</span><a href="/weekly/new/" class="m-link">+ 新建</a></div>
+  <div class="m-list">
+    {{range .RecentWeekly}}
+    <a class="m-list-item" href="/weekly/{{.ID}}/">
+      <span><strong>{{.WeekStart}} ~ {{.WeekEnd}}</strong><small class="m-sub">{{len .Domains}} 个领域</small></span>
+      <span class="m-badge">{{len .Domains}}</span>
+    </a>
+    {{else}}
+    <div class="m-empty">暂无记录，<a href="/weekly/new/" class="m-link">去填写本周复盘</a></div>
+    {{end}}
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head m-between"><span>最近每月重构</span><a href="/monthly/new/" class="m-link">+ 新建</a></div>
+  <div class="m-list">
+    {{range .RecentMonthly}}
+    <a class="m-list-item" href="/monthly/{{.ID}}/">
+      <span><strong>{{.Month}}</strong><small class="m-sub">{{if .AvgScore}}均分 {{.AvgScore}}{{else}}未评分{{end}}</small></span>
+      <span class="m-badge">{{if .AvgScore}}{{.AvgScore}}{{else}}—{{end}}</span>
+    </a>
+    {{else}}
+    <div class="m-empty">暂无记录，<a href="/monthly/new/" class="m-link">去填写本月重构</a></div>
+    {{end}}
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">快捷入口</div>
+  <div class="m-card-body m-quick">
+    <a class="m-btn m-btn-outline" href="/daily/new/">填写每日执行清单</a>
+    <a class="m-btn m-btn-outline" href="/weekly/new/">填写每周复盘清单</a>
+    <a class="m-btn m-btn-outline" href="/monthly/new/">填写每月重构清单</a>
+  </div>
+</div>
+{{end}}

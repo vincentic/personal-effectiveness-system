@@ -38,11 +38,11 @@ FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它�
 - **前端**：Vue 3、TypeScript、Vite；PC / 手机使用同一响应式页面。构建结果输出至 `app/web`。
 - **后端**：Python 3.10+、FastAPI、Pydantic、Uvicorn；启动时幂等初始化数据库表。
 - **持久化与认证**：MySQL 8、PyMySQL；密码使用 BCrypt，API 使用 HMAC-SHA256 Token（有效期 24 小时）。
-- **共享契约**：日、周、月记录与其他实现共享表结构，API 字段见API 契约，数据关系见数据模型设计。
+- **共享契约**：日、周、月记录与其他实现共享表结构，API 字段见[API 契约](../../../docs/data/api-contract.md)，数据关系见[数据模型设计](../../../docs/data/schema-design.md)。
 
 ## 使用指南
 
-完整的日 / 周 / 月使用流程见简体中文使用指南：English · 繁體中文 · 日本語。
+完整的日 / 周 / 月使用流程见[简体中文使用指南](../../../docs/guides/user-guide.zh-CN.md)：[English](../../../docs/guides/user-guide.en.md) · [繁體中文](../../../docs/guides/user-guide.zh-TW.md) · [日本語](../../../docs/guides/user-guide.ja.md)。
 
 ## 启动
 
@@ -116,7 +116,7 @@ GitHub Actions 会在共享 Vue 前端相关改动时自动运行上述测试和
 
 ## API
 
-见API 契约。端点包括：
+见[API 契约](../../../docs/data/api-contract.md)。端点包括：
 
 ```
 POST /api/auth/login

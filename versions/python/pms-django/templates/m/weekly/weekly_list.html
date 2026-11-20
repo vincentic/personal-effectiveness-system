@@ -1,0 +1,42 @@
+{% extends "m/base.html" %}
+{% block title %}每周复盘 - 个人效能系统{% endblock %}
+{% block page_title %}每周复盘{% endblock %}
+{% block content %}
+
+<a class="m-btn m-btn-primary m-btn-block m-new-btn" href="{% url 'weekly_create' %}">＋ 填写本周复盘</a>
+
+{% for w in reviews %}
+<div class="m-card">
+  <div class="m-card-head">
+    <a href="{% url 'weekly_update' w.pk %}" class="m-card-title">{{ w.week_start|date:"Y-m-d" }}</a>
+    <span class="m-badge m-badge-secondary">至 {{ w.week_end|date:"m/d" }}</span>
+  </div>
+  <div class="m-card-body">
+    <div class="m-field-label">下周最重要成果</div>
+    <div class="m-badge-row">
+      {% if w.next_mit_1 %}<span class="m-badge m-badge-primary">{{ w.next_mit_1|truncatechars:20 }}</span>{% endif %}
+      {% if w.next_mit_2 %}<span class="m-badge m-badge-primary">{{ w.next_mit_2|truncatechars:20 }}</span>{% endif %}
+      {% if w.next_mit_3 %}<span class="m-badge m-badge-primary">{{ w.next_mit_3|truncatechars:20 }}</span>{% endif %}
+      {% if not w.next_mit_1 and not w.next_mit_2 and not w.next_mit_3 %}<span class="m-muted">未填写</span>{% endif %}
+    </div>
+    <div class="m-progress-row">
+      <span>领域回顾 {{ w.domains.count }}/4</span>
+      <span>任务流 {{ w.flows.count }} 条</span>
+    </div>
+    <div class="m-btn-row">
+      <a class="m-btn m-btn-ghost" href="{% url 'weekly_update' w.pk %}">编辑</a>
+      <form method="post" action="{% url 'weekly_delete' w.pk %}" class="m-inline-form" onsubmit="return confirm('确定删除该周复盘？');">
+        {% csrf_token %}<button class="m-btn m-btn-danger" type="submit">删除</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% empty %}
+<div class="m-empty">
+  <div class="m-empty-ico">↻</div>
+  <p>还没有周复盘。</p>
+  <a class="m-btn m-btn-primary" href="{% url 'weekly_create' %}">填写本周复盘</a>
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{{define "content"}}
+<div class="m-page-head">
+  <div>
+    <h3 class="m-mb-1">{{.Review.WeekStart}} ~ {{.Review.WeekEnd}} · 每周复盘</h3>
+    <span class="m-sub">领域 {{len .Review.Domains}} 项 · 任务流 {{len .Review.Flows}} 条</span>
+  </div>
+</div>
+<div class="m-actions m-actions-top">
+  <a href="/weekly/{{.Review.ID}}/edit/" class="m-btn m-btn-sm m-btn-outline">编辑</a>
+  <a href="/weekly/{{.Review.ID}}/delete/" class="m-btn m-btn-sm m-btn-danger"
+     onclick="return confirm('确定删除该周复盘吗？')">删除</a>
+  <a href="/weekly/" class="m-btn m-btn-sm m-btn-outline">返回列表</a>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">下周设计</div>
+  <div class="m-card-body">
+    <p class="m-kv"><span class="m-kv-label">重要成果 1</span><span>{{if .Review.NextMIT1}}{{.Review.NextMIT1}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">重要成果 2</span><span>{{if .Review.NextMIT2}}{{.Review.NextMIT2}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">重要成果 3</span><span>{{if .Review.NextMIT3}}{{.Review.NextMIT3}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">要保护的深度时间</span><span>{{if .Review.DeepWorkTime}}{{.Review.DeepWorkTime}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">提前准备</span><span>{{if .Review.PrepEnvMaterials}}{{.Review.PrepEnvMaterials}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">If-Then</span><span>{{if .Review.IfCondition}}如果 {{.Review.IfCondition}}，那么 {{.Review.ThenAction}}{{else}}—{{end}}</span></p>
+    <p class="m-kv"><span class="m-kv-label">复盘五问</span><span>
+      {{if .Review.QSkilledBlock}}<span class="m-badge m-badge-primary">熟练组块</span>{{end}}
+      {{if .Review.QLowValueTime}}<span class="m-badge m-badge-warn">低价值耗时</span>{{end}}
+      {{if .Review.QEstimateGap}}<span class="m-badge m-badge-warn">估算偏差</span>{{end}}
+      {{if .Review.QRestConnection}}<span class="m-badge m-badge-success">休息连接</span>{{end}}
+      {{if .Review.QNextAdjust}}<span class="m-badge m-badge-info">调整计划</span>{{end}}
+    </span></p>
+  </div>
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">领域回顾</div>
+  {{range .Review.Domains}}
+  <div class="m-row-card">
+    <div class="m-between"><strong>{{domainLabel .Domain}}</strong><span class="m-badge">{{statusLabel .Status}}</span></div>
+    <p class="m-muted m-mb-0">{{if .Facts}}{{.Facts}}{{else}}—{{end}}</p>
+  </div>
+  {{else}}
+  <div class="m-empty">暂无领域回顾</div>
+  {{end}}
+</div>
+
+<div class="m-card">
+  <div class="m-card-head">任务流</div>
+  {{range .Review.Flows}}
+  <div class="m-row-card m-between"><span>{{.Content}}</span><span class="m-badge">{{bucketLabel .Bucket}}</span></div>
+  {{else}}
+  <div class="m-empty">暂无任务流条目</div>
+  {{end}}
+</div>
+{{end}}

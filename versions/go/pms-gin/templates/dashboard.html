@@ -1,0 +1,81 @@
+{{define "content"}}
+<h3 class="mb-4">工作台</h3>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card text-bg-primary h-100"><div class="card-body">
+    <h6>日 / 周 / 月清单</h6><h2>{{.DailyCount}} / {{.WeeklyCount}} / {{.MonthlyCount}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-success h-100"><div class="card-body">
+    <h6>组块完成（近 7 日）</h6><h2>{{.BlockDone}} / {{.BlockTotal}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-info h-100"><div class="card-body">
+    <h6>今日清单</h6><h2>{{if .TodayPlan}}已记录{{else}}待填写{{end}}</h2></div></div></div>
+  <div class="col-md-3"><div class="card text-bg-warning h-100"><div class="card-body">
+    <h6>本周 / 本月</h6><h2>{{if .WeekReview}}✓{{else}}—{{end}} / {{if .MonthReview}}✓{{else}}—{{end}}</h2></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>最近每日清单</span><a class="small" href="/daily/new/">+ 新建</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {{range .RecentDaily}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/daily/{{.ID}}/">{{.PlanDate}}</a>
+          <span class="badge bg-secondary">{{.BlocksDone}}/{{.BlocksTotal}} 组块</span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无记录，<a href="/daily/new/">去填写今日清单</a></li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>最近每周复盘</span><a class="small" href="/weekly/new/">+ 新建</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {{range .RecentWeekly}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/weekly/{{.ID}}/">{{.WeekStart}} ~ {{.WeekEnd}}</a>
+          <span class="badge bg-secondary">{{len .Domains}} 个领域</span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无记录，<a href="/weekly/new/">去填写本周复盘</a></li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>最近每月重构</span><a class="small" href="/monthly/new/">+ 新建</a>
+      </div>
+      <ul class="list-group list-group-flush">
+        {{range .RecentMonthly}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="/monthly/{{.ID}}/">{{.Month}}</a>
+          <span class="badge bg-secondary">{{if .AvgScore}}均分 {{.AvgScore}}{{else}}未评分{{end}}</span>
+        </li>
+        {{else}}
+        <li class="list-group-item text-muted">暂无记录，<a href="/monthly/new/">去填写本月重构</a></li>
+        {{end}}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">快捷入口</div>
+      <div class="card-body d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" href="/daily/new/">填写每日执行清单</a>
+        <a class="btn btn-outline-success" href="/weekly/new/">填写每周复盘清单</a>
+        <a class="btn btn-outline-info" href="/monthly/new/">填写每月重构清单</a>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
