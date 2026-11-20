@@ -5,10 +5,10 @@
 ## 1. 运行拓扑与运行环境
 
 ```text
-Vue 静态站点 / API 客户端 → Nginx HTTPS → Spring Boot API → MySQL
+React 静态站点 / API 客户端 → Nginx HTTPS → Spring Boot API → MySQL
 ```
 
-运行服务器需要 JDK 17+、MySQL 8+、systemd 和 Nginx。Maven 只在构建机器需要。API 默认监听 `8080`；该项目不包含 Vue 前端，也不提供 Spring MVC 页面。
+运行服务器需要 JDK 17+、MySQL 8+、systemd 和 Nginx。Maven 只在构建机器需要。API 默认监听 `8080`；该项目不包含 React 前端，也不提供 Spring MVC 页面。
 
 先创建数据库与专用账号；按实际连接来源配置 MySQL host：
 
@@ -58,7 +58,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=replace-with-a-unique-strong-password
 ```
 
-Spring Boot 直接运行 JAR 时不会自行读取 `.env`；systemd 的 `EnvironmentFile` 会将这些值注入进程。`API_SECRET` 在需要跨版本共享 Token 时必须与 Gin / FastAPI 配置相同。仅允许真实 Vue origin 的 CORS 请求；管理员初始密码只在空用户表时生效。
+Spring Boot 直接运行 JAR 时不会自行读取 `.env`；systemd 的 `EnvironmentFile` 会将这些值注入进程。`API_SECRET` 在需要跨版本共享 Token 时必须与 Gin / FastAPI 配置相同。仅允许真实 React origin 的 CORS 请求；管理员初始密码只在空用户表时生效。
 
 ```bash
 sudo chown www-data:www-data /opt/pms-springboot-api/.env
@@ -119,7 +119,7 @@ server {
 }
 ```
 
-生产环境应通过 Nginx 或受信任的边缘入口启用 HTTPS，防火墙只开放必要端口。Vue 与 API 分开部署时，配置 `CORS_ORIGINS` 为 Vue 站点 origin；API 本身不托管静态前端。
+生产环境应通过 Nginx 或受信任的边缘入口启用 HTTPS，防火墙只开放必要端口。React 与 API 分开部署时，配置 `CORS_ORIGINS` 为 React 站点 origin；API 本身不托管静态前端。
 
 ```bash
 sudo nginx -t
@@ -149,4 +149,4 @@ curl -i http://127.0.0.1:8080/api/me
 
 ## 7. Docker 与 Kubernetes
 
-容器端口为 `8080`；API 未配置匿名健康端点，Kubernetes 应使用 TCP readiness / liveness probe，而不是把 `/api/me` 的 401 当作健康失败。Java 镜像、Nginx Ingress、Secret 与 Vue 路由见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+容器端口为 `8080`；API 未配置匿名健康端点，Kubernetes 应使用 TCP readiness / liveness probe，而不是把 `/api/me` 的 401 当作健康失败。Java 镜像、Nginx Ingress、Secret 与 React 路由见多语言 Docker + Kubernetes 部署指南。
