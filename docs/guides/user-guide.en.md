@@ -1,13 +1,13 @@
 # Personal Effectiveness System · User Guide (English)
 
-This guide helps you put the "daily execution → weekly review → monthly refactor" loop into practice. The four implementations share a data model; Django, Spring Boot, and Gin provide PC / Mobile pages, while FastAPI provides a responsive Vue 3 page and REST API.
+This guide helps you put the "daily execution → weekly review → monthly refactor" loop into practice. The system includes Django, Go/Gin, Java/Spring Boot, FastAPI, and Flask implementations: Gin, Spring Boot, and Flask provide server-rendered pages, Django provides a Session page, and FastAPI can host Vue 3 and the REST API at one origin.
 
 - [简体中文](user-guide.zh-CN.md) · [繁體中文](user-guide.zh-TW.md) · [日本語](user-guide.ja.md)
 - [Back to project README](../../README.md)
 
 ## 1. Sign in and switch between PC / Mobile
 
-1. Open your chosen version's root URL (Django `http://127.0.0.1:8000/`, Spring Boot `:8080/`, Gin `:8081/`; FastAPI `:8000/` after building the frontend) and sign in with your account.
+1. Open your chosen version's root URL (Django `:8000/`, Spring Boot `:8080/`, Gin `:8081/`, Flask page app `:8001/`; FastAPI `:8000/` after building the frontend) and sign in with your account.
 2. **Django / Spring Boot / Gin dual view**: the server picks PC or Mobile by browser User-Agent and serves a touch-friendly mobile view on phones.
 3. **Manual switch in the first three editions**:
    - On PC, click "📱 Mobile" in the top bar to go mobile.
@@ -27,7 +27,7 @@ Go to **Daily** and click "New daily plan". The page has five sections:
 4. **Life maintenance**: water & food, movement, cleaning/tidying, real conversation or outdoors — not about a perfect score, just keeping the baseline.
 5. **Evening review**: what you actually finished, the biggest resistance, tomorrow's smallest starting action, and one thing worth gratitude.
 
-After saving, the list shows each day's block progress (done/total) and checklist completion. Django lets you toggle a block directly from the list; in Gin, Spring Boot, and FastAPI, edit the daily plan to change its completion status. All four editions let you edit or delete records.
+After saving, the list shows each day's block progress (done/total) and checklist completion. Django lets you toggle a block directly from the list; in Gin, Spring Boot, and Flask, edit the daily plan to change its completion status. Page apps let you edit or delete records.
 
 **Key points**: one MIT only; every block needs a verifiable output; the evening review asks what was *actually* completed, not what was planned.
 
@@ -53,13 +53,13 @@ Go to **Monthly** and click "New monthly refactor". Four sections:
 
 **Key point**: the ultimate standard is — important things keep moving, life's baseline stays stable, attention is self-directed, and the system itself is not a burden.
 
-## 5. The four editions and shared data
+## 5. Implementations and shared data
 
-Django, Spring Boot, Gin, and FastAPI share one database and schema, with data isolated by account. FastAPI shares the API Token contract with Spring Boot and Gin; each page-based edition has its own session mechanism.
+Gin, Spring Boot, FastAPI, and Flask use the shared v2 schema in `db/schema.sql`, with data isolated by account. Django uses its own ORM migrations for equivalent business entities. FastAPI, Spring Boot, Gin, and Flask API follow the same API Token contract; each page app has its own session mechanism.
 
 - **Page users**: sign in via Session / signed cookie; data is isolated per account — nobody else can see your lists.
-- **FastAPI page and API users**: after page sign-in, the browser keeps a session Token. For API calls, get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across FastAPI, Spring Boot, and Gin. See the [API contract](../data/api-contract.md).
-- Default ports: Spring Boot 8080, Gin 8081, FastAPI 8000; Django and FastAPI both use 8000, so offset one when running together.
+- **API users**: get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across all four API implementations. See the [API contract](../data/api-contract.md).
+- Default ports: Spring Boot 8080, Gin 8081, Django / FastAPI 8000, Flask page app 8001, Flask API 8002.
 
 ## 6. FAQ
 
@@ -76,7 +76,7 @@ They are saved with the parent list. Editing detail rows and saving replaces the
 In the Daily list click "New daily plan" and pick a past date; if that day already has a record, edit it instead.
 
 **Q: Is content hard to read on my phone?**
-Django / Spring Boot / Gin use separate mobile templates; the FastAPI Vue page uses responsive layout and collapsible navigation. Content adapts to screen width.
+Django / Spring Boot / Gin use separate mobile templates; Flask and FastAPI Vue pages use responsive layouts. Content adapts to screen width.
 
 **Q: Can several people use it at once?**
 Yes, data is isolated per account. User management is admin-only (`/admin/users/` or the equivalent page).

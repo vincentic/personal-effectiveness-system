@@ -1,13 +1,13 @@
 # 个人效能系统 · 使用指南（简体中文）
 
-本指南帮助你用系统落地「日执行 → 周复盘 → 月重构」的效能闭环。系统有四个实现版本，共享数据模型；Django、Spring Boot、Gin 提供 PC / Mobile 页面，FastAPI 提供 Vue 3 响应式页面和 REST API，可按需要选用。
+本指南帮助你用系统落地「日执行 → 周复盘 → 月重构」的效能闭环。系统包含 Django、Go/Gin、Java/Spring Boot、FastAPI 和 Flask 实现：Gin、Spring Boot、Flask 提供服务端页面，Django 提供 Session 页面，FastAPI 可同源托管 Vue 3 和 REST API。
 
 - [English](user-guide.en.md) · [繁體中文](user-guide.zh-TW.md) · [日本語](user-guide.ja.md)
 - [返回项目 README](../../README.md)
 
 ## 1. 登录与双端切换
 
-1. 打开所选用版本的根地址（Django `http://127.0.0.1:8000/`、Spring Boot `:8080/`、Gin `:8081/`；FastAPI 在完成前端构建后访问 `:8000/`），输入管理员或你的账号密码登录。
+1. 打开所选用版本的根地址（Django `:8000/`、Spring Boot `:8080/`、Gin `:8081/`、Flask 页面版 `:8001/`；FastAPI 在完成前端构建后访问 `:8000/`），输入管理员或你的账号密码登录。
 2. **Django / Spring Boot / Gin 双端**：系统按浏览器 User-Agent 自动选择 PC 版或手机版。手机上打开会看到适配触屏的移动界面。
 3. **前三版手动切换**：
    - PC 版顶栏点「📱 手机版」切到移动版；
@@ -27,7 +27,7 @@
 4. **生活维护**：饮水饮食、运动、清洁整理、真实交流户外——不追求满分，保持基本盘。
 5. **晚间复盘**：今天真正完成了什么、最大阻力、明天最小启动动作、值得感谢的一件事。
 
-保存后回到列表，可查看每日组块进度（完成数/总数）与检查完成度。Django 可在列表直接勾选时间盒完成状态；Gin 和 Spring Boot 可进入编辑表单修改完成状态。三版均可编辑或删除记录。
+保存后回到列表，可查看每日组块进度（完成数/总数）与检查完成度。Django 可在列表直接勾选时间盒完成状态；Gin、Spring Boot 和 Flask 可进入编辑表单修改完成状态。页面版均可编辑或删除记录。
 
 **要点**：MIT 只有一个；每个组块必须有可验收输出；晚间复盘回答"真正完成"而非"计划完成"。
 
@@ -53,13 +53,13 @@
 
 **要点**：系统的最终标准是——重要事情持续推进、生活基本盘稳定、注意力有自主权、系统本身不成为负担。
 
-## 5. 四版说明与数据共享
+## 5. 多版本说明与数据共享
 
-Django / Spring Boot / Gin / FastAPI 四版共用同一个数据库和效能表结构，数据按账号隔离。FastAPI 与 Spring Boot / Gin 的 API Token 契约一致；页面版使用各自的会话机制。
+Gin、Spring Boot、FastAPI 与 Flask 使用 `db/schema.sql` 定义的共享 v2 表结构，数据按账号隔离；Django 使用自己的 ORM 迁移实现对应业务实体。FastAPI、Spring Boot、Gin 和 Flask API 遵循相同的 API Token 契约；页面版使用各自的会话机制。
 
 - **页面用户**：通过 Session / 签名 Cookie 登录，数据按账号隔离，看不到别人的清单。
-- **FastAPI 页面与 API 用户**：页面登录后由浏览器保存当前会话 Token；程序调用用 `POST /api/auth/login` 获取 Token，并在 `Authorization: Bearer <token>` 中携带。FastAPI、Spring Boot、Gin 的 Token 可互通。完整端点见 [API 契约](../data/api-contract.md)。
-- 默认端口：Spring Boot 8080、Gin 8081、FastAPI 8000；Django 与 FastAPI 同为 8000，同启时需错开。
+- **API 用户**：程序调用用 `POST /api/auth/login` 获取 Token，并在 `Authorization: Bearer <token>` 中携带。四种 API 实现的 Token 可互通。完整端点见 [API 契约](../data/api-contract.md)。
+- 默认端口：Spring Boot 8080、Gin 8081、Django / FastAPI 8000、Flask 页面版 8001、Flask API 版 8002。
 
 ## 6. 常见问题
 
@@ -76,7 +76,7 @@ Django / Spring Boot / Gin / FastAPI 四版共用同一个数据库和效能表�
 在每日执行列表点「填写今日清单」，日期选过去的某天即可补录；但同一天已有记录时需编辑那条。
 
 **Q：手机上内容看不全？**
-Django / Spring Boot / Gin 使用独立移动模板；FastAPI Vue 页面使用响应式布局和折叠导航。页面内容会随屏幕宽度调整。
+Django / Spring Boot / Gin 使用独立移动模板；Flask 页面和 FastAPI Vue 页面使用响应式布局。页面内容会随屏幕宽度调整。
 
 **Q：可以同时多人用吗？**
 可以，数据按账号隔离。用户管理仅管理员可操作（在 `/admin/users/` 或对应页面）。

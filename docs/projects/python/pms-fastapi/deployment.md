@@ -244,7 +244,7 @@ sudo systemctl restart pms-fastapi
 | `ModuleNotFoundError` | 确认已 `source .venv/bin/activate` 且 `pip install -r requirements.txt` |
 | `Access denied` / 连不上库 | 检查 `.env` 的 DB_*；确认 MySQL 账号权限与来源主机 |
 | `Unknown database 'pms'` | 先执行第三节建库 SQL |
-| API 401 | 检查 `Authorization: Bearer <token>`；三版 `API_SECRET` 需一致；Token 24 小时过期 |
+| API 401 | 检查 `Authorization: Bearer <token>`；四个 API 版本的 `API_SECRET` 需一致；Token 24 小时过期 |
 | 跨域被浏览器拦截 | 调整 `CORS_ORIGINS` 为实际前端来源，多个用逗号分隔 |
 | 端口被占用 | `lsof -nP -iTCP:8000 -sTCP:LISTEN`，或用 `SERVER_PORT` 改端口 |
 | 与 Django 版端口冲突 | Django 默认也是 8000，两版同时启动需给其中一版设不同的 `SERVER_PORT` |
@@ -259,3 +259,7 @@ TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -d '{"username":"admin","password":"你的密码"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')
 curl -s http://127.0.0.1:8000/api/dashboard -H "Authorization: Bearer $TOKEN"
 ```
+
+## 八、Docker 与 Kubernetes
+
+FastAPI + Vue 同源模式在容器内监听 `8000`，`/health` 可用于 HTTP 探针；镜像需从仓库根目录构建 Vue 产物。Docker 多阶段构建、Ingress 路由、Secret 和多后端探针方案见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

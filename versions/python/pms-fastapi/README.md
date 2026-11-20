@@ -1,6 +1,6 @@
 # 个人效能系统 · FastAPI 版
 
-FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。系统与 Django、Spring Boot、Gin 版共用 v2 数据模型和账号数据，并与独立的 Spring Boot API / Gin API 共用 REST API 与 Token 契约；数据按当前用户隔离。
+FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。它与 Gin、Spring Boot 和 Flask API 共用 REST API 与 Token 契约；独立 Flask API、Gin API 和 Spring Boot API 也可连接同一份共享 Vue 前端。
 
 本地环境和启动步骤见[搭建指南](../../../docs/projects/python/pms-fastapi/setup.md)，前后端构建流程见[构建过程讲解](../../../docs/projects/python/pms-fastapi/build-process-explained.md)，生产发布见[部署指南](../../../docs/projects/python/pms-fastapi/deployment.md)。
 
@@ -83,9 +83,11 @@ npm run dev
 VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
 # Gin API（versions/go/pms-gin-api）
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
+# Flask API（versions/python/pms-flask-api）
+VITE_API_PROXY_TARGET=http://127.0.0.1:8002 npm run dev
 ```
 
-`.env.local` 也可设置 `VITE_API_PROXY_TARGET`。若将 Vue 静态资源与 API 分开部署，可在构建时设置 `VITE_API_BASE_URL=https://api.example.com`；这时 Java/Gin 后端需将 Vue 的站点 origin 加入 `CORS_ORIGINS`。默认留空表示同源 API。从 `versions/vue/pms-vue` 执行 `npm run build` 会将构建产物写入 FastAPI 的 `app/web`，仍由 FastAPI 同源提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
+`.env.local` 也可设置 `VITE_API_PROXY_TARGET`。若将 Vue 静态资源与 API 分开部署，可在构建时设置 `VITE_API_BASE_URL=https://api.example.com`；这时 Go、Java、FastAPI 或 Flask API 需将 Vue 的站点 origin 加入 `CORS_ORIGINS`。默认留空表示同源 API。从 `versions/vue/pms-vue` 执行 `npm run build` 会将构建产物写入 FastAPI 的 `app/web`，仍由 FastAPI 同源提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
 
 前端单元测试与生产构建可在 `versions/vue/pms-vue` 目录执行：
 
@@ -134,4 +136,4 @@ GET|POST          /api/users          # 仅管理员
 - 登录返回 Token：✅
 - 日/周/月清单 CRUD + 明细整体替换（真实 MySQL）：✅
 - dashboard / 401 鉴权：✅
-- 三版 Token 交叉验证与跨版本 CRUD：见仓库根 README 的联调结果。
+- Go、Java 与 FastAPI 的既有 Token 联调记录见仓库根 README；Flask API 的契约和单元测试同步维护。

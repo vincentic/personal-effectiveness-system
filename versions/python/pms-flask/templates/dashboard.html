@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}工作台 · 个人效能系统{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">{{ today }}</p><h1>工作台</h1><p class="muted">把注意力放回重要成果，也给恢复和关系留出空间。</p></div>
+  <a class="primary button" href="{{ url_for('edit_record', kind='daily') }}">记录今天</a>
+</div>
+<section class="stats">
+  <article class="stat"><span>每日清单</span><strong>{{ counts.daily }}</strong><a href="{{ url_for('list_records', kind='daily') }}">查看全部 →</a></article>
+  <article class="stat"><span>每周复盘</span><strong>{{ counts.weekly }}</strong><a href="{{ url_for('list_records', kind='weekly') }}">查看全部 →</a></article>
+  <article class="stat"><span>每月重构</span><strong>{{ counts.monthly }}</strong><a href="{{ url_for('list_records', kind='monthly') }}">查看全部 →</a></article>
+</section>
+<section class="grid-two">
+  <article class="panel">
+    <h2>本周期入口</h2>
+    <ul class="check-list">
+      <li><span>今日执行</span><strong>{{ "已创建" if today_plan else "待填写" }}</strong></li>
+      <li><span>本周复盘</span><strong>{{ "已创建" if week_review else "待填写" }}</strong></li>
+      <li><span>本月重构</span><strong>{{ "已创建" if month_review else "待填写" }}</strong></li>
+      <li><span>近 7 条每日记录时间盒</span><strong>{{ block_done }} / {{ block_total }} 完成</strong></li>
+    </ul>
+  </article>
+  <article class="panel">
+    <h2>最近记录</h2>
+    {% for kind, label in [("daily", "每日"), ("weekly", "每周"), ("monthly", "每月")] %}
+      <h3>{{ label }}</h3>
+      {% if recent[kind] %}
+      <ul class="compact-list">
+        {% for row in recent[kind] %}
+        <li><span>{{ row.plan_date if kind == "daily" else row.week_start if kind == "weekly" else row.month }}</span>
+          <span>{{ row.mit if kind == "daily" else row.next_mit_1 if kind == "weekly" else row.top_achievement }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">还没有记录。</p>{% endif %}
+    {% endfor %}
+  </article>
+</section>
+{% endblock %}

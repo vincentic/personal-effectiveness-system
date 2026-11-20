@@ -146,3 +146,7 @@ curl -i http://127.0.0.1:8080/api/me
 ```
 
 预期返回 `401`。再调用 `POST /api/auth/login` 验证数据库、密码和管理员初始化状态。若启动失败，优先检查 `journalctl`、JDK 主版本、DB_*、端口占用、`API_SECRET` 与 CORS 设置。
+
+## 7. Docker 与 Kubernetes
+
+容器端口为 `8080`；API 未配置匿名健康端点，Kubernetes 应使用 TCP readiness / liveness probe，而不是把 `/api/me` 的 401 当作健康失败。Java 镜像、Nginx Ingress、Secret 与 Vue 路由见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

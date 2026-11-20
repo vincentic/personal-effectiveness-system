@@ -1,8 +1,8 @@
 # 个人效能系统：业务说明与代码应用顺序
 
-本文面向仓库中的单体页面实现与 API 实现：Go/Gin、Java/Spring Boot、Python/Django、Python/FastAPI。Go / Java 的单体页面版与 REST API 版位于不同项目目录；目标是把「用户为什么填写清单」与「请求最终在哪些代码中处理」连起来，方便阅读、维护和跨版本同步功能。
+本文面向仓库中的单体页面实现与 API 实现：Go/Gin、Java/Spring Boot、Python/Django、FastAPI、Flask。Go、Java 和 Flask 的单体页面版与 REST API 版位于不同项目目录；目标是把「用户为什么填写清单」与「请求最终在哪些代码中处理」连起来，方便阅读、维护和跨版本同步功能。
 
-共享数据结构以 [`db/schema.sql`](../../db/schema.sql) 为准；字段含义见 [数据模型设计](../data/schema-design.md)，REST 请求与响应见 [API 契约](../data/api-contract.md)。四个实现共用业务数据模型，但页面技术、认证方式和代码分层并不完全相同。
+共享数据结构以 [`db/schema.sql`](../../db/schema.sql) 为准；字段含义见 [数据模型设计](../data/schema-design.md)，REST 请求与响应见 [API 契约](../data/api-contract.md)。Gin、Spring Boot、FastAPI 与 Flask 使用共享 v2 schema；Django 以 ORM 迁移实现对应业务实体。页面技术、认证方式和代码分层并不完全相同。
 
 ## 一、业务闭环：日执行 → 周复盘 → 月重构
 
@@ -37,7 +37,7 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 3. 组块、领域、任务流、健康检查属于主记录的明细。REST API 的 `blocks`、`domains`、`flows`、`health_checks` 是随主记录提交的完整数组，而不是局部补丁。
 4. 完成率、检查项计数、周结束日期和健康均分属于读取时派生的数据，不应被当作用户输入字段重复保存。
 
-页面与 API 的认证入口有所不同：Spring Boot 和 Gin 的服务端页面使用各自的会话机制，REST API 使用共享 HMAC Token；Django 页面使用 Django 登录会话；Vue 可由 FastAPI 同源提供，也可独立部署后复用 FastAPI、Spring Boot 或 Gin 的 `/api/**`，均通过 Bearer Token 认证。
+页面与 API 的认证入口有所不同：Spring Boot、Gin 和 Flask 的服务端页面使用各自的会话机制，REST API 使用共享 HMAC Token；Django 页面使用 Django 登录会话；Vue 可由 FastAPI 同源提供，也可独立部署后复用 FastAPI、Spring Boot、Gin 或 Flask API 的 `/api/**`，均通过 Bearer Token 认证。
 
 共享 Vue 源码位于 [`versions/vue/pms-vue/`](../../versions/vue/pms-vue/)，与 Python 后端项目分离。开发时用 `VITE_API_PROXY_TARGET` 指向 `http://127.0.0.1:8000`（FastAPI）、`http://127.0.0.1:8080`（Spring Boot）或 `http://127.0.0.1:8081`（Gin）；独立部署时用 `VITE_API_BASE_URL` 指定 API origin，并将前端站点 origin 配入 Java / Go 的 `CORS_ORIGINS`。这样三种后端复用同一份 Vue 页面与 TypeScript API 类型，不需要维护三份前端。
 

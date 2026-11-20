@@ -217,3 +217,7 @@ sudo systemctl restart pms-springboot
 ```bash
 curl -s http://127.0.0.1:8080/                    # 未登录应 302 到 /login
 ```
+
+## 八、Docker 与 Kubernetes
+
+容器端口仍为 `8080`，服务端页面可通过 `/` HTTP 探针检查。Java 多阶段镜像、Nginx Ingress、Session 配置、Secret 与 rollout 步骤见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

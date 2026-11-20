@@ -1,6 +1,6 @@
 # 个人效能系统 · 表结构设计（v2）
 
-本设计依据附件《个人效能系统 · 可手写打印 · 版本 1.0》的三张 A4 清单，把原 PMS（项目/任务）数据模型整体替换为效能模型。四个版本（Django / Spring Boot / Gin / FastAPI）均已按此模型实现，共用同一套表结构与 REST API 契约。
+本设计依据附件《个人效能系统 · 可手写打印 · 版本 1.0》的三张 A4 清单，把原 PMS（项目/任务）数据模型整体替换为效能模型。`db/schema.sql` 是 Gin、Spring Boot、FastAPI 与 Flask 两个项目共用的 v2 schema；Django 按相同业务实体使用自己的 ORM 迁移与表名。Gin、Spring Boot、FastAPI 和 Flask API 共用 REST API 契约。
 
 ## 一、PDF 清单 → 数据表映射
 

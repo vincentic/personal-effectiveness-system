@@ -802,3 +802,7 @@ kubectl rollout status deployment/pms-django --namespace pms
 - 甘特图 / 日历视图
 - 企业微信 / 钉钉登录集成
 - Docker 化部署（Dockerfile + docker-compose 编排 MySQL + Web）
+
+## 十、多项目容器部署
+
+本指南已包含 Django 的 Docker Compose、Nginx sidecar、Kubernetes Deployment / Service / Ingress、迁移与静态资源步骤。其他 Go、Java、FastAPI、Flask 和 Vue 变体的端口、Dockerfile 示例及统一 Nginx Ingress 方案见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

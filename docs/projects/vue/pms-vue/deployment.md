@@ -11,7 +11,7 @@
 | FastAPI 同源 | FastAPI 提供 Vue 构建产物和 `/api/**` | 留空，浏览器使用当前 origin |
 | 独立静态站点 | Nginx / 静态托管平台提供 Vue 文件 | 构建时指定 `VITE_API_BASE_URL` |
 
-独立静态部署可连接 Gin API、Spring Boot API 或 FastAPI。部署前确认 API 可由浏览器访问，并配置正确的 HTTPS 和 CORS origin。
+独立静态部署可连接 Gin API、Spring Boot API、FastAPI 或 Flask API。部署前确认 API 可由浏览器访问，并配置正确的 HTTPS 和 CORS origin。
 
 ## 2. 构建静态文件
 
@@ -67,7 +67,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-生产应配置 TLS 并使用 HTTPS。若前端与 API 使用不同 origin，应在后端 `CORS_ORIGINS` 中精确加入 `https://pms.example.com`，同时允许应用所需的 `Authorization` 和 `Content-Type` 请求头。Gin、Spring Boot 与 FastAPI 后端各自的部署文档说明了对应的 CORS 配置。
+生产应配置 TLS 并使用 HTTPS。若前端与 API 使用不同 origin，应在后端 `CORS_ORIGINS` 中精确加入 `https://pms.example.com`，同时允许应用所需的 `Authorization` 和 `Content-Type` 请求头。Gin、Spring Boot、FastAPI 与 Flask API 的部署文档说明了对应的 CORS 配置。
 
 ## 4. 发布验证
 
@@ -80,3 +80,7 @@ curl -I https://pms.example.com/
 页面加载成功但 API 报跨域错误时，检查 `VITE_API_BASE_URL` 是否在构建时设置，以及后端 CORS 配置是否包含页面 origin。API 返回 401 时检查登录状态和 Bearer Token；重新部署静态文件不会自动更改 API 配置。
 
 使用 FastAPI 同源模式时，API 与静态页面的联合部署细节见 [FastAPI 部署指南](../../python/pms-fastapi/deployment.md)。
+
+## 5. Docker 与 Kubernetes
+
+Vue 可构建为 Nginx 静态镜像，通过 Ingress 将 `/` 发往 Vue Service、将 `/api` 发往所选 API Service；也可保持 FastAPI 同源模式并将所有路径发往 FastAPI。镜像与 Ingress 配置示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

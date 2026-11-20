@@ -140,3 +140,7 @@ curl -i http://127.0.0.1:8081/api/me
 ```
 
 预期得到 `401`，表示 HTTP 服务与路由正常、请求尚未认证。再以真实管理员凭据调用 `/api/auth/login` 验证数据库连接与认证。故障排查时查看 `journalctl -u pms-gin-api`，并核对 DB_*、`API_SECRET` 和 CORS origin。
+
+## 7. Docker 与 Kubernetes
+
+容器端口为 `8081`；API 没有匿名健康路由，Kubernetes 应使用 TCP 探针，不要用返回 401 的 `/api/me` 作为 HTTP probe。镜像构建、Nginx Ingress、Secret 和 Vue 路由见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。

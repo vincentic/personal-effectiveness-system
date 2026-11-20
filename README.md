@@ -1,6 +1,6 @@
-# 个人效能系统 · 四版本实现
+# 个人效能系统 · 多语言多版本实现
 
-> **v4（当前）**：四版本全部基于「个人效能系统」v2 数据模型；Django / Spring Boot / Gin 三版提供 **PC / Mobile 双端界面**（独立模板 + UA 自动识别 + 手动切换），FastAPI 提供 **Vue 3 响应式页面 + REST API**。四版共用数据表与账号数据；Spring Boot / Gin / FastAPI 共用 REST API 契约与 HMAC Token。
+> **v4（当前）**：系统提供 Go、Java、Python 和共享 Vue 多种实现。Gin、Spring Boot、Flask 有服务端页面单体版；Django 是独立 Session 页面版；FastAPI 可同源托管 Vue 与 REST API；Gin、Spring Boot、FastAPI、Flask API 均遵循共享 REST 契约与 HMAC Token。各实现围绕日 / 周 / 月个人效能流程，数据 schema 与认证边界因项目而异，详见[数据模型](docs/data/schema-design.md)和[API 契约](docs/data/api-contract.md)。
 >
 > 历史版本：v3 = 三版业务迁移到效能模型（`af45fbf`）；v2 = 按 PDF 重设计表结构与 Django 界面（`00850f2`）；v1 = 原 PMS 项目/任务系统基线（`a702875`），旧建表语句见 [db/schema.v1-legacy.sql](db/schema.v1-legacy.sql)。
 
@@ -61,7 +61,7 @@
 | **系统本身变成负担** | 工具越来越复杂，维护工具本身耗时 | 三张清单字段固定、填写快；系统健康自评专门检查"系统是否成为负担" |
 | **只顾产出、忽略生活基本盘** | 效率工具常把人当机器 | 每日「生活维护」4 项（饮水饮食/运动/清洁/真实交流），不追求满分只保持基本盘 |
 | **纸质清单无法统计与检索** | 手写卡片不可搜索、不可回溯趋势 | 数字化存储，进度读时计算，可按日期/周/月回溯，系统健康分数可比对 |
-| **电脑和手机切换割裂** | 一套界面在手机上缩放难用 | 三版提供 PC / Mobile 独立模板：手机端卡片流 + 底部 Tab + 大按钮，切回电脑数据一致 |
+| **电脑和手机切换割裂** | 一套界面在手机上缩放难用 | 页面实现包含响应式 PC / Mobile 布局与视图切换，切换设备后仍可继续个人日 / 周 / 月工作流 |
 
 ## 四、版本与技术栈
 
@@ -73,17 +73,19 @@
 | Go | Gin REST API | Gin + database/sql | 8081 | 共享 Vue | ✅ `/api/**` | HMAC Token |
 | Java | Spring Boot 单体页面版 | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | — | Spring Session + CSRF |
 | Java | Spring Boot REST API | Spring Boot 3.2 + JdbcTemplate | 8080 | 共享 Vue | ✅ `/api/**` | HMAC Token |
-| Python | Django | Django 4.2 + MySQL | 8000 | ✅ PC / Mobile 双端 | — | Django Session |
+| Python | Django 页面版 | Django 4.2 + MySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | — | Django Session |
 | Python | FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
+| Python | Flask 单体页面版 | Flask + Jinja2 + PyMySQL | 8001 | ✅ 响应式 PC / Mobile 页面 | — | Flask Session + CSRF |
+| Python | Flask REST API | Flask + Pydantic + PyMySQL | 8002 | 共享 Vue | ✅ `/api/**` | HMAC Token |
 | Vue | PMS Vue | Vue 3 + TypeScript + Vite | 5173 | ✅ 响应式 PC / Mobile 页面 | 调用共享 API | Bearer Token |
 
-> Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。Go / Java 的单体页面版与 API 版也使用相同默认端口，不能同时启动。
+> Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。Go 与 Java 的单体版、API 版默认端口相同，不能同时绑定；Flask 两个项目默认分别使用 8001 和 8002。
 
 **共享数据层**
 
-- 建表脚本 [db/schema.sql](db/schema.sql)（5 处副本一致）；效能表：每日 `daily_plans` + `time_blocks`，每周 `weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`，每月 `monthly_reviews` + `system_health_checks`。
-- 字段映射与设计说明见[数据模型设计](docs/data/schema-design.md)；REST API 契约见[API 契约](docs/data/api-contract.md)。
-- 密码统一 BCrypt。默认管理员首次启动且 users 为空时自动创建，生产环境务必用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖。
+- 共享 v2 schema [db/schema.sql](db/schema.sql) 由 Gin、Spring Boot、FastAPI 与 Flask API/单体版使用；Django 使用自己的 ORM 迁移与 Session 用户模型。
+- 字段映射与设计说明见[数据模型设计](docs/data/schema-design.md)；四种 REST API 实现的字段与认证约定见[API 契约](docs/data/api-contract.md)。
+- Gin、Spring Boot、FastAPI、Flask API 共用 BCrypt 密码与 HMAC Token；生产环境务必更换 API_SECRET 与初始管理员密码。
 
 **文档导航**
 
@@ -128,6 +130,14 @@ cd versions/python/pms-fastapi && python3 -m venv .venv && source .venv/bin/acti
 pip install -r requirements.txt && (test -f .env || cp .env.example .env)
 npm --prefix ../../vue/pms-vue install && npm --prefix ../../vue/pms-vue run build
 uvicorn app.main:app --reload --port 8000
+
+# Flask 服务端页面单体版（默认 8001）
+cd versions/python/pms-flask && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && (test -f .env || cp .env.example .env) && ./start.sh
+
+# Flask REST API（默认 8002；共享 Vue 可代理到此服务）
+cd versions/python/pms-flask-api && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && (test -f .env || cp .env.example .env) && ./start.sh
 ```
 
 > 迁移说明：请在新库上使用 v2/v3 表结构；若数据库已有 v1 的 Django 表（`auth_user` / `projects_project` 等），需自行编写数据迁移或另建库。
@@ -145,7 +155,9 @@ pms/
 │   │   └── pms-springboot-api/ Spring Boot 3.2 REST API（供共享 Vue 使用）
 │   ├── python/
 │   │   ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
-│   │   └── pms-fastapi/      FastAPI REST API（可同源提供 Vue 构建页面）
+│   │   ├── pms-fastapi/      FastAPI + Vue 同源页面 / REST API
+│   │   ├── pms-flask/        Flask 服务端页面单体版（响应式页面）
+│   │   └── pms-flask-api/    Flask REST API（供共享 Vue 使用）
 │   └── vue/
 │       └── pms-vue/          共享 Vue 3 + TypeScript 前端
 ├── db/                   共享建表脚本：schema.sql、schema.v1-legacy.sql
@@ -165,9 +177,11 @@ pms/
 | Java Spring Boot REST API | [搭建](docs/projects/java/pms-springboot-api/setup.md) | [构建讲解](docs/projects/java/pms-springboot-api/build-process-explained.md) | [部署](docs/projects/java/pms-springboot-api/deployment.md) |
 | Python Django 页面版 | [搭建](docs/projects/python/pms-django/setup.md) | [构建讲解](docs/projects/python/pms-django/build-process-explained.md) | [部署](docs/projects/python/pms-django/deployment.md) · [不停机发布](docs/projects/python/pms-django/hot-deployment.md) |
 | Python FastAPI + Vue 同源版 | [搭建](docs/projects/python/pms-fastapi/setup.md) | [构建讲解](docs/projects/python/pms-fastapi/build-process-explained.md) | [部署](docs/projects/python/pms-fastapi/deployment.md) |
+| Python Flask 单体页面版 | [搭建](docs/projects/python/pms-flask/setup.md) | [构建讲解](docs/projects/python/pms-flask/build-process-explained.md) | [部署](docs/projects/python/pms-flask/deployment.md) |
+| Python Flask REST API | [搭建](docs/projects/python/pms-flask-api/setup.md) | [构建讲解](docs/projects/python/pms-flask-api/build-process-explained.md) | [部署](docs/projects/python/pms-flask-api/deployment.md) |
 | Vue 共享前端 | [搭建](docs/projects/vue/pms-vue/setup.md) | [构建讲解](docs/projects/vue/pms-vue/build-process-explained.md) | [部署](docs/projects/vue/pms-vue/deployment.md) |
 
-> 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
+所有语言的容器化部署入口见[Docker + Kubernetes 指南](docs/guides/container-deployment.md)。生产环境务必修改 `.env` 中的数据库账号、管理员密码与密钥；API 版本的 `API_SECRET` 需一致才能跨版本互认 Token。
 
 ## 八、API 互通验证
 
@@ -179,6 +193,7 @@ TOKEN=$(curl -s -X POST http://127.0.0.1:8080/api/auth/login \
 
 curl -s http://127.0.0.1:8081/api/me -H "Authorization: Bearer $TOKEN"
 curl -s http://127.0.0.1:8000/api/me -H "Authorization: Bearer $TOKEN"
+curl -s http://127.0.0.1:8002/api/me -H "Authorization: Bearer $TOKEN"
 ```
 
 ## 九、构建与实测状态
@@ -189,6 +204,6 @@ curl -s http://127.0.0.1:8000/api/me -H "Authorization: Bearer $TOKEN"
 | Spring Boot `mvn test` | ✅ 通过 |
 | Gin `go build ./...` + `go vet ./...` | ✅ 通过 |
 | FastAPI `compileall` + 路由注册 | ✅ 通过 |
-| 三版 Token 交叉验证（3×3 = 9 组合） | ✅ 全部 200 |
-| 跨版本 CRUD（FastAPI 建 → 三版读、跨版更新三版可见） | ✅ 通过 |
-| 真实 MySQL 上端到端 CRUD（日/周/月 + 明细替换 + 用户隔离） | ✅ 通过 |
+| Flask 单体版与 API 版单元测试、模板渲染、Python 编译 | ✅ 通过 |
+| Gin / Spring Boot / FastAPI 历史 Token 联调（3×3） | ✅ 通过；Flask API 由共享契约与单测覆盖 |
+| 已有版本真实 MySQL CRUD（日/周/月 + 明细替换 + 用户隔离） | ✅ 通过；Flask 本轮未运行真实 MySQL 集成测试 |

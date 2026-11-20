@@ -4,7 +4,7 @@
 
 ## 1. 工程边界
 
-这是一个独立的 Vue 3 + TypeScript 单页前端，不包含业务 API、数据库或服务端页面模板。登录与日 / 周 / 月数据操作由 [`src/api.ts`](../../../../versions/vue/pms-vue/src/api.ts) 调用 REST API；同一份前端可连接 FastAPI、Gin API 或 Spring Boot API。
+这是一个独立的 Vue 3 + TypeScript 单页前端，不包含业务 API、数据库或服务端页面模板。登录与日 / 周 / 月数据操作由 [`src/api.ts`](../../../../versions/vue/pms-vue/src/api.ts) 调用 REST API；同一份前端可连接 FastAPI、Gin API、Spring Boot API 或 Flask API。
 
 `package.json` 定义运行脚本和依赖，`package-lock.json` 固定完整依赖树，`vite.config.ts` 配置 Vue 插件、开发代理和构建目录。
 
@@ -41,7 +41,7 @@ npm run build -- --outDir dist
 
 开发模式中 `VITE_API_PROXY_TARGET` 指定 Vite 代理 `/api` 和 `/health` 的后端地址，默认 `http://127.0.0.1:8000`。浏览器请求经 Vite 转发，避免本地跨域。
 
-生产模式中 `VITE_API_BASE_URL` 是构建期变量；空值代表调用当前站点的同源 API，完整 URL 则让前端请求独立 API origin。部署到独立域名时，应在构建前确定该值，并将前端站点 origin 加入 Java / Go / FastAPI 后端的 CORS allowlist。所有 `VITE_*` 值都会包含在浏览器可读取的资源中，不得设置机密。
+生产模式中 `VITE_API_BASE_URL` 是构建期变量；空值代表调用当前站点的同源 API，完整 URL 则让前端请求独立 API origin。部署到独立域名时，应在构建前确定该值，并将前端站点 origin 加入 Go / Java / Python API 后端的 CORS allowlist。所有 `VITE_*` 值都会包含在浏览器可读取的资源中，不得设置机密。
 
 ## 5. 验收与产物
 

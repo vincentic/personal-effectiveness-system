@@ -55,9 +55,9 @@
 
 **旁白**：
 
-接下来要先分清项目目录。Go 和 Java 都有两种独立项目：一种是服务端渲染的单体页面版，另一种是 REST API 版。Django 是服务端页面应用；FastAPI 提供 REST API，也可以托管 Vue 的构建结果。Vue 本身则独立位于 `versions/vue/pms-vue`。
+接下来要先分清项目目录。Go、Java 和 Flask 都有两种独立项目：一种是服务端渲染的单体页面版，另一种是 REST API 版。Django 是服务端页面应用；FastAPI 提供 REST API，也可以托管 Vue 的构建结果。Vue 本身则独立位于 `versions/vue/pms-vue`。
 
-这意味着，访问页面有两种主要路径。第一种是浏览器直接请求 Go、Java 或 Django 的服务端页面，由后端生成 HTML。第二种是浏览器运行 Vue 单页应用，再通过 Bearer Token 调用 FastAPI、Gin API 或 Spring API。
+这意味着，访问页面有两种主要路径。第一种是浏览器直接请求 Go、Java、Django 或 Flask 单体版的服务端页面，由后端生成 HTML。第二种是浏览器运行 Vue 单页应用，再通过 Bearer Token 调用 FastAPI、Gin API、Spring API 或 Flask API。
 
 这些后端实现复用相同的业务数据结构和 API 契约，但不是一个运行时里的六个微服务。它们是可以分别选择、构建和部署的实现。对跨版本协作而言，最重要的连接点是 `db/schema.sql` 的数据结构，以及[REST API 契约](../data/api-contract.md)。
 

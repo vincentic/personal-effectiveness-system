@@ -1,6 +1,6 @@
 # Vue 共享前端搭建过程详解
 
-本文介绍如何独立安装、开发、测试和构建共享 Vue 3 前端。Vue 项目不自带业务数据库或 API 服务；启动前需要选择并运行 FastAPI、Gin API 或 Spring Boot API 之一。
+本文介绍如何独立安装、开发、测试和构建共享 Vue 3 前端。Vue 项目不自带业务数据库或 API 服务；启动前需要选择并运行 FastAPI、Gin API、Spring Boot API 或 Flask API 之一。
 
 ## 1. 环境准备
 
@@ -9,6 +9,7 @@
   - FastAPI：默认 `http://127.0.0.1:8000`
   - Spring Boot API：默认 `http://127.0.0.1:8080`
   - Gin API：默认 `http://127.0.0.1:8081`
+  - Flask API：默认 `http://127.0.0.1:8002`
 
 各后端的环境和数据库准备步骤见仓库根目录的[README.md](../../../../README.md)。
 
@@ -35,12 +36,14 @@ npm ci
 npm run dev
 ```
 
-打开 Vite 输出的本地地址。默认配置会将 `/api` 和 `/health` 请求代理到 FastAPI。若使用 Gin 或 Spring Boot，可临时指定目标：
+打开 Vite 输出的本地地址。默认配置会将 `/api` 和 `/health` 请求代理到 FastAPI。若使用其他 API，可临时指定目标：
 
 ```bash
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
 # 或
 VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
+# 或
+VITE_API_PROXY_TARGET=http://127.0.0.1:8002 npm run dev
 ```
 
 浏览器登录使用所连接后端的账号；账号、记录和业务校验均由后端负责。
@@ -72,3 +75,4 @@ npm run build
 - FastAPI 同源托管方式：[FastAPI 搭建详解](../../python/pms-fastapi/setup.md)
 - Go API：[Gin API 搭建详解](../../go/pms-gin-api/setup.md)
 - Java API：[Spring Boot API 搭建详解](../../java/pms-springboot-api/setup.md)
+- Flask API：[Flask API 搭建指南](../../python/pms-flask-api/setup.md)

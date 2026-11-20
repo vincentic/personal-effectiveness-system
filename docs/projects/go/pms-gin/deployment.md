@@ -223,3 +223,7 @@ ssh server 'sudo systemctl restart pms-gin'
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/login    # 200
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/         # 302 to /login when logged out
 ```
+
+## 八、Docker 与 Kubernetes
+
+容器端口仍为 `8081`，使用签名 Cookie 的服务端页面版；Kubernetes 可使用 TCP readiness / liveness probe。Docker 多阶段构建、Nginx Ingress、Secret、资源限制和回滚步骤见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
