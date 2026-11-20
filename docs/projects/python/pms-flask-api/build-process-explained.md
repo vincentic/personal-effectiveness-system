@@ -1,11 +1,11 @@
 # Flask API 版构建过程讲解
 
-该项目是 Flask 版 REST 服务，负责认证、业务字段验证、用户隔离与 v2 MySQL 读写；Vue 前端仍是独立工程。
+该项目是 Flask 版 REST 服务，负责认证、业务字段验证、用户隔离与 v2 MySQL 读写；React 前端仍是独立工程。
 
 ## 1. 请求生命周期
 
 ```text
-Vue → Flask 路由 → Bearer Token 验签 → 重新加载当前用户
+React → Flask 路由 → Bearer Token 验签 → 重新加载当前用户
                   → Pydantic 校验请求体
                   → 参数化 SQL / MySQL 事务
                   → 与 API 契约一致的 JSON 响应
@@ -26,7 +26,7 @@ Vue → Flask 路由 → Bearer Token 验签 → 重新加载当前用户
 
 ## 3. 构建与验证
 
-Flask API 不需要编译步骤。安装依赖后，Gunicorn 加载 `app:app`；Vue 可由 Nginx 或静态托管独立发布。
+Flask API 不需要编译步骤。安装依赖后，Gunicorn 加载 `app:app`；React 可由 Nginx 或静态托管独立发布。
 
 ```bash
 pip install -r requirements.txt

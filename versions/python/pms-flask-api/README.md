@@ -1,6 +1,6 @@
 # PMS Flask API 版
 
-Flask API 版提供个人效能系统 v2 的 REST API，可直接连接仓库中的共享 Vue 前端。它与 FastAPI、Gin API 和 Spring Boot API 共用 MySQL schema、BCrypt 密码格式、HMAC-SHA256 Bearer Token 与 `/api/**` 契约。
+Flask API 版提供个人效能系统 v2 的 REST API，可直接连接仓库中的共享 React 前端。它与 FastAPI、Gin API 和 Spring Boot API 共用 MySQL schema、BCrypt 密码格式、HMAC-SHA256 Bearer Token 与 `/api/**` 契约。
 
 ## 快速开始
 
@@ -18,13 +18,13 @@ pip install -r requirements.txt
 
 应用启动时会幂等初始化 v2 schema；只有 `users` 表为空时才创建 `.env` 中的默认管理员。开发 API 地址为 <http://127.0.0.1:8002/>，健康检查为 `/health`。
 
-在 `versions/vue/pms-vue/` 启动共享前端时，将 API 代理目标设为 Flask：
+在 `versions/react/pms-react/` 启动共享前端时，将 API 代理目标设为 Flask：
 
 ```bash
 VITE_API_PROXY_TARGET=http://127.0.0.1:8002 npm run dev
 ```
 
-共享 API 的请求/响应字段、权限边界和错误格式见[REST API 契约](../../../docs/data/api-contract.md)；项目的安装、构建和生产部署步骤见[搭建指南](../../../docs/projects/python/pms-flask-api/setup.md)、[构建过程讲解](../../../docs/projects/python/pms-flask-api/build-process-explained.md)和[部署指南](../../../docs/projects/python/pms-flask-api/deployment.md)。
+共享 API 的请求/响应字段、权限边界和错误格式见REST API 契约；项目的安装、构建和生产部署步骤见[搭建指南](../../../docs/projects/python/pms-flask-api/setup.md)、[构建过程讲解](../../../docs/projects/python/pms-flask-api/build-process-explained.md)和[部署指南](../../../docs/projects/python/pms-flask-api/deployment.md)。
 
 ## 配置
 

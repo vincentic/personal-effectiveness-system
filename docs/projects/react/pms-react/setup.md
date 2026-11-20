@@ -46,7 +46,7 @@ VITE_API_PROXY_TARGET=http://127.0.0.1:8080 pnpm dev
 VITE_API_PROXY_TARGET=http://127.0.0.1:8002 pnpm dev
 ```
 
-浏览器使用所连接后端的账号登录；账号、记录和业务校验均由后端负责。Vue 前端的默认端口为 5173，React 使用 5174，两个开发服务器可以同时启动。
+浏览器使用所连接后端的账号登录；账号、记录和业务校验均由后端负责。React 前端的默认端口为 5173，React 使用 5174，两个开发服务器可以同时启动。
 
 ## 4. 测试、类型检查和构建
 
@@ -57,7 +57,7 @@ pnpm run lint
 pnpm run build
 ```
 
-构建会先执行 TypeScript 项目引用检查，再由 Vite 生成 `dist/` 中的静态文件。React 与 Vue 页面使用相同的 API 字段和认证契约，但各自独立打包。
+构建会先执行 TypeScript 项目引用检查，再由 Vite 生成 `dist/` 中的静态文件。React 与 React 页面使用相同的 API 字段和认证契约，但各自独立打包。
 
 若将 React 部署到独立静态站点，在构建前设置 `VITE_API_BASE_URL` 为 API origin，并在 API 后端配置允许的 CORS 来源。
 
@@ -72,6 +72,6 @@ pnpm run build
 ## 6. 关联资料
 
 - React 源码和测试：[src/](../../../../versions/react/pms-react/src/)
-- Vue 共享前端：[Vue 项目](../../../../versions/vue/pms-vue/)
-- API 数据结构与请求契约：[API 契约](../../../data/api-contract.md)
-- 多语言容器部署：[Docker + Kubernetes 指南](../../../guides/container-deployment.md)
+- React 共享前端：[React 项目](../../../../versions/react/pms-react/)
+- API 数据结构与请求契约：API 契约
+- 多语言容器部署：Docker + Kubernetes 指南
