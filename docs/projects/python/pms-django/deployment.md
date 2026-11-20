@@ -1,6 +1,6 @@
 # 项目管理系统部署文档
 
-基于 **Python 3.10+ / Django 4.2 / MySQL 8.0** 的简单项目管理系统。
+基于 **Python 3.10+ / Django 4.2 / MySQL 8.0** 的简单项目管理系统。构建与迁移过程详见[构建过程讲解](build-process-explained.md)。
 
 ---
 
@@ -19,8 +19,6 @@ versions/python/pms-django/ # 仓库内按服务端语言归档的 Django 版目
 ├── manage.py                 # Django 管理入口
 ├── requirements.txt          # Python 依赖
 ├── .env.example              # 环境变量示例（复制为 .env 使用）
-├── ../../../docs/projects/python/pms-django/deployment.md # 基础部署指南（本文）
-├── ../../../docs/projects/python/pms-django/hot-deployment.md # 不停机发布指南
 ├── README.md                 # 项目说明（另有 zh-CN / zh-TW / en 多语言版）
 ├── deploy/                   # 生产部署与热部署配置
 │   ├── gunicorn.conf.py      # Gunicorn 生产配置（优雅重载参数）

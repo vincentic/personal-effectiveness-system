@@ -2,7 +2,7 @@
 
 Standalone Java/Spring Boot REST API for the personal effectiveness system. The server-rendered Spring Boot monolith lives separately in `../pms-springboot`; both services implement the shared contract in [`../../../docs/data/api-contract.md`](../../../docs/data/api-contract.md) and use the shared MySQL schema.
 
-搭建步骤见[搭建指南](../../../docs/projects/java/pms-springboot-api/setup.md)。
+搭建步骤见[搭建指南](../../../docs/projects/java/pms-springboot-api/setup.md)，构建说明见[构建过程讲解](../../../docs/projects/java/pms-springboot-api/build-process-explained.md)，生产发布见[部署指南](../../../docs/projects/java/pms-springboot-api/deployment.md)。
 
 ## Run
 

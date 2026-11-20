@@ -2,7 +2,7 @@
 
 Spring Boot 3.2, Thymeleaf, Spring Security, JdbcTemplate, and MySQL. This project is the monolithic server-rendered page version with PC and mobile views; it does not expose the REST API. The standalone API service is in [`../pms-springboot-api/`](../pms-springboot-api/README.md). Both versions share the database schema.
 
-搭建步骤见[搭建指南](../../../docs/projects/java/pms-springboot/setup.md)；工程设计与实现讲解见[搭建过程讲解](../../../docs/projects/java/pms-springboot/build-process-explained.md)。
+搭建步骤见[搭建指南](../../../docs/projects/java/pms-springboot/setup.md)；工程设计与实现讲解见[搭建过程讲解](../../../docs/projects/java/pms-springboot/build-process-explained.md)；生产发布见[部署指南](../../../docs/projects/java/pms-springboot/deployment.md)。
 
 ## Run
 

@@ -1,7 +1,7 @@
 # PMS Spring Boot 单体版部署文档
 
 基于 **JDK 17 / Spring Boot 3.2.5 / Maven 3.8+ / MySQL 8.0** 的个人效能系统 Spring Boot 版（v2）。
-本目录仅提供日/周/月服务端页面；独立 REST API 项目见 [`../pms-springboot-api/`](../../../../versions/java/pms-springboot-api/README.md)。
+本目录仅提供日/周/月服务端页面；独立 REST API 项目见 [`../pms-springboot-api/`](../../../../versions/java/pms-springboot-api/README.md)。构建过程详见[构建过程讲解](build-process-explained.md)。
 
 ---
 
@@ -22,7 +22,6 @@ versions/java/pms-springboot/
 ├── pom.xml                          # Maven 构建（Spring Boot 3.2.5 / Java 17）
 ├── .env.example                     # 环境变量示例（复制为 .env，start.sh 自动加载）
 ├── start.sh                         # 便捷启动脚本
-├── ../../../docs/projects/go/pms-gin/deployment.md # 本文（集中归档）
 ├── sql/schema.sql                   # 建表脚本副本（与 db/schema.sql 一致）
 └── src/main/
     ├── java/com/example/pms/        # 应用源码

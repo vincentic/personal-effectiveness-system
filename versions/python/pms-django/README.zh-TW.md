@@ -5,6 +5,7 @@
 以 **Django 4.2 + MySQL** 打造的輕量級專案與任務管理系統。提供帳號認證、工作臺統計概覽、專案管理、成員管理、任務看板（待處理 / 進行中 / 已完成）以及 Django Admin 後台。介面為中文，使用 Bootstrap 5，預設時區 `Asia/Shanghai`。
 
 > 正式環境部署（Gunicorn + Nginx + systemd）與常見問題排查，請見 [部署指南](../../../docs/projects/python/pms-django/deployment.md)（簡體中文）。架構設計見[第 3 節](#3-架構設計)。
+> 建置、遷移與靜態檔案收集流程見[建置過程講解](../../../docs/projects/python/pms-django/build-process-explained.md)（簡體中文）。
 
 ---
 

@@ -2,7 +2,7 @@
 
 FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。系统与 Django、Spring Boot、Gin 版共用 v2 数据模型和账号数据，并与独立的 Spring Boot API / Gin API 共用 REST API 与 Token 契约；数据按当前用户隔离。
 
-本地环境、前端构建和启动步骤见[搭建指南](../../../docs/projects/python/pms-fastapi/setup.md)。
+本地环境和启动步骤见[搭建指南](../../../docs/projects/python/pms-fastapi/setup.md)，前后端构建流程见[构建过程讲解](../../../docs/projects/python/pms-fastapi/build-process-explained.md)，生产发布见[部署指南](../../../docs/projects/python/pms-fastapi/deployment.md)。
 
 ## 业务场景
 

@@ -1,7 +1,7 @@
 # PMS Gin 单体版部署文档
 
 基于 **Go 1.22+（本机实测 1.27.4，通过 gvm 安装）/ Gin 1.10 / database/sql / MySQL 8.0** 的项目管理系统 Gin 版。
-本目录仅提供服务端页面；独立 REST API 项目见 [`../pms-gin-api/`](../../../../versions/go/pms-gin-api/README.md)。
+本目录仅提供服务端页面；独立 REST API 项目见 [`../pms-gin-api/`](../../../../versions/go/pms-gin-api/README.md)。构建过程详见[构建过程讲解](build-process-explained.md)。
 
 ---
 
@@ -21,7 +21,6 @@ versions/go/pms-gin/
 ├── main.go                          # 入口：embed 资源、初始化、启动
 ├── .env.example                     # 环境变量示例
 ├── start.sh                         # 便捷启动（自动 tidy、加载 .env）
-├── ../../../docs/projects/go/pms-gin/deployment.md # 本文（集中归档）
 ├── sql/schema.sql                   # 内嵌建表脚本（go:embed）
 ├── internal/
 │   ├── config/                      # .env 加载与配置
@@ -117,9 +116,11 @@ go mod tidy && go run .
 ### 3. 编译生产二进制
 
 ```bash
-CGO_ENABLED=0 go build -o pms-gin .
-# 产物 pms-gin 为静态二进制，直接分发即可（已内嵌 templates/static/sql）
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -o pms-gin .
+# 产物 pms-gin 适用于 Linux x86-64（ARM64 目标改用 GOARCH=arm64）
 ```
+
+也可在目标服务器本机编译，以自动匹配服务器架构。
 
 ## 五、生产环境部署（Linux + systemd + Nginx）
 
@@ -198,8 +199,8 @@ sudo nginx -t && sudo systemctl reload nginx
 ### 4. 更新发布
 
 ```bash
-# 本机重新编译后上传
-CGO_ENABLED=0 go build -o pms-gin .
+# 为 Linux x86-64 重新编译后上传；ARM64 目标改用 GOARCH=arm64
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -o pms-gin .
 scp pms-gin server:/opt/pms-gin/pms-gin
 ssh server 'sudo systemctl restart pms-gin'
 ```

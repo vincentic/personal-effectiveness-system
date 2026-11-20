@@ -1,6 +1,6 @@
 # PMS Spring Boot 单体版搭建过程讲解
 
-本文结合当前 `pms-springboot` 单体项目的代码，介绍从工程骨架到可运行应用的搭建思路。项目采用 Java 17、Spring Boot 3.2.5、Maven、MySQL 和 Thymeleaf，仅提供服务端页面。独立 REST API 项目位于 [`../pms-springboot-api/`](../../../../versions/java/pms-springboot-api/README.md)。
+本文结合当前 `pms-springboot` 单体项目的代码，介绍从工程骨架到可运行应用的搭建思路。项目采用 Java 17、Spring Boot 3.2.5、Maven、MySQL 和 Thymeleaf，仅提供服务端页面。独立 REST API 项目位于 [`../pms-springboot-api/`](../../../../versions/java/pms-springboot-api/README.md)。本地环境见[搭建指南](setup.md)，生产运行见[部署指南](deployment.md)。
 
 ## 1. 软件需求梳理
 

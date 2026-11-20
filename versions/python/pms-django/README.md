@@ -7,6 +7,7 @@
 > 生产环境部署（Gunicorn + Nginx + systemd）与常见问题排查，见[部署指南](../../../docs/projects/python/pms-django/deployment.md)。架构设计见 [第 3 节](#3-架构设计)。
 >
 > 本地环境准备、数据库配置和启动步骤见[搭建指南](../../../docs/projects/python/pms-django/setup.md)。
+> 构建与发布流程见[构建过程讲解](../../../docs/projects/python/pms-django/build-process-explained.md)。
 
 ---
 

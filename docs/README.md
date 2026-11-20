@@ -34,18 +34,19 @@
 
 项目 README 保留在源码目录；详细搭建、部署和工程讲解统一存放于 `docs/projects/`。
 
-| 语言 | 项目 | 搭建指南 | 部署 / 延伸文档 |
-|------|------|----------|----------------|
-| Go | Gin 页面单体版 | [setup](projects/go/pms-gin/setup.md) | [部署](projects/go/pms-gin/deployment.md) |
-| Go | Gin REST API | [setup](projects/go/pms-gin-api/setup.md) | — |
-| Java | Spring Boot 页面单体版 | [setup](projects/java/pms-springboot/setup.md) | [部署](projects/java/pms-springboot/deployment.md) · [搭建过程讲解](projects/java/pms-springboot/build-process-explained.md) |
-| Java | Spring Boot REST API | [setup](projects/java/pms-springboot-api/setup.md) | — |
-| Python | Django 页面版 | [setup](projects/python/pms-django/setup.md) | [部署](projects/python/pms-django/deployment.md) · [不停机发布](projects/python/pms-django/hot-deployment.md) |
-| Python | FastAPI + Vue 同源版 | [setup](projects/python/pms-fastapi/setup.md) | [部署](projects/python/pms-fastapi/deployment.md) |
-| Vue | 共享 Vue 前端 | [setup](projects/vue/pms-vue/setup.md) | — |
+| 语言 | 项目 | 搭建指南 | 构建过程讲解 | 部署指南 |
+|------|------|----------|--------------|----------|
+| Go | Gin 页面单体版 | [搭建](projects/go/pms-gin/setup.md) | [构建讲解](projects/go/pms-gin/build-process-explained.md) | [部署](projects/go/pms-gin/deployment.md) |
+| Go | Gin REST API | [搭建](projects/go/pms-gin-api/setup.md) | [构建讲解](projects/go/pms-gin-api/build-process-explained.md) | [部署](projects/go/pms-gin-api/deployment.md) |
+| Java | Spring Boot 页面单体版 | [搭建](projects/java/pms-springboot/setup.md) | [构建讲解](projects/java/pms-springboot/build-process-explained.md) | [部署](projects/java/pms-springboot/deployment.md) |
+| Java | Spring Boot REST API | [搭建](projects/java/pms-springboot-api/setup.md) | [构建讲解](projects/java/pms-springboot-api/build-process-explained.md) | [部署](projects/java/pms-springboot-api/deployment.md) |
+| Python | Django 页面版 | [搭建](projects/python/pms-django/setup.md) | [构建讲解](projects/python/pms-django/build-process-explained.md) | [部署](projects/python/pms-django/deployment.md) · [不停机发布](projects/python/pms-django/hot-deployment.md) |
+| Python | FastAPI + Vue 同源版 | [搭建](projects/python/pms-fastapi/setup.md) | [构建讲解](projects/python/pms-fastapi/build-process-explained.md) | [部署](projects/python/pms-fastapi/deployment.md) |
+| Vue | 共享 Vue 前端 | [搭建](projects/vue/pms-vue/setup.md) | [构建讲解](projects/vue/pms-vue/build-process-explained.md) | [部署](projects/vue/pms-vue/deployment.md) |
 
 ## 文档位置约定
 
 - 项目专属详细文档放在 `docs/projects/<语言>/<项目>/`，以 `setup.md`、`deployment.md` 等名称区分用途。
+- 每个项目均提供构建过程讲解和部署指南；Java 页面单体版的构建讲解同时涵盖架构与实现脉络。
 - 可直接运行的源码与项目 README 仍保留在 `versions/`，避免把开发入口和代码分离。
 - 数据库 SQL 保留在 `db/`；其设计说明和 API 契约归档在本目录的 `data/`。

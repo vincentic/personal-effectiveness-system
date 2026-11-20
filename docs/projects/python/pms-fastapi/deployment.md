@@ -1,7 +1,7 @@
 # PMS FastAPI 版部署文档
 
 基于 **Python 3.10+ / FastAPI / Vue 3 / Uvicorn / PyMySQL / MySQL 8.0** 的项目管理系统 FastAPI 版。
-Vue 源码独立位于 `versions/vue/pms-vue/`，构建后由 FastAPI 同源提供；REST API 提供交互式文档 `/docs`，与 Spring Boot / Gin 版共用数据库表和 Token 契约。
+Vue 源码独立位于 `versions/vue/pms-vue/`，构建后由 FastAPI 同源提供；REST API 提供交互式文档 `/docs`，与 Spring Boot / Gin 版共用数据库表和 Token 契约。前后端构建过程详见[构建过程讲解](build-process-explained.md)。
 
 ---
 
@@ -21,7 +21,6 @@ versions/python/pms-fastapi/
 ├── requirements.txt                 # Python 依赖
 ├── .env.example                     # 环境变量示例
 ├── start.sh                         # 便捷启动（开发模式，带 --reload）
-├── ../../../docs/projects/go/pms-gin/deployment.md # 本文（集中归档）
 ├── sql/schema.sql                   # 建表脚本副本（与 db/schema.sql 一致）
 └── app/
     ├── main.py                      # 应用入口、全部 API 路由

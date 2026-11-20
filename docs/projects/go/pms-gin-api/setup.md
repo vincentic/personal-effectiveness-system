@@ -43,7 +43,7 @@ npm ci
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
 ```
 
-访问 Vite 输出的本地地址。开发代理会把 `/api` 和 `/health` 请求转发给 Gin API；浏览器因此无需直接跨域访问后端。若只检查 API，可参考共享契约 [API 契约](../../../data/api-contract.md) 并调用认证、健康或业务端点。
+访问 Vite 输出的本地地址。开发代理会把 `/api` 和 `/health` 请求转发给 Gin API；浏览器因此无需直接跨域访问后端。若只检查 API，可参考共享契约 [API 契约](../../../data/api-contract.md) 并调用认证或业务端点。Gin API 当前没有单独的 `/health` 路由。
 
 ## 4. 验证与构建
 

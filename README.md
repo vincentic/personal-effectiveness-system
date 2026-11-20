@@ -155,28 +155,17 @@ pms/
 
 ## 七、部署文档与项目搭建指南
 
-下表列出各独立应用的搭建指南，涵盖依赖准备、数据库与环境变量配置、启动方式和验证命令。
+下表为各独立应用提供搭建、构建过程讲解和部署入口；所有文档集中在 `docs/projects/`，详情也可从[文档中心](docs/README.md)按项目浏览。
 
-| 项目 | 搭建指南 |
-|------|----------|
-| Go Gin 单体页面版 | [搭建指南](docs/projects/go/pms-gin/setup.md) |
-| Go Gin REST API | [搭建指南](docs/projects/go/pms-gin-api/setup.md) |
-| Java Spring Boot 单体页面版 | [搭建指南](docs/projects/java/pms-springboot/setup.md) |
-| Java Spring Boot REST API | [搭建指南](docs/projects/java/pms-springboot-api/setup.md) |
-| Python Django 页面版 | [搭建指南](docs/projects/python/pms-django/setup.md) |
-| Python FastAPI + Vue 同源版 | [搭建指南](docs/projects/python/pms-fastapi/setup.md) |
-| Vue 共享前端 | [搭建指南](docs/projects/vue/pms-vue/setup.md) |
-
-生产环境部署细节另见下表：
-
-| 服务端语言 | 实现 | 部署文档 |
-|------------|------|---------|
-| Python | Django | [部署指南](docs/projects/python/pms-django/deployment.md) · [热部署指南](docs/projects/python/pms-django/hot-deployment.md)（不停机发布） |
-| Java | Spring Boot 单体页面版 | [部署指南](docs/projects/java/pms-springboot/deployment.md) |
-| Java | Spring Boot REST API | [README.md](versions/java/pms-springboot-api/README.md) |
-| Go | Gin 单体页面版 | [部署指南](docs/projects/go/pms-gin/deployment.md) |
-| Go | Gin REST API | [README.md](versions/go/pms-gin-api/README.md) |
-| Python | FastAPI + Vue | [部署指南](docs/projects/python/pms-fastapi/deployment.md) |
+| 项目 | 搭建指南 | 构建过程讲解 | 部署指南 |
+|------|----------|--------------|----------|
+| Go Gin 单体页面版 | [搭建](docs/projects/go/pms-gin/setup.md) | [构建讲解](docs/projects/go/pms-gin/build-process-explained.md) | [部署](docs/projects/go/pms-gin/deployment.md) |
+| Go Gin REST API | [搭建](docs/projects/go/pms-gin-api/setup.md) | [构建讲解](docs/projects/go/pms-gin-api/build-process-explained.md) | [部署](docs/projects/go/pms-gin-api/deployment.md) |
+| Java Spring Boot 单体页面版 | [搭建](docs/projects/java/pms-springboot/setup.md) | [构建讲解](docs/projects/java/pms-springboot/build-process-explained.md) | [部署](docs/projects/java/pms-springboot/deployment.md) |
+| Java Spring Boot REST API | [搭建](docs/projects/java/pms-springboot-api/setup.md) | [构建讲解](docs/projects/java/pms-springboot-api/build-process-explained.md) | [部署](docs/projects/java/pms-springboot-api/deployment.md) |
+| Python Django 页面版 | [搭建](docs/projects/python/pms-django/setup.md) | [构建讲解](docs/projects/python/pms-django/build-process-explained.md) | [部署](docs/projects/python/pms-django/deployment.md) · [不停机发布](docs/projects/python/pms-django/hot-deployment.md) |
+| Python FastAPI + Vue 同源版 | [搭建](docs/projects/python/pms-fastapi/setup.md) | [构建讲解](docs/projects/python/pms-fastapi/build-process-explained.md) | [部署](docs/projects/python/pms-fastapi/deployment.md) |
+| Vue 共享前端 | [搭建](docs/projects/vue/pms-vue/setup.md) | [构建讲解](docs/projects/vue/pms-vue/build-process-explained.md) | [部署](docs/projects/vue/pms-vue/deployment.md) |
 
 > 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
 
