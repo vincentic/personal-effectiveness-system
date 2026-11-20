@@ -1,6 +1,6 @@
 # PMS Spring Boot 单体版搭建过程讲解
 
-本文结合当前 `pms-springboot` 单体项目的代码，介绍从工程骨架到可运行应用的搭建思路。项目采用 Java 17、Spring Boot 3.2.5、Maven、MySQL 和 Thymeleaf，仅提供服务端页面。独立 REST API 项目位于 [`../pms-springboot-api/`](../pms-springboot-api/README.md)。
+本文结合当前 `pms-springboot` 单体项目的代码，介绍从工程骨架到可运行应用的搭建思路。项目采用 Java 17、Spring Boot 3.2.5、Maven、MySQL 和 Thymeleaf，仅提供服务端页面。独立 REST API 项目位于 [`../pms-springboot-api/`](../../../../versions/java/pms-springboot-api/README.md)。
 
 ## 1. 软件需求梳理
 
@@ -73,13 +73,13 @@ Repository / JdbcTemplate
 
 | 模块 | 职责 | 代码位置 |
 |---|---|---|
-| Web 入口 | 页面路由、表单 DTO、结果展示 | [`web/`](./src/main/java/com/example/pms/web) |
-| 领域对象 | 表达用户、日/周/月记录及其明细 | [`domain/`](./src/main/java/com/example/pms/domain) |
-| 数据访问 | 通过 `JdbcTemplate` 执行 SQL、映射结果、管理相关事务 | [`repo/`](./src/main/java/com/example/pms/repo) |
-| 横切支持 | 当前用户、页面视图选择、启动初始化等公共能力 | [`support/`](./src/main/java/com/example/pms/support) |
-| 安全配置 | Session 登录、角色边界、CSRF 规则和密码编码器 | [`SecurityConfig.java`](./src/main/java/com/example/pms/config/SecurityConfig.java) |
-| 页面与静态资源 | Thymeleaf 模板、CSS 和浏览器资源 | [`templates/`](./src/main/resources/templates)、[`static/`](./src/main/resources/static) |
-| 配置与表结构 | 环境配置及启动时初始化的 SQL | [`application.yml`](./src/main/resources/application.yml)、[`schema.sql`](./src/main/resources/schema.sql) |
+| Web 入口 | 页面路由、表单 DTO、结果展示 | [`web/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/web) |
+| 领域对象 | 表达用户、日/周/月记录及其明细 | [`domain/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/domain) |
+| 数据访问 | 通过 `JdbcTemplate` 执行 SQL、映射结果、管理相关事务 | [`repo/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/repo) |
+| 横切支持 | 当前用户、页面视图选择、启动初始化等公共能力 | [`support/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/support) |
+| 安全配置 | Session 登录、角色边界、CSRF 规则和密码编码器 | [`SecurityConfig.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/config/SecurityConfig.java) |
+| 页面与静态资源 | Thymeleaf 模板、CSS 和浏览器资源 | [`templates/`](../../../../versions/java/pms-springboot/src/main/resources/templates)、[`static/`](../../../../versions/java/pms-springboot/src/main/resources/static) |
+| 配置与表结构 | 环境配置及启动时初始化的 SQL | [`application.yml`](../../../../versions/java/pms-springboot/src/main/resources/application.yml)、[`schema.sql`](../../../../versions/java/pms-springboot/src/main/resources/schema.sql) |
 
 页面请求从 Controller 进入，Controller 负责请求绑定、校验和页面转换，再调用 Repository 读写数据；Repository 将结果组装成领域对象。当前实现没有独立的通用 Service 层，部分业务转换与校验由 Controller 和 Repository 分担。讲解当前架构时应反映这一实际结构，不能将不存在的服务层描述为既有模块。
 
@@ -124,7 +124,7 @@ MySQL
 
 ## 4. 创建 Maven 与 Spring Boot 工程骨架
 
-工程定义在 [`pom.xml`](./pom.xml) 中。Maven 的 Spring Boot parent 统一管理依赖版本，`java.version` 固定为 17。主要依赖各自承担以下职责：
+工程定义在 [`pom.xml`](../../../../versions/java/pms-springboot/pom.xml) 中。Maven 的 Spring Boot parent 统一管理依赖版本，`java.version` 固定为 17。主要依赖各自承担以下职责：
 
 | 依赖 | 用途 |
 |---|---|
@@ -136,11 +136,11 @@ MySQL
 | `mysql-connector-j` | MySQL JDBC 驱动 |
 | `spring-boot-starter-test` | 测试依赖 |
 
-[`PmsApplication.java`](./src/main/java/com/example/pms/PmsApplication.java) 是应用入口。`@SpringBootApplication` 开启自动配置和组件扫描，`SpringApplication.run(...)` 创建 Spring 容器并启动内嵌 Web 服务器。配置类、Controller、Repository 等组件都位于启动类所在包及其子包内，因此会自动被扫描。
+[`PmsApplication.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/PmsApplication.java) 是应用入口。`@SpringBootApplication` 开启自动配置和组件扫描，`SpringApplication.run(...)` 创建 Spring 容器并启动内嵌 Web 服务器。配置类、Controller、Repository 等组件都位于启动类所在包及其子包内，因此会自动被扫描。
 
 ## 5. 配置应用与数据库连接
 
-[`application.yml`](./src/main/resources/application.yml) 集中配置服务端口、MySQL 数据源、页面模板、静态资源、时区、数据库初始化和管理员参数。
+[`application.yml`](../../../../versions/java/pms-springboot/src/main/resources/application.yml) 集中配置服务端口、MySQL 数据源、页面模板、静态资源、时区、数据库初始化和管理员参数。
 
 配置项使用 `${环境变量:默认值}` 的形式，例如：
 
@@ -149,11 +149,11 @@ server:
   port: ${SERVER_PORT:8080}
 ```
 
-这种写法让开发环境可以直接使用默认值，也可以通过环境变量覆盖。环境变量示例见 [`.env.example`](./.env.example)，正式部署时应更换默认管理员密码，并避免将真实密码提交到版本库。
+这种写法让开发环境可以直接使用默认值，也可以通过环境变量覆盖。环境变量示例见 [`.env.example`](../../../../versions/java/pms-springboot/.env.example)，正式部署时应更换默认管理员密码，并避免将真实密码提交到版本库。
 
 ### `.env` 的加载方式
 
-[`start.sh`](./start.sh) 会先切换到项目目录，再导出 `.env` 中的值，最后执行 `mvn spring-boot:run`。因此：
+[`start.sh`](../../../../versions/java/pms-springboot/start.sh) 会先切换到项目目录，再导出 `.env` 中的值，最后执行 `mvn spring-boot:run`。因此：
 
 - 使用 `./start.sh` 时，项目目录下的 `.env` 会被自动加载。
 - 直接执行 `mvn spring-boot:run` 或 `java -jar ...` 时，Spring Boot 不会自动读取 `.env`；需要在启动环境中预先设置对应环境变量，或由部署平台注入。
@@ -162,7 +162,7 @@ server:
 
 ## 6. 定义数据表并初始化
 
-数据表结构在 [`src/main/resources/schema.sql`](./src/main/resources/schema.sql) 中。设计从每日、每周、每月三种业务记录出发，把稳定的主体信息与数量可变的明细拆开，并用外键表达从属关系。
+数据表结构在 [`src/main/resources/schema.sql`](../../../../versions/java/pms-springboot/src/main/resources/schema.sql) 中。设计从每日、每周、每月三种业务记录出发，把稳定的主体信息与数量可变的明细拆开，并用外键表达从属关系。
 
 ### 6.1 按业务周期划分主表
 
@@ -199,13 +199,13 @@ server:
 
 `application.yml` 中的 `spring.sql.init` 配置会在应用启动时执行 classpath 下的 `schema.sql`。建表语句使用 `CREATE TABLE IF NOT EXISTS`，所以重复启动不会重复创建已有表；但它不会为已经存在的表自动新增或修改列，后续结构变更应通过明确的数据库迁移处理。此处需要先创建数据库本身，应用初始化脚本负责创建表，而不是创建 MySQL 数据库。
 
-首次启动时，[`AppInitializer.java`](./src/main/java/com/example/pms/support/AppInitializer.java) 会检查 `users` 表：表为空才按配置创建默认管理员，并使用 BCrypt 保存密码；已有用户时不会再创建默认管理员。
+首次启动时，[`AppInitializer.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/support/AppInitializer.java) 会检查 `users` 表：表为空才按配置创建默认管理员，并使用 BCrypt 保存密码；已有用户时不会再创建默认管理员。
 
 ## 7. 建立数据访问与领域对象
 
-[`domain/`](./src/main/java/com/example/pms/domain) 中的类表达业务数据，例如 `DailyPlan` 表示每日计划，包含清单字段、时间盒明细和供页面展示的统计值。
+[`domain/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/domain) 中的类表达业务数据，例如 `DailyPlan` 表示每日计划，包含清单字段、时间盒明细和供页面展示的统计值。
 
-[`repo/DailyRepository.java`](./src/main/java/com/example/pms/repo/DailyRepository.java) 展示了典型的 JDBC 数据访问方式：
+[`repo/DailyRepository.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/repo/DailyRepository.java) 展示了典型的 JDBC 数据访问方式：
 
 1. 通过构造器注入 `JdbcTemplate`。
 2. 查询时以用户 ID 限定数据范围，再将查询结果映射为领域对象。
@@ -217,7 +217,7 @@ server:
 
 该设计使用共享数据库和共享业务表，通过 `user_id` 做逻辑隔离，而不是为每个用户建独立数据库或表：
 
-1. 页面请求由 [`CurrentUser.java`](./src/main/java/com/example/pms/support/CurrentUser.java) 从 Spring Security 的当前认证身份解析用户，并取回数据库中的用户 ID。
+1. 页面请求由 [`CurrentUser.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/support/CurrentUser.java) 从 Spring Security 的当前认证身份解析用户，并取回数据库中的用户 ID。
 2. API 项目从 Bearer Token 中校验签名和过期时间，再根据 Token 的 `uid` 读取用户；不能只相信客户端传来的用户 ID。
 3. Controller 将当前用户 ID 传给 Repository。主表的列表、按日期查询、按 ID 读取、更新和删除都同时使用记录 ID 与用户 ID；创建时也把当前用户 ID 写入记录。
 4. 明细表不重复保存 `user_id`，而是通过 `daily_plan_id`、`weekly_review_id` 或 `monthly_review_id` 隶属于主记录。业务入口先按当前用户取到主记录，再操作其明细；外键和级联删除保证关系一致。
@@ -227,7 +227,7 @@ server:
 
 ## 8. 实现页面请求与模板
 
-页面 Controller 放在 [`web/`](./src/main/java/com/example/pms/web)，模板位于 [`src/main/resources/templates/`](./src/main/resources/templates)。以 [`DailyController.java`](./src/main/java/com/example/pms/web/DailyController.java) 为例：
+页面 Controller 放在 [`web/`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/web)，模板位于 [`src/main/resources/templates/`](../../../../versions/java/pms-springboot/src/main/resources/templates)。以 [`DailyController.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/web/DailyController.java) 为例：
 
 1. `GET /daily/` 从 Repository 取出当前用户的计划，并放进 Model。
 2. `GET /daily/new/` 创建空表单数据，供 Thymeleaf 渲染。
@@ -239,14 +239,14 @@ DTO（`web/dto/`）负责承接和验证输入；领域对象负责表示应用�
 
 ## 9. 加入登录与权限
 
-[`SecurityConfig.java`](./src/main/java/com/example/pms/config/SecurityConfig.java) 定义页面安全边界：
+[`SecurityConfig.java`](../../../../versions/java/pms-springboot/src/main/java/com/example/pms/config/SecurityConfig.java) 定义页面安全边界：
 
 - 页面默认要求已登录；管理员页面 `/admin/**` 要求 `ADMIN` 角色。
 - `/login` 和静态资源对未登录用户开放；业务页面需登录。
 - 页面通过表单登录和 Session 维持登录状态，并保留 CSRF 防护。
 - 用户密码通过 BCrypt 编码和验证。
 
-API 登录、HMAC Token 和 REST 业务端点由独立的 [`pms-springboot-api`](../pms-springboot-api/README.md) 项目提供。
+API 登录、HMAC Token 和 REST 业务端点由独立的 [`pms-springboot-api`](../../../../versions/java/pms-springboot-api/README.md) 项目提供。
 
 ### 安全与多用户设计的边界
 
@@ -261,7 +261,7 @@ API 登录、HMAC Token 和 REST 业务端点由独立的 [`pms-springboot-api`]
 
 ## 10. 补充测试并运行
 
-项目测试位于 [`src/test/java/`](./src/test/java)。新增功能时，优先覆盖输入校验、业务计算、权限边界或数据转换等行为。
+项目测试位于 [`src/test/java/`](../../../../versions/java/pms-springboot/src/test/java)。新增功能时，优先覆盖输入校验、业务计算、权限边界或数据转换等行为。
 
 ### 开发环境启动
 

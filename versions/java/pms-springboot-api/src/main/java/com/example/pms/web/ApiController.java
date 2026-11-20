@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 与 Gin / FastAPI 版共用 db/API.md 契约的 REST API（v2 个人效能系统）。
+ * 与 Gin / FastAPI 版共用 docs/data/api-contract.md 契约的 REST API（v2 个人效能系统）。
  * 页面仍走 Session + CSRF；/api/** 走 HMAC Token 并豁免 CSRF。
  */
 @RestController

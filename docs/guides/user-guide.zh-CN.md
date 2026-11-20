@@ -2,8 +2,8 @@
 
 本指南帮助你用系统落地「日执行 → 周复盘 → 月重构」的效能闭环。系统有四个实现版本，共享数据模型；Django、Spring Boot、Gin 提供 PC / Mobile 页面，FastAPI 提供 Vue 3 响应式页面和 REST API，可按需要选用。
 
-- [English](user_guide.en.md) · [繁體中文](user_guide.zh-TW.md) · [日本語](user_guide.ja.md)
-- [返回项目 README](../README.md)
+- [English](user-guide.en.md) · [繁體中文](user-guide.zh-TW.md) · [日本語](user-guide.ja.md)
+- [返回项目 README](../../README.md)
 
 ## 1. 登录与双端切换
 
@@ -58,7 +58,7 @@
 Django / Spring Boot / Gin / FastAPI 四版共用同一个数据库和效能表结构，数据按账号隔离。FastAPI 与 Spring Boot / Gin 的 API Token 契约一致；页面版使用各自的会话机制。
 
 - **页面用户**：通过 Session / 签名 Cookie 登录，数据按账号隔离，看不到别人的清单。
-- **FastAPI 页面与 API 用户**：页面登录后由浏览器保存当前会话 Token；程序调用用 `POST /api/auth/login` 获取 Token，并在 `Authorization: Bearer <token>` 中携带。FastAPI、Spring Boot、Gin 的 Token 可互通。完整端点见 [API 契约](../db/API.md)。
+- **FastAPI 页面与 API 用户**：页面登录后由浏览器保存当前会话 Token；程序调用用 `POST /api/auth/login` 获取 Token，并在 `Authorization: Bearer <token>` 中携带。FastAPI、Spring Boot、Gin 的 Token 可互通。完整端点见 [API 契约](../data/api-contract.md)。
 - 默认端口：Spring Boot 8080、Gin 8081、FastAPI 8000；Django 与 FastAPI 同为 8000，同启时需错开。
 
 ## 6. 常见问题

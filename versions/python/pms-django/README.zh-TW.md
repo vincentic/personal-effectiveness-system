@@ -4,7 +4,7 @@
 
 以 **Django 4.2 + MySQL** 打造的輕量級專案與任務管理系統。提供帳號認證、工作臺統計概覽、專案管理、成員管理、任務看板（待處理 / 進行中 / 已完成）以及 Django Admin 後台。介面為中文，使用 Bootstrap 5，預設時區 `Asia/Shanghai`。
 
-> 正式環境部署（Gunicorn + Nginx + systemd）與常見問題排查，請見 [部署文档.md](部署文档.md)（簡體中文）。架構設計見[第 3 節](#3-架構設計)。
+> 正式環境部署（Gunicorn + Nginx + systemd）與常見問題排查，請見 [部署指南](../../../docs/projects/python/pms-django/deployment.md)（簡體中文）。架構設計見[第 3 節](#3-架構設計)。
 
 ---
 
@@ -165,7 +165,7 @@ flowchart LR
 CREATE DATABASE pms DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-如需專用帳號，可參考 [部署文档.md](部署文档.md) 第三節的建立使用者與授權 SQL。
+如需專用帳號，可參考 [部署指南](../../../docs/projects/python/pms-django/deployment.md) 第三節的建立使用者與授權 SQL。
 
 **② 建立虛擬環境並安裝依賴**
 
@@ -224,8 +224,8 @@ pms/
 ├── manage.py                     # Django 管理入口
 ├── requirements.txt              # Python 依賴
 ├── .env.example                  # 環境變數範例（複製為 .env 使用）
-├── 部署文档.md                    # 簡體中文詳細部署與除錯文件
-├── 热部署文档.md                  # 不停機發布（HUP 優雅重載）文件
+├── ../../../docs/projects/python/pms-django/deployment.md # 簡體中文部署與除錯指南
+├── ../../../docs/projects/python/pms-django/hot-deployment.md # 不停機發布指南
 ├── README.md / README.zh-CN.md / README.zh-TW.md / README.en.md
 ├── deploy/                       # 正式環境與熱部署設定
 │   ├── gunicorn.conf.py          # Gunicorn 優雅重載參數
@@ -276,9 +276,9 @@ pms/
 - 啟動應用：`gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3`。
 - 由 Nginx 反向代理應用，並直接託管 `/static/`。
 
-完整的 systemd 服務設定、Nginx 設定範例與除錯對照表，請見 [部署文档.md](部署文档.md) 第五、六節。
+完整的 systemd 服務設定、Nginx 設定範例與除錯對照表，請見 [部署指南](../../../docs/projects/python/pms-django/deployment.md) 第五、六節。
 
-**熱部署（不停機發布）**：`deploy/pms.service` 以 `ExecReload=/bin/kill -HUP $MAINPID` 觸發 Gunicorn 優雅重載；日常發布執行 `./deploy/hot-deploy.sh`（可先加 `--dry-run` 演練），指令稿依序完成程式碼拉取、依賴安裝、`migrate`、`collectstatic`、HUP 重載與 `/login/` 健康檢查，全程不中斷，Nginx 無須 reload。前提是 `preload_app = False` 且資料庫遷移向後相容；詳見 [热部署文档.md](热部署文档.md)。
+**熱部署（不停機發布）**：`deploy/pms.service` 以 `ExecReload=/bin/kill -HUP $MAINPID` 觸發 Gunicorn 優雅重載；日常發布執行 `./deploy/hot-deploy.sh`（可先加 `--dry-run` 演練），指令稿依序完成程式碼拉取、依賴安裝、`migrate`、`collectstatic`、HUP 重載與 `/login/` 健康檢查，全程不中斷，Nginx 無須 reload。前提是 `preload_app = False` 且資料庫遷移向後相容；詳見 [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md)。
 
 本機開發可直接用 `./deploy/local-hot.sh`：預設執行 HUP 熱重載，`watch` 子命令監聽 `.py` / `.html` / `.css` 變化自動重載，另有 `start` / `status` / `stop`；無須 systemd、sudo 或額外監聽工具，詳見該文件第十節。
 
@@ -301,8 +301,8 @@ python manage.py test
 
 | 文件 | 內容 |
 |------|------|
-| [部署文档.md](部署文档.md) | 環境準備、建庫 SQL、正式環境部署、常見問題、後續擴充建議（簡體中文） |
-| [热部署文档.md](热部署文档.md) | Gunicorn HUP 優雅重載、一鍵發布指令稿、回滾與除錯（簡體中文） |
+| [部署指南](../../../docs/projects/python/pms-django/deployment.md) | 環境準備、建庫 SQL、正式環境部署、常見問題、後續擴充建議（簡體中文） |
+| [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md) | Gunicorn HUP 優雅重載、一鍵發布指令稿、回滾與除錯（簡體中文） |
 | [README.md](README.md) | 簡體中文（預設入口） |
 | [README.zh-CN.md](README.zh-CN.md) | 簡體中文（依語言代碼命名的副本） |
 | [README.zh-TW.md](README.zh-TW.md) | 繁體中文版 |

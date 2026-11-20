@@ -1,6 +1,6 @@
 # Spring Boot 单体页面版搭建过程详解
 
-本文说明如何本地搭建 Spring Boot + Thymeleaf 服务端页面版本。该项目提供 PC / Mobile 页面和 Session 登录，不是 REST API 服务；API 项目见 [`../pms-springboot-api/`](../pms-springboot-api/搭建过程详解.md)。
+本文说明如何本地搭建 Spring Boot + Thymeleaf 服务端页面版本。该项目提供 PC / Mobile 页面和 Session 登录，不是 REST API 服务；API 项目见 [`../pms-springboot-api/`](../pms-springboot-api/setup.md)。
 
 ## 1. 环境准备
 
@@ -60,7 +60,7 @@ java -jar target/pms-springboot-1.0.0.jar
 
 ## 6. 关联资料
 
-- 项目说明：[README.md](README.md)
-- 生产部署：[部署文档.md](部署文档.md)
-- 更完整的需求、架构和实现讲解：[搭建过程讲解.md](搭建过程讲解.md)
-- REST API 对应项目：[Spring Boot API 搭建详解](../pms-springboot-api/搭建过程详解.md)
+- 项目说明：[README.md](../../../../versions/java/pms-springboot/README.md)
+- 生产部署：[部署指南](deployment.md)
+- 更完整的需求、架构和实现讲解：[搭建过程讲解.md](build-process-explained.md)
+- REST API 对应项目：[Spring Boot API 搭建详解](../pms-springboot-api/setup.md)

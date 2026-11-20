@@ -82,19 +82,21 @@
 **共享数据层**
 
 - 建表脚本 [db/schema.sql](db/schema.sql)（5 处副本一致）；效能表：每日 `daily_plans` + `time_blocks`，每周 `weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`，每月 `monthly_reviews` + `system_health_checks`。
-- 字段映射与设计说明见 [db/DESIGN.md](db/DESIGN.md)；REST API 契约见 [db/API.md](db/API.md)。
+- 字段映射与设计说明见[数据模型设计](docs/data/schema-design.md)；REST API 契约见[API 契约](docs/data/api-contract.md)。
 - 密码统一 BCrypt。默认管理员首次启动且 users 为空时自动创建，生产环境务必用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖。
 
 **文档导航**
 
+所有文档及按项目整理的搭建、部署指南见[文档中心](docs/README.md)。
+
 | 文档 | 介绍 |
 |------|------|
-| [使用指南](docs/user_guide.md)（[English](docs/user_guide.en.md) · [繁體中文](docs/user_guide.zh-TW.md) · [日本語](docs/user_guide.ja.md)） | 面向使用者，说明登录与设备切换，以及每日执行、每周复盘、每月重构的填写方法和建议节奏。 |
-| [PC / Mobile 双端实现规范](docs/DUAL_VIEW.md) | 说明三种服务端页面版的视图切换、模板组织、移动端设计要求和验收标准。 |
-| [业务说明与代码应用顺序](docs/业务说明与代码应用顺序.md) | 从日 / 周 / 月业务闭环出发，介绍 Go、Java、Python 与 Vue 项目的代码阅读路径，并追踪周复盘数据的处理过程。 |
-| [中文音视频口播稿](docs/业务说明与代码应用顺序-中文口播稿.md) | 配套业务追踪文档的中文讲解脚本，包含画面提示和时间码，预计时长约 20 分钟。 |
-| [需求规格说明书（2026.11.20）](docs/requirements-2026-11-20.md) | 汇总系统范围、用户场景、功能需求、关键实体与可验证的成功标准。 |
-| [架构设计与组件关系（2026.11.20）](.github/modernize/assessment/engines/facts/architecture-diagram.md) | 通过架构图和组件关系图概览系统分层、技术栈、数据存储及主要组件职责。 |
+| [使用指南](docs/guides/user-guide.zh-CN.md)（[English](docs/guides/user-guide.en.md) · [繁體中文](docs/guides/user-guide.zh-TW.md) · [日本語](docs/guides/user-guide.ja.md)） | 面向使用者，说明登录与设备切换，以及每日执行、每周复盘、每月重构的填写方法和建议节奏。 |
+| [PC / Mobile 双端实现规范](docs/guides/dual-view-guidelines.md) | 说明三种服务端页面版的视图切换、模板组织、移动端设计要求和验收标准。 |
+| [业务说明与代码应用顺序](docs/business/business-flow-and-code-reading.md) | 从日 / 周 / 月业务闭环出发，介绍 Go、Java、Python 与 Vue 项目的代码阅读路径，并追踪周复盘数据的处理过程。 |
+| [中文音视频口播稿](docs/business/business-flow-video-script.zh-CN.md) | 配套业务追踪文档的中文讲解脚本，包含画面提示和时间码，预计时长约 20 分钟。 |
+| [需求规格说明书（2026.11.20）](docs/requirements/requirements-2026-11-20.md) | 汇总系统范围、用户场景、功能需求、关键实体与可验证的成功标准。 |
+| [架构设计与组件关系（2026.11.20）](docs/architecture/architecture-diagram.md) | 通过架构图和组件关系图概览系统分层、技术栈、数据存储及主要组件职责。 |
 
 ## 五、快速开始
 
@@ -146,35 +148,35 @@ pms/
 │   │   └── pms-fastapi/      FastAPI REST API（可同源提供 Vue 构建页面）
 │   └── vue/
 │       └── pms-vue/          共享 Vue 3 + TypeScript 前端
-├── db/                   共享：schema.sql、schema.v1-legacy.sql、API.md、DESIGN.md
-├── docs/                 双端规范 DUAL_VIEW.md + 四语言 user_guide.md
+├── db/                   共享建表脚本：schema.sql、schema.v1-legacy.sql
+├── docs/                 集中存放业务、指南、架构、数据与项目搭建文档
 └── README.md             本文件
 ```
 
 ## 七、部署文档与项目搭建指南
 
-下表列出各独立应用的搭建过程详解，涵盖依赖准备、数据库与环境变量配置、启动方式和验证命令。
+下表列出各独立应用的搭建指南，涵盖依赖准备、数据库与环境变量配置、启动方式和验证命令。
 
-| 项目 | 搭建详解 |
+| 项目 | 搭建指南 |
 |------|----------|
-| Go Gin 单体页面版 | [搭建过程详解.md](versions/go/pms-gin/搭建过程详解.md) |
-| Go Gin REST API | [搭建过程详解.md](versions/go/pms-gin-api/搭建过程详解.md) |
-| Java Spring Boot 单体页面版 | [搭建过程详解.md](versions/java/pms-springboot/搭建过程详解.md) |
-| Java Spring Boot REST API | [搭建过程详解.md](versions/java/pms-springboot-api/搭建过程详解.md) |
-| Python Django 页面版 | [搭建过程详解.md](versions/python/pms-django/搭建过程详解.md) |
-| Python FastAPI + Vue 同源版 | [搭建过程详解.md](versions/python/pms-fastapi/搭建过程详解.md) |
-| Vue 共享前端 | [搭建过程详解.md](versions/vue/pms-vue/搭建过程详解.md) |
+| Go Gin 单体页面版 | [搭建指南](docs/projects/go/pms-gin/setup.md) |
+| Go Gin REST API | [搭建指南](docs/projects/go/pms-gin-api/setup.md) |
+| Java Spring Boot 单体页面版 | [搭建指南](docs/projects/java/pms-springboot/setup.md) |
+| Java Spring Boot REST API | [搭建指南](docs/projects/java/pms-springboot-api/setup.md) |
+| Python Django 页面版 | [搭建指南](docs/projects/python/pms-django/setup.md) |
+| Python FastAPI + Vue 同源版 | [搭建指南](docs/projects/python/pms-fastapi/setup.md) |
+| Vue 共享前端 | [搭建指南](docs/projects/vue/pms-vue/setup.md) |
 
 生产环境部署细节另见下表：
 
 | 服务端语言 | 实现 | 部署文档 |
 |------------|------|---------|
-| Python | Django | [部署文档.md](versions/python/pms-django/部署文档.md) · [热部署文档.md](versions/python/pms-django/热部署文档.md)（不停机发布） |
-| Java | Spring Boot 单体页面版 | [部署文档.md](versions/java/pms-springboot/部署文档.md) |
+| Python | Django | [部署指南](docs/projects/python/pms-django/deployment.md) · [热部署指南](docs/projects/python/pms-django/hot-deployment.md)（不停机发布） |
+| Java | Spring Boot 单体页面版 | [部署指南](docs/projects/java/pms-springboot/deployment.md) |
 | Java | Spring Boot REST API | [README.md](versions/java/pms-springboot-api/README.md) |
-| Go | Gin 单体页面版 | [部署文档.md](versions/go/pms-gin/部署文档.md) |
+| Go | Gin 单体页面版 | [部署指南](docs/projects/go/pms-gin/deployment.md) |
 | Go | Gin REST API | [README.md](versions/go/pms-gin-api/README.md) |
-| Python | FastAPI + Vue | [部署文档.md](versions/python/pms-fastapi/部署文档.md) |
+| Python | FastAPI + Vue | [部署指南](docs/projects/python/pms-fastapi/deployment.md) |
 
 > 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
 

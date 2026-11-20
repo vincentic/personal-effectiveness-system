@@ -2,7 +2,7 @@
 
 本文面向仓库中的单体页面实现与 API 实现：Go/Gin、Java/Spring Boot、Python/Django、Python/FastAPI。Go / Java 的单体页面版与 REST API 版位于不同项目目录；目标是把「用户为什么填写清单」与「请求最终在哪些代码中处理」连起来，方便阅读、维护和跨版本同步功能。
 
-共享数据结构以 [`db/schema.sql`](../db/schema.sql) 为准；字段含义见 [`db/DESIGN.md`](../db/DESIGN.md)，REST 请求与响应见 [`db/API.md`](../db/API.md)。四个实现共用业务数据模型，但页面技术、认证方式和代码分层并不完全相同。
+共享数据结构以 [`db/schema.sql`](../../db/schema.sql) 为准；字段含义见 [数据模型设计](../data/schema-design.md)，REST 请求与响应见 [API 契约](../data/api-contract.md)。四个实现共用业务数据模型，但页面技术、认证方式和代码分层并不完全相同。
 
 ## 一、业务闭环：日执行 → 周复盘 → 月重构
 
@@ -39,7 +39,7 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 
 页面与 API 的认证入口有所不同：Spring Boot 和 Gin 的服务端页面使用各自的会话机制，REST API 使用共享 HMAC Token；Django 页面使用 Django 登录会话；Vue 可由 FastAPI 同源提供，也可独立部署后复用 FastAPI、Spring Boot 或 Gin 的 `/api/**`，均通过 Bearer Token 认证。
 
-共享 Vue 源码位于 [`versions/vue/pms-vue/`](../versions/vue/pms-vue/)，与 Python 后端项目分离。开发时用 `VITE_API_PROXY_TARGET` 指向 `http://127.0.0.1:8000`（FastAPI）、`http://127.0.0.1:8080`（Spring Boot）或 `http://127.0.0.1:8081`（Gin）；独立部署时用 `VITE_API_BASE_URL` 指定 API origin，并将前端站点 origin 配入 Java / Go 的 `CORS_ORIGINS`。这样三种后端复用同一份 Vue 页面与 TypeScript API 类型，不需要维护三份前端。
+共享 Vue 源码位于 [`versions/vue/pms-vue/`](../../versions/vue/pms-vue/)，与 Python 后端项目分离。开发时用 `VITE_API_PROXY_TARGET` 指向 `http://127.0.0.1:8000`（FastAPI）、`http://127.0.0.1:8080`（Spring Boot）或 `http://127.0.0.1:8081`（Gin）；独立部署时用 `VITE_API_BASE_URL` 指定 API origin，并将前端站点 origin 配入 Java / Go 的 `CORS_ORIGINS`。这样三种后端复用同一份 Vue 页面与 TypeScript API 类型，不需要维护三份前端。
 
 ## 三、四个实现的代码阅读顺序
 
@@ -47,35 +47,35 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 
 ### Go：Gin 单体页面版与 REST API 版
 
-单体页面版位于 [`versions/go/pms-gin/`](../versions/go/pms-gin/)，提供 Gin + HTML 模板、Session 和 CSRF，不注册 REST API 路由。
+单体页面版位于 [`versions/go/pms-gin/`](../../versions/go/pms-gin/)，提供 Gin + HTML 模板、Session 和 CSRF，不注册 REST API 路由。
 
-1. [`router.go`](../versions/go/pms-gin/internal/server/router.go)：注册页面路由、登录保护和视图切换。
-2. [`handlers.go`](../versions/go/pms-gin/internal/server/handlers.go) 与 [`templates/`](../versions/go/pms-gin/templates)：处理服务端页面表单并渲染 PC / Mobile 页面。
-3. API 版位于 [`versions/go/pms-gin-api/`](../versions/go/pms-gin-api/)；[`api.go`](../versions/go/pms-gin-api/internal/server/api.go) 处理 JSON 请求与 Token，模型和 SQL Store 保持相同业务契约。
+1. [`router.go`](../../versions/go/pms-gin/internal/server/router.go)：注册页面路由、登录保护和视图切换。
+2. [`handlers.go`](../../versions/go/pms-gin/internal/server/handlers.go) 与 [`templates/`](../../versions/go/pms-gin/templates)：处理服务端页面表单并渲染 PC / Mobile 页面。
+3. API 版位于 [`versions/go/pms-gin-api/`](../../versions/go/pms-gin-api/)；[`api.go`](../../versions/go/pms-gin-api/internal/server/api.go) 处理 JSON 请求与 Token，模型和 SQL Store 保持相同业务契约。
 
 ### Java：Spring Boot 单体页面版与 REST API 版
 
-单体页面版位于 [`versions/java/pms-springboot/`](../versions/java/pms-springboot/)，提供 Thymeleaf、Session 和 CSRF，不注册 REST API 路由。
+单体页面版位于 [`versions/java/pms-springboot/`](../../versions/java/pms-springboot/)，提供 Thymeleaf、Session 和 CSRF，不注册 REST API 路由。
 
-1. [`WeeklyController.java`](../versions/java/pms-springboot/src/main/java/com/example/pms/web/WeeklyController.java) 与 [`templates/`](../versions/java/pms-springboot/src/main/resources/templates/)：服务端页面的列表、表单、转换与渲染入口。
-2. API 版位于 [`versions/java/pms-springboot-api/`](../versions/java/pms-springboot-api/)；[`ApiController.java`](../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/ApiController.java) 和 API DTO 处理 Token 认证与 REST 契约。
+1. [`WeeklyController.java`](../../versions/java/pms-springboot/src/main/java/com/example/pms/web/WeeklyController.java) 与 [`templates/`](../../versions/java/pms-springboot/src/main/resources/templates/)：服务端页面的列表、表单、转换与渲染入口。
+2. API 版位于 [`versions/java/pms-springboot-api/`](../../versions/java/pms-springboot-api/)；[`ApiController.java`](../../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/ApiController.java) 和 API DTO 处理 Token 认证与 REST 契约。
 3. 两版的领域对象与 Repository 分别承载同一业务语义和共享数据库结构；更新时需同步验证。
 
 ### Python：Django
 
-1. [`urls.py`](../versions/python/pms-django/projects/urls.py)：把页面 URL 映射到视图函数。
-2. [`views.py`](../versions/python/pms-django/projects/views.py)：检查登录状态、按 `request.user` 取得数据，编排表单验证、保存和页面重定向/渲染。
-3. [`forms.py`](../versions/python/pms-django/projects/forms.py)：主表使用 ModelForm；时间盒、领域、任务流和健康检查使用 inline formset 与主表一起提交。
-4. [`models.py`](../versions/python/pms-django/projects/models.py)：定义 ORM 模型、关联、枚举选择、唯一约束，以及日完成率、检查项数量、周结束日期和健康均分等派生属性。
-5. [`templates/`](../versions/python/pms-django/templates/)：呈现业务表单、列表和详情。Django 版是服务端页面实现，不提供与 FastAPI、Go API、Java API 相同的 REST API。
+1. [`urls.py`](../../versions/python/pms-django/projects/urls.py)：把页面 URL 映射到视图函数。
+2. [`views.py`](../../versions/python/pms-django/projects/views.py)：检查登录状态、按 `request.user` 取得数据，编排表单验证、保存和页面重定向/渲染。
+3. [`forms.py`](../../versions/python/pms-django/projects/forms.py)：主表使用 ModelForm；时间盒、领域、任务流和健康检查使用 inline formset 与主表一起提交。
+4. [`models.py`](../../versions/python/pms-django/projects/models.py)：定义 ORM 模型、关联、枚举选择、唯一约束，以及日完成率、检查项数量、周结束日期和健康均分等派生属性。
+5. [`templates/`](../../versions/python/pms-django/templates/)：呈现业务表单、列表和详情。Django 版是服务端页面实现，不提供与 FastAPI、Go API、Java API 相同的 REST API。
 
 ### Python：FastAPI 与独立 Vue 前端
 
-1. [`schemas.py`](../versions/python/pms-fastapi/app/schemas.py)：Pydantic 输入模型负责字段类型、日期、时间、分数及枚举校验，并为缺省字段提供默认值。
-2. [`main.py`](../versions/python/pms-fastapi/app/main.py)：在同一模块中注册 API 路由、依赖注入认证用户、执行用户范围检查、编排写入和响应序列化。
-3. [`db.py`](../versions/python/pms-fastapi/app/db.py)：提供 PyMySQL 连接、查询、写入和启动时建表初始化；SQL 由路由模块调用。
-4. [`security.py`](../versions/python/pms-fastapi/app/security.py)：处理密码哈希和 HMAC Token。
-5. [`api.ts`](../versions/vue/pms-vue/src/api.ts)、[`types.ts`](../versions/vue/pms-vue/src/types.ts) 与 [`src/views/`](../versions/vue/pms-vue/src/views/)：Vue 页面维护前端类型、调用 REST API 并呈现响应。
+1. [`schemas.py`](../../versions/python/pms-fastapi/app/schemas.py)：Pydantic 输入模型负责字段类型、日期、时间、分数及枚举校验，并为缺省字段提供默认值。
+2. [`main.py`](../../versions/python/pms-fastapi/app/main.py)：在同一模块中注册 API 路由、依赖注入认证用户、执行用户范围检查、编排写入和响应序列化。
+3. [`db.py`](../../versions/python/pms-fastapi/app/db.py)：提供 PyMySQL 连接、查询、写入和启动时建表初始化；SQL 由路由模块调用。
+4. [`security.py`](../../versions/python/pms-fastapi/app/security.py)：处理密码哈希和 HMAC Token。
+5. [`api.ts`](../../versions/vue/pms-vue/src/api.ts)、[`types.ts`](../../versions/vue/pms-vue/src/types.ts) 与 [`src/views/`](../../versions/vue/pms-vue/src/views/)：Vue 页面维护前端类型、调用 REST API 并呈现响应。
 
 ## 四、示例追踪：`weekly.domains[]` 中的领域回顾
 
@@ -98,15 +98,15 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 
 ### 一、从 Vue 表单到 JSON
 
-以独立 [Vue 前端](../versions/vue/pms-vue/) 调用 [Spring Boot API 版](../versions/java/pms-springboot-api/) 为例。[`WeeklyView.vue`](../versions/vue/pms-vue/src/views/WeeklyView.vue) 初始化表单时，准备四个固定领域（work、study、body、relations），每项包含 `facts` 和 `status`；同时允许用户增删任务流。用户选择日期、填写事实与状态后，按“保存每周复盘”时，`save()` 根据是否正在编辑调用 `api.saveWeekly()`。
+以独立 [Vue 前端](../../versions/vue/pms-vue/) 调用 [Spring Boot API 版](../../versions/java/pms-springboot-api/) 为例。[`WeeklyView.vue`](../../versions/vue/pms-vue/src/views/WeeklyView.vue) 初始化表单时，准备四个固定领域（work、study、body、relations），每项包含 `facts` 和 `status`；同时允许用户增删任务流。用户选择日期、填写事实与状态后，按“保存每周复盘”时，`save()` 根据是否正在编辑调用 `api.saveWeekly()`。
 
-[`api.ts`](../versions/vue/pms-vue/src/api.ts) 将新记录发到 `POST /api/weekly`，将已有记录发到 `PUT /api/weekly/{id}`。请求封装会添加 JSON Content-Type；已有登录凭证则放入 `Authorization: Bearer ...`。[`WeeklyInput`](../versions/vue/pms-vue/src/types.ts) 类型限定了字段形状，但最终业务校验仍由服务端负责。Vue 不直接连接 MySQL，也不负责判断该条周复盘是否属于当前账号。
+[`api.ts`](../../versions/vue/pms-vue/src/api.ts) 将新记录发到 `POST /api/weekly`，将已有记录发到 `PUT /api/weekly/{id}`。请求封装会添加 JSON Content-Type；已有登录凭证则放入 `Authorization: Bearer ...`。[`WeeklyInput`](../../versions/vue/pms-vue/src/types.ts) 类型限定了字段形状，但最终业务校验仍由服务端负责。Vue 不直接连接 MySQL，也不负责判断该条周复盘是否属于当前账号。
 
 ### 二、Spring Boot API：认证、绑定与校验
 
-请求进入 [`ApiController.java`](../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/ApiController.java) 的 `createWeekly()` 或 `updateWeekly()` 后，服务端先校验 Token 并取得当前用户。更新时，Repository 先用“记录 ID + 当前用户 ID”查询；不存在或不属于该用户时返回 404，而不会根据客户端传来的 `user_id` 判断所有权。
+请求进入 [`ApiController.java`](../../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/ApiController.java) 的 `createWeekly()` 或 `updateWeekly()` 后，服务端先校验 Token 并取得当前用户。更新时，Repository 先用“记录 ID + 当前用户 ID”查询；不存在或不属于该用户时返回 404，而不会根据客户端传来的 `user_id` 判断所有权。
 
-接着 Jackson 将 JSON 绑定到 [`WeeklyIn.java`](../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/dto/WeeklyIn.java)：顶层 `domains` 是 `List<DomainIn>`，每项包含 `domain`、`facts`、`status`。`safeDomains()` 和 `safeFlows()` 将缺失或 null 的明细数组作为空列表处理。[`DomainIn.java`](../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/dto/DomainIn.java) 的 `fa()` 将 null 的事实转换为空字符串，`st()` 将 null 或空白状态默认成 `smooth`。
+接着 Jackson 将 JSON 绑定到 [`WeeklyIn.java`](../../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/dto/WeeklyIn.java)：顶层 `domains` 是 `List<DomainIn>`，每项包含 `domain`、`facts`、`status`。`safeDomains()` 和 `safeFlows()` 将缺失或 null 的明细数组作为空列表处理。[`DomainIn.java`](../../versions/java/pms-springboot-api/src/main/java/com/example/pms/web/dto/DomainIn.java) 的 `fa()` 将 null 的事实转换为空字符串，`st()` 将 null 或空白状态默认成 `smooth`。
 
 `ApiController.toWeekly()` 负责把输入对象转换为领域对象，并验证：
 
@@ -122,7 +122,7 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 
 主表 `weekly_reviews` 保存用户、周起始日、下周三项成果、深度时间、If-Then 计划和复盘问题。领域事实单独写入 `weekly_domain_reviews`，任务流写入 `weekly_task_flows`。这使一个周复盘可以包含多条领域与任务流，而不把重复字段塞进主表。
 
-Spring 的 [`WeeklyRepository.java`](../versions/java/pms-springboot-api/src/main/java/com/example/pms/repo/WeeklyRepository.java) 中，`create()` 先插入主表并取得新 ID，再调用 `replaceChildren()` 保存 `domains` 和 `flows`；`update()` 则先更新主记录，再整体替换两个明细集合。Repository 方法使用 `@Transactional`，所以该版本的主表与明细写入在事务中一起提交或回滚。明细表通过外键关联主记录；主记录删除时，数据库级联删除明细。数据库还以 `(user_id, week_start)` 限制每人每周一条，并以 `(weekly_review_id, domain)` 限制一个复盘中的领域不重复，具体约束见 [`schema.sql`](../db/schema.sql)。
+Spring 的 [`WeeklyRepository.java`](../../versions/java/pms-springboot-api/src/main/java/com/example/pms/repo/WeeklyRepository.java) 中，`create()` 先插入主表并取得新 ID，再调用 `replaceChildren()` 保存 `domains` 和 `flows`；`update()` 则先更新主记录，再整体替换两个明细集合。Repository 方法使用 `@Transactional`，所以该版本的主表与明细写入在事务中一起提交或回滚。明细表通过外键关联主记录；主记录删除时，数据库级联删除明细。数据库还以 `(user_id, week_start)` 限制每人每周一条，并以 `(weekly_review_id, domain)` 限制一个复盘中的领域不重复，具体约束见 [`schema.sql`](../../db/schema.sql)。
 
 ### 四、保存后的读取和响应
 
@@ -144,9 +144,9 @@ Vue 收到响应后刷新周复盘列表；用户稍后编辑时，页面将服�
 
 ### 五、其他实现如何承载同一业务语义
 
-- **Gin API**：路由将 JSON 绑定到 `WeeklyIn`，`normalizeWeeklyIn()` 校验周日期、最多四个领域、枚举、重复领域和任务流，并填充空状态及序号默认值。`InsertWeekly()` / `UpdateWeekly()` 在 `sql.Tx` 中写主表与替换明细，然后按 `id + user_id` 重新读取。对应代码见 [`router.go`](../versions/go/pms-gin-api/internal/server/router.go)、[`api.go`](../versions/go/pms-gin-api/internal/server/api.go)、[`models.go`](../versions/go/pms-gin-api/internal/models/models.go) 和 [`store.go`](../versions/go/pms-gin-api/internal/models/store.go)。
-- **Django 页面版**：`weekly_create()` / `weekly_update()` 使用 `WeeklyReviewForm` 处理主表，用 `DomainReviewFormSet` 和 `TaskFlowFormSet` 处理内联明细；保存前先验证表单和表单集，并将主记录的 `user` 设为当前登录用户。Django 使用服务端模板和 Session，不是共享 `/api/weekly` 的实现。对应代码见 [`views.py`](../versions/python/pms-django/projects/views.py)、[`forms.py`](../versions/python/pms-django/projects/forms.py) 和 [`models.py`](../versions/python/pms-django/projects/models.py)。
-- **FastAPI**：Pydantic 的 `WeeklyIn` / `DomainIn` 声明字段、枚举及默认值；`create_weekly()` / `update_weekly()` 从认证依赖取得用户，写入主表后由 `_replace_children()` 分别替换 `domains` 和 `flows`，最后通过 `weekly_out()` 计算结束日并装配响应。对应代码见 [`schemas.py`](../versions/python/pms-fastapi/app/schemas.py) 和 [`main.py`](../versions/python/pms-fastapi/app/main.py)。
+- **Gin API**：路由将 JSON 绑定到 `WeeklyIn`，`normalizeWeeklyIn()` 校验周日期、最多四个领域、枚举、重复领域和任务流，并填充空状态及序号默认值。`InsertWeekly()` / `UpdateWeekly()` 在 `sql.Tx` 中写主表与替换明细，然后按 `id + user_id` 重新读取。对应代码见 [`router.go`](../../versions/go/pms-gin-api/internal/server/router.go)、[`api.go`](../../versions/go/pms-gin-api/internal/server/api.go)、[`models.go`](../../versions/go/pms-gin-api/internal/models/models.go) 和 [`store.go`](../../versions/go/pms-gin-api/internal/models/store.go)。
+- **Django 页面版**：`weekly_create()` / `weekly_update()` 使用 `WeeklyReviewForm` 处理主表，用 `DomainReviewFormSet` 和 `TaskFlowFormSet` 处理内联明细；保存前先验证表单和表单集，并将主记录的 `user` 设为当前登录用户。Django 使用服务端模板和 Session，不是共享 `/api/weekly` 的实现。对应代码见 [`views.py`](../../versions/python/pms-django/projects/views.py)、[`forms.py`](../../versions/python/pms-django/projects/forms.py) 和 [`models.py`](../../versions/python/pms-django/projects/models.py)。
+- **FastAPI**：Pydantic 的 `WeeklyIn` / `DomainIn` 声明字段、枚举及默认值；`create_weekly()` / `update_weekly()` 从认证依赖取得用户，写入主表后由 `_replace_children()` 分别替换 `domains` 和 `flows`，最后通过 `weekly_out()` 计算结束日并装配响应。对应代码见 [`schemas.py`](../../versions/python/pms-fastapi/app/schemas.py) 和 [`main.py`](../../versions/python/pms-fastapi/app/main.py)。
 - **Spring 页面版**：周复盘通过 Thymeleaf 表单、页面 Controller 和 `WeeklyRepository` 完成，不提供 `/api/weekly`；其 Session 登录与 API Token 是两条独立入口。
 
 ### 六、跨实现核对时要特别留意
@@ -157,14 +157,14 @@ Vue 收到响应后刷新周复盘列表；用户稍后编辑时，页面将服�
 4. **校验实现有差异**：Go 与 Spring API 显式检查领域重复；FastAPI Schema 声明领域枚举，但没有同等的请求级重复领域检查，数据库唯一约束仍会限制重复值。新增或修改规则时，应把边界行为作为跨版本验收项，而不是只确认正常请求成功。
 5. **所有权来自认证上下文**：客户端传来的领域数据只描述内容；记录归属必须来自 Token 或页面 Session 对应的当前用户，并在主记录查询与更新中继续按用户范围约束。
 
-更多口播式讲解见[《业务说明与代码应用顺序》中文音视频口播稿](业务说明与代码应用顺序-中文口播稿.md)。
+更多口播式讲解见[《业务说明与代码应用顺序》中文音视频口播稿](business-flow-video-script.zh-CN.md)。
 
 ## 五、增加或修改一项业务时的推荐顺序
 
 同一功能要同步到相关实现时，按以下顺序推进，避免页面、API 和数据库字段逐渐分叉：
 
 1. **先写业务规则**：确定用户场景、字段含义、缺省值、允许值、重复约束、用户隔离及删除行为。
-2. **更新共享契约**：先核对 [`db/DESIGN.md`](../db/DESIGN.md) 和 [`db/API.md`](../db/API.md)，确认字段名、类型、枚举和响应计算项。
+2. **更新共享契约**：先核对 [数据模型设计](../data/schema-design.md) 和 [API 契约](../data/api-contract.md)，确认字段名、类型、枚举和响应计算项。
 3. **更新数据库模型**：修改 `db/schema.sql` 与各项目启动/迁移所需的 schema 副本；检查外键、唯一键和级联删除。
 4. **更新输入层**：分别更新 Go 输入结构与 normalize、Java DTO 与转换校验、Django ModelForm/FormSet、FastAPI Pydantic Schema。
 5. **更新持久化层**：一次写操作同时处理主表与子表；所有读写保持用户范围过滤；编辑时依契约整体处理明细集合，并明确事务边界。
@@ -180,6 +180,6 @@ Vue 收到响应后刷新周复盘列表；用户稍后编辑时，页面将服�
 
 ## 六、建议阅读入口
 
-- 先看业务与数据：[`README.md`](../README.md)、[`db/DESIGN.md`](../db/DESIGN.md)、[`db/API.md`](../db/API.md)。
+- 先看业务与数据：[`README.md`](../../README.md)、[数据模型设计](../data/schema-design.md)、[API 契约](../data/api-contract.md)。
 - 再看当前实现的同一业务切片：从各语言的路由入口开始，沿本文第三节的顺序跟到保存与输出。
-- 最后对照 [`docs/user_guide.md`](user_guide.md)，确认代码字段仍服务于实际的日、周、月工作流程。
+- 最后对照 [简体中文使用指南](../guides/user-guide.zh-CN.md)，确认代码字段仍服务于实际的日、周、月工作流程。

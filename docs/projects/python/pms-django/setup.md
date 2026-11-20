@@ -72,7 +72,7 @@ python manage.py test
 python manage.py collectstatic --noinput
 ```
 
-生产环境建议使用 Gunicorn 和 Nginx；具体服务配置、静态文件托管与排错见项目的 [`部署文档.md`](部署文档.md)。
+生产环境建议使用 Gunicorn 和 Nginx；具体服务配置、静态文件托管与排错见[部署指南](deployment.md)。
 
 ## 6. 常见问题
 
@@ -83,7 +83,7 @@ python manage.py collectstatic --noinput
 
 ## 7. 关联资料
 
-- 项目快速开始：[README.md](README.md)
-- 生产部署：[部署文档.md](部署文档.md)
-- 不停机发布：[热部署文档.md](热部署文档.md)
-- 共享业务数据与 API 契约：[db/DESIGN.md](../../../db/DESIGN.md)、[db/API.md](../../../db/API.md)
+- 项目快速开始：[README.md](../../../../versions/python/pms-django/README.md)
+- 生产部署：[部署指南](deployment.md)
+- 不停机发布：[热部署指南](hot-deployment.md)
+- 共享业务数据与 API 契约：[数据模型设计](../../../data/schema-design.md)、[API 契约](../../../data/api-contract.md)

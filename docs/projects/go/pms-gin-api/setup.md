@@ -1,6 +1,6 @@
 # Gin REST API 搭建过程详解
 
-本文介绍如何启动独立的 Go/Gin REST API，并将共享 Vue 前端连接到它。该项目不渲染业务页面；服务端页面版见 [`../pms-gin/`](../pms-gin/搭建过程详解.md)。
+本文介绍如何启动独立的 Go/Gin REST API，并将共享 Vue 前端连接到它。该项目不渲染业务页面；服务端页面版见 [`../pms-gin/`](../pms-gin/setup.md)。
 
 ## 1. 环境准备
 
@@ -43,7 +43,7 @@ npm ci
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
 ```
 
-访问 Vite 输出的本地地址。开发代理会把 `/api` 和 `/health` 请求转发给 Gin API；浏览器因此无需直接跨域访问后端。若只检查 API，可参考共享契约 [`../../../db/API.md`](../../../db/API.md) 并调用认证、健康或业务端点。
+访问 Vite 输出的本地地址。开发代理会把 `/api` 和 `/health` 请求转发给 Gin API；浏览器因此无需直接跨域访问后端。若只检查 API，可参考共享契约 [API 契约](../../../data/api-contract.md) 并调用认证、健康或业务端点。
 
 ## 4. 验证与构建
 
@@ -74,7 +74,7 @@ Gin API 不会托管 Vue 构建产物；生产部署时分别部署 API 和前�
 
 ## 6. 关联资料
 
-- API 契约：[db/API.md](../../../db/API.md)
-- 项目快速说明：[README.md](README.md)
-- 服务端页面版：[Gin 单体页面版搭建详解](../pms-gin/搭建过程详解.md)
-- Vue 前端：[Vue 搭建详解](../../vue/pms-vue/搭建过程详解.md)
+- API 契约：[API 契约](../../../data/api-contract.md)
+- 项目快速说明：[README.md](../../../../versions/go/pms-gin-api/README.md)
+- 服务端页面版：[Gin 单体页面版搭建详解](../pms-gin/setup.md)
+- Vue 前端：[Vue 搭建详解](../../vue/pms-vue/setup.md)

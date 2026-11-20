@@ -7,9 +7,9 @@
 
 ## 范围基线
 
-- **发现方式**：核对 [`README.md`](../README.md)、[`db/API.md`](../db/API.md)、[`db/schema.sql`](../db/schema.sql)、现有 Vue 页面及 Go、Java、Django、FastAPI 的路由和数据模型。
+- **发现方式**：核对 [`README.md`](../../README.md)、[API 契约](../data/api-contract.md)、[`db/schema.sql`](../../db/schema.sql)、现有 Vue 页面及 Go、Java、Django、FastAPI 的路由和数据模型。
 - **纳入范围**：6 个业务领域——账户与权限、工作台、每日执行、每周复盘、每月重构、多端访问与共享数据。
-- **实现形态**：Gin 与 Spring Boot 各有独立的服务端页面版和 REST API 版；Django 提供服务端页面；FastAPI 提供 REST API 并可同源托管 Vue 构建产物；共享 Vue 源码独立位于 [`versions/vue/pms-vue/`](../versions/vue/pms-vue/)。
+- **实现形态**：Gin 与 Spring Boot 各有独立的服务端页面版和 REST API 版；Django 提供服务端页面；FastAPI 提供 REST API 并可同源托管 Vue 构建产物；共享 Vue 源码独立位于 [`versions/vue/pms-vue/`](../../versions/vue/pms-vue/)。
 - **范围边界**：各后端是同一产品的替代实现，不要求在一个部署中同时运行。Django、Gin 页面版和 Spring 页面版不提供与 API 版本相同的 `/api/**` 契约。共享 Vue 当前面向 FastAPI、Gin API 和 Spring API；它不包含用户管理页面。
 - **依据强度**：业务字段和 API 行为以仓库契约及代码为基线；性能等未被现有实现证明的数值仅作为待验收目标。
 
@@ -100,7 +100,7 @@
 - **REQ-010**：用户必须能够查看、创建、编辑和删除其有权访问的日、周、月记录；删除主记录时其明细一并删除。
 - **REQ-011**：系统必须提供工作台，展示当前日、周、月记录状态、记录数量、近期记录及最近七条每日清单的时间盒汇总。
 - **REQ-012**：管理员必须能够通过对应后端提供的管理界面或 API 查看及创建用户；普通用户不得执行管理员专属操作。共享 Vue 当前不承担用户管理入口。
-- **REQ-013**：兼容的 REST API 必须遵循 [`db/API.md`](../db/API.md) 的端点、字段、认证、用户隔离和错误语义；Gin、Spring Boot 与 FastAPI API 版必须能在共享密钥配置一致时互验 HMAC Token。
+- **REQ-013**：兼容的 REST API 必须遵循 [API 契约](../data/api-contract.md) 的端点、字段、认证、用户隔离和错误语义；Gin、Spring Boot 与 FastAPI API 版必须能在共享密钥配置一致时互验 HMAC Token。
 - **REQ-014**：共享 Vue 必须支持调用 FastAPI、Gin API 和 Spring API，并在 PC 与手机屏幕尺寸下提供工作台、每日、每周、每月和登录流程。
 - **REQ-015**：Gin、Spring Boot 和 Django 服务端页面必须提供各自实现的登录保护、CSRF 防护和 PC / Mobile 页面行为；自动模式按设备选择，手动偏好可保持。
 - **REQ-016**：实现版本必须遵循共享数据结构及账号归属规则，使一个版本写入的数据可由使用相同数据库的兼容版本读取。

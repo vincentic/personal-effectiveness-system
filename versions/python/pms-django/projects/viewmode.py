@@ -8,7 +8,7 @@ COOKIE_NAME = "pms_view"
 VALID_PREFS = ("auto", "pc", "mobile")
 ONE_YEAR = 31536000
 
-# 移动特征（大小写不敏感），与 docs/DUAL_VIEW.md 中的正则保持一致
+# 移动特征（大小写不敏感），与 docs/guides/dual-view-guidelines.md 中的正则保持一致
 MOBILE_UA_RE = re.compile(
     r"Android|iPhone|iPad|iPod|Mobile|Windows Phone|BlackBerry|Opera Mini|IEMobile",
     re.IGNORECASE,

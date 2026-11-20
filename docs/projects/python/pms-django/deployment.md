@@ -19,8 +19,8 @@ versions/python/pms-django/ # 仓库内按服务端语言归档的 Django 版目
 ├── manage.py                 # Django 管理入口
 ├── requirements.txt          # Python 依赖
 ├── .env.example              # 环境变量示例（复制为 .env 使用）
-├── 部署文档.md                # 基础部署文档（本文）
-├── 热部署文档.md              # 不停机发布文档
+├── ../../../docs/projects/python/pms-django/deployment.md # 基础部署指南（本文）
+├── ../../../docs/projects/python/pms-django/hot-deployment.md # 不停机发布指南
 ├── README.md                 # 项目说明（另有 zh-CN / zh-TW / en 多语言版）
 ├── deploy/                   # 生产部署与热部署配置
 │   ├── gunicorn.conf.py      # Gunicorn 生产配置（优雅重载参数）
@@ -131,7 +131,7 @@ python manage.py collectstatic --noinput
 
 ### 2. 用 Gunicorn 启动服务
 
-推荐直接使用仓库中的生产配置（含优雅重载参数，详见 [热部署文档.md](热部署文档.md)）：
+推荐直接使用仓库中的生产配置（含优雅重载参数，详见 [热部署指南](hot-deployment.md)）：
 
 ```bash
 pip install gunicorn                 # requirements.txt 已包含
@@ -221,7 +221,7 @@ cd /opt/pms
 
 脚本依次完成代码拉取、依赖安装、`check` / `migrate` / `collectstatic`、`systemctl reload pms` 与 `/login/` 健康检查；任一步失败即中止且不会触发重载。新旧 worker 会短暂共存，Nginx 上游端口不变，因此无需 reload Nginx。
 
-> 关键约束：`deploy/gunicorn.conf.py` 中必须保持 `preload_app = False`；数据库迁移需向后兼容；含破坏性迁移时改用蓝绿部署。完整原理、参数、回滚与排错见 [热部署文档.md](热部署文档.md)。
+> 关键约束：`deploy/gunicorn.conf.py` 中必须保持 `preload_app = False`；数据库迁移需向后兼容；含破坏性迁移时改用蓝绿部署。完整原理、参数、回滚与排错见 [热部署指南](hot-deployment.md)。
 
 ## 六、常见问题排查
 
@@ -232,7 +232,7 @@ cd /opt/pms
 | `django.core.cache` 或登录后 403 | DEBUG=False 时需正确配置 `ALLOWED_HOSTS`（settings 中已默认 `["*"]`，生产建议改为具体域名） |
 | `cryptography` 相关报错 | `pip install cryptography`（requirements 已包含） |
 | 管理员密码忘记 | `python manage.py changepassword 用户名` |
-| 热部署后仍是旧代码 | 确认 `preload_app = False` 且 `systemctl reload pms` 已执行，详见 [热部署文档.md](热部署文档.md) 第七节 |
+| 热部署后仍是旧代码 | 确认 `preload_app = False` 且 `systemctl reload pms` 已执行，详见 [热部署指南](hot-deployment.md) 第七节 |
 
 ## 七、后续扩展建议
 

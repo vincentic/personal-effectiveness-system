@@ -2,7 +2,7 @@
 
 Go/Gin/MySQL server-rendered personal effectiveness app with PC and mobile pages. This project is the monolithic page version and does not expose the REST API. The standalone API service is in [`../pms-gin-api/`](../pms-gin-api/README.md); both versions share the database schema.
 
-搭建步骤见[搭建过程详解.md](搭建过程详解.md)。
+搭建步骤见[搭建指南](../../../docs/projects/go/pms-gin/setup.md)。
 
 ## Run
 

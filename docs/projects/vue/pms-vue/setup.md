@@ -10,7 +10,7 @@
   - Spring Boot API：默认 `http://127.0.0.1:8080`
   - Gin API：默认 `http://127.0.0.1:8081`
 
-各后端的环境和数据库准备步骤见仓库根目录的[README.md](../../../README.md)。
+各后端的环境和数据库准备步骤见仓库根目录的[README.md](../../../../README.md)。
 
 ## 2. 安装依赖
 
@@ -67,8 +67,8 @@ npm run build
 
 ## 6. 关联资料
 
-- 前端代码和测试：[src/](src/)
-- API 数据结构与请求契约：[db/API.md](../../../db/API.md)
-- FastAPI 同源托管方式：[FastAPI 搭建详解](../../python/pms-fastapi/搭建过程详解.md)
-- Go API：[Gin API 搭建详解](../../go/pms-gin-api/搭建过程详解.md)
-- Java API：[Spring Boot API 搭建详解](../../java/pms-springboot-api/搭建过程详解.md)
+- 前端代码和测试：[src/](../../../../versions/vue/pms-vue/src/)
+- API 数据结构与请求契约：[API 契约](../../../data/api-contract.md)
+- FastAPI 同源托管方式：[FastAPI 搭建详解](../../python/pms-fastapi/setup.md)
+- Go API：[Gin API 搭建详解](../../go/pms-gin-api/setup.md)
+- Java API：[Spring Boot API 搭建详解](../../java/pms-springboot-api/setup.md)

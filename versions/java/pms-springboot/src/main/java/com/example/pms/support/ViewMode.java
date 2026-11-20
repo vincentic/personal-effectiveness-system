@@ -8,7 +8,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.regex.Pattern;
 
 /**
- * PC / Mobile 双端视图模式判定（三版统一规范，见 docs/DUAL_VIEW.md）。
+ * PC / Mobile 双端视图模式判定（三版统一规范，见 docs/guides/dual-view-guidelines.md）。
  *
  * <p>纯函数部分（pref / effective / isMobileUA / page）不依赖容器，便于单测；
  * current* 部分从 RequestContextHolder 读取当前请求的 cookie 与 User-Agent。</p>

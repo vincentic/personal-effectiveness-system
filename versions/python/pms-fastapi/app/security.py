@@ -1,4 +1,4 @@
-"""BCrypt 密码与三版互通的 HMAC-SHA256 Token（详见 db/API.md）。"""
+"""BCrypt 密码与三版互通的 HMAC-SHA256 Token（详见 docs/data/api-contract.md）。"""
 from __future__ import annotations
 
 import base64

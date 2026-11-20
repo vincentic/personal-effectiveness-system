@@ -1,6 +1,6 @@
 # Gin 单体页面版搭建过程详解
 
-本文介绍如何在本地搭建 Go/Gin 服务端渲染版本。该项目独立运行，使用 Session 登录和 HTML 模板，不提供供 Vue 调用的 REST API；API 版本见 [`../pms-gin-api/`](../pms-gin-api/搭建过程详解.md)。
+本文介绍如何在本地搭建 Go/Gin 服务端渲染版本。该项目独立运行，使用 Session 登录和 HTML 模板，不提供供 Vue 调用的 REST API；API 版本见 [`../pms-gin-api/`](../pms-gin-api/setup.md)。
 
 ## 1. 环境准备
 
@@ -57,6 +57,6 @@ go build ./...
 
 ## 6. 关联资料
 
-- 项目概述与快速启动：[README.md](README.md)
-- 生产部署与 Nginx / systemd 配置：[部署文档.md](部署文档.md)
-- API 对应项目：[Gin API 搭建详解](../pms-gin-api/搭建过程详解.md)
+- 项目概述与快速启动：[README.md](../../../../versions/go/pms-gin/README.md)
+- 生产部署与 Nginx / systemd 配置：[部署指南](deployment.md)
+- API 对应项目：[Gin API 搭建详解](../pms-gin-api/setup.md)

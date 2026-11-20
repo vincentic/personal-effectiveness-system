@@ -2,8 +2,8 @@
 
 This guide helps you put the "daily execution → weekly review → monthly refactor" loop into practice. The four implementations share a data model; Django, Spring Boot, and Gin provide PC / Mobile pages, while FastAPI provides a responsive Vue 3 page and REST API.
 
-- [简体中文](user_guide.md) · [繁體中文](user_guide.zh-TW.md) · [日本語](user_guide.ja.md)
-- [Back to project README](../README.md)
+- [简体中文](user-guide.zh-CN.md) · [繁體中文](user-guide.zh-TW.md) · [日本語](user-guide.ja.md)
+- [Back to project README](../../README.md)
 
 ## 1. Sign in and switch between PC / Mobile
 
@@ -58,7 +58,7 @@ Go to **Monthly** and click "New monthly refactor". Four sections:
 Django, Spring Boot, Gin, and FastAPI share one database and schema, with data isolated by account. FastAPI shares the API Token contract with Spring Boot and Gin; each page-based edition has its own session mechanism.
 
 - **Page users**: sign in via Session / signed cookie; data is isolated per account — nobody else can see your lists.
-- **FastAPI page and API users**: after page sign-in, the browser keeps a session Token. For API calls, get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across FastAPI, Spring Boot, and Gin. See the [API contract](../db/API.md).
+- **FastAPI page and API users**: after page sign-in, the browser keeps a session Token. For API calls, get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across FastAPI, Spring Boot, and Gin. See the [API contract](../data/api-contract.md).
 - Default ports: Spring Boot 8080, Gin 8081, FastAPI 8000; Django and FastAPI both use 8000, so offset one when running together.
 
 ## 6. FAQ

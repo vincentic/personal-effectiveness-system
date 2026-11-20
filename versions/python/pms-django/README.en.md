@@ -4,7 +4,7 @@
 
 A lightweight project and task management system built with **Django 4.2 + MySQL**. It provides authentication, a dashboard with statistics, project management, member management, a three-column task board (To Do / In Progress / Done), and the Django Admin site. The UI is in Chinese, styled with Bootstrap 5, and uses the `Asia/Shanghai` time zone by default.
 
-> For production deployment (Gunicorn + Nginx + systemd) and troubleshooting, see [部署文档.md](部署文档.md) (in Simplified Chinese). For the architecture, see [Section 3](#3-architecture).
+> For production deployment (Gunicorn + Nginx + systemd) and troubleshooting, see [部署指南](../../../docs/projects/python/pms-django/deployment.md) (in Simplified Chinese). For the architecture, see [Section 3](#3-architecture).
 
 ---
 
@@ -165,7 +165,7 @@ Prerequisites: MySQL installed and running, with an account allowed to create da
 CREATE DATABASE pms DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-For a dedicated database user, see section 3 of [部署文档.md](部署文档.md).
+For a dedicated database user, see section 3 of [部署指南](../../../docs/projects/python/pms-django/deployment.md).
 
 **2. Create a virtual environment and install dependencies**
 
@@ -224,8 +224,8 @@ pms/
 ├── manage.py                     # Django management entry point
 ├── requirements.txt              # Python dependencies
 ├── .env.example                  # Environment variable template (copy to .env)
-├── 部署文档.md                    # Deployment & troubleshooting guide (Chinese)
-├── 热部署文档.md                  # Zero-downtime hot deploy via HUP (Chinese)
+├── ../../../docs/projects/python/pms-django/deployment.md # Deployment & troubleshooting guide (Chinese)
+├── ../../../docs/projects/python/pms-django/hot-deployment.md # Zero-downtime hot deploy guide (Chinese)
 ├── README.md / README.zh-CN.md / README.zh-TW.md / README.en.md
 ├── deploy/                       # Production & hot-deploy configuration
 │   ├── gunicorn.conf.py          # Gunicorn graceful reload settings
@@ -276,9 +276,9 @@ Deleting a project cascades to its tasks; deleting the assigned user sets the ta
 - Start the app: `gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3`.
 - Put Nginx in front as a reverse proxy and serve `/static/` directly.
 
-Full systemd unit, Nginx config sample and troubleshooting table are in sections 5–6 of [部署文档.md](部署文档.md).
+Full systemd unit, Nginx config sample and troubleshooting table are in sections 5–6 of [部署指南](../../../docs/projects/python/pms-django/deployment.md).
 
-**Hot deploy (zero-downtime release)**: `deploy/pms.service` uses `ExecReload=/bin/kill -HUP $MAINPID` to trigger a graceful Gunicorn reload. Run `./deploy/hot-deploy.sh` for routine releases (`--dry-run` to preview): it pulls code, installs dependencies, runs `migrate` and `collectstatic`, sends HUP, then polls `/login/` until it returns 200. Nginx needs no reload. This requires `preload_app = False` and backward-compatible migrations; see [热部署文档.md](热部署文档.md) (in Chinese).
+**Hot deploy (zero-downtime release)**: `deploy/pms.service` uses `ExecReload=/bin/kill -HUP $MAINPID` to trigger a graceful Gunicorn reload. Run `./deploy/hot-deploy.sh` for routine releases (`--dry-run` to preview): it pulls code, installs dependencies, runs `migrate` and `collectstatic`, sends HUP, then polls `/login/` until it returns 200. Nginx needs no reload. This requires `preload_app = False` and backward-compatible migrations; see [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md) (in Chinese).
 
 On a local dev machine, use `./deploy/local-hot.sh`: HUP reload by default, `watch` for auto-reload on `.py` / `.html` / `.css` changes, plus `start` / `status` / `stop`. No systemd, sudo or extra file-watching tools are needed; see section 10 of that guide.
 
@@ -301,8 +301,8 @@ python manage.py test
 
 | Document | Contents |
 |----------|----------|
-| [部署文档.md](部署文档.md) | Prerequisites, database SQL, production deployment, FAQ, roadmap (in Simplified Chinese) |
-| [热部署文档.md](热部署文档.md) | Gunicorn HUP graceful reload, one-command release script, rollback and FAQ (in Simplified Chinese) |
+| [部署指南](../../../docs/projects/python/pms-django/deployment.md) | Prerequisites, database SQL, production deployment, FAQ, roadmap (in Simplified Chinese) |
+| [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md) | Gunicorn HUP graceful reload, one-command release script, rollback and FAQ (in Simplified Chinese) |
 | [README.md](README.md) | 简体中文 (Simplified Chinese, default) |
 | [README.zh-CN.md](README.zh-CN.md) | 简体中文 (language-code named copy) |
 | [README.zh-TW.md](README.zh-TW.md) | 繁體中文 (Traditional Chinese) |

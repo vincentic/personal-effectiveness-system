@@ -7,7 +7,7 @@ Vue 源码独立位于 `versions/vue/pms-vue/`，构建后由 FastAPI 同源提�
 
 ## 一、系统功能
 
-- API Token 认证（HMAC-SHA256，签名格式见 `../../../db/API.md`）
+- API Token 认证（HMAC-SHA256，签名格式见[API 契约](../../../data/api-contract.md)）
 - 工作台统计：`/api/dashboard`
 - 项目 CRUD、成员管理、进度计算
 - 任务 CRUD、三列看板排序、执行人指派
@@ -21,7 +21,7 @@ versions/python/pms-fastapi/
 ├── requirements.txt                 # Python 依赖
 ├── .env.example                     # 环境变量示例
 ├── start.sh                         # 便捷启动（开发模式，带 --reload）
-├── 部署文档.md                        # 本文
+├── ../../../docs/projects/go/pms-gin/deployment.md # 本文（集中归档）
 ├── sql/schema.sql                   # 建表脚本副本（与 db/schema.sql 一致）
 └── app/
     ├── main.py                      # 应用入口、全部 API 路由

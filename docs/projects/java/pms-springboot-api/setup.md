@@ -1,6 +1,6 @@
 # Spring Boot REST API 搭建过程详解
 
-本文说明如何运行独立的 Spring Boot REST API，并让共享 Vue 前端通过它读写个人效能数据。该服务不渲染业务页面；服务端页面版见 [`../pms-springboot/`](../pms-springboot/搭建过程详解.md)。
+本文说明如何运行独立的 Spring Boot REST API，并让共享 Vue 前端通过它读写个人效能数据。该服务不渲染业务页面；服务端页面版见 [`../pms-springboot/`](../pms-springboot/setup.md)。
 
 ## 1. 环境准备
 
@@ -55,7 +55,7 @@ mvn test
 mvn package
 ```
 
-运行 API 后可按 [`../../../db/API.md`](../../../db/API.md) 验证登录和业务端点。Vue 的单测、类型检查与构建：
+运行 API 后可按 [API 契约](../../../data/api-contract.md) 验证登录和业务端点。Vue 的单测、类型检查与构建：
 
 ```bash
 cd versions/vue/pms-vue
@@ -74,7 +74,7 @@ npm run build
 
 ## 6. 关联资料
 
-- REST API 契约：[db/API.md](../../../db/API.md)
-- 项目概述：[README.md](README.md)
-- 页面单体版：[Spring Boot 单体页面版搭建详解](../pms-springboot/搭建过程详解.md)
-- Vue 前端：[Vue 搭建详解](../../vue/pms-vue/搭建过程详解.md)
+- REST API 契约：[API 契约](../../../data/api-contract.md)
+- 项目概述：[README.md](../../../../versions/java/pms-springboot-api/README.md)
+- 页面单体版：[Spring Boot 单体页面版搭建详解](../pms-springboot/setup.md)
+- Vue 前端：[Vue 搭建详解](../../vue/pms-vue/setup.md)

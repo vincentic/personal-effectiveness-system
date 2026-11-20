@@ -1,7 +1,7 @@
 """个人效能系统：FastAPI 提供 Vue 页面与 REST API，与其他版本共用数据与 Token 契约。
 
 日 / 周 / 月清单全部按当前用户隔离；明细子表在写请求内随主表整体替换。
-契约见 db/API.md。
+契约见 docs/data/api-contract.md。
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="个人效能系统 API",
     version="2.0.0",
-    description="个人效能系统 FastAPI 服务，提供 Vue 页面和 REST API。契约见 db/API.md。",
+    description="个人效能系统 FastAPI 服务，提供 Vue 页面和 REST API。契约见 docs/data/api-contract.md。",
     lifespan=lifespan,
 )
 app.add_middleware(

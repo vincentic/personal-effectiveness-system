@@ -1,7 +1,7 @@
 # PMS Gin 单体版部署文档
 
 基于 **Go 1.22+（本机实测 1.27.4，通过 gvm 安装）/ Gin 1.10 / database/sql / MySQL 8.0** 的项目管理系统 Gin 版。
-本目录仅提供服务端页面；独立 REST API 项目见 [`../pms-gin-api/`](../pms-gin-api/README.md)。
+本目录仅提供服务端页面；独立 REST API 项目见 [`../pms-gin-api/`](../../../../versions/go/pms-gin-api/README.md)。
 
 ---
 
@@ -21,7 +21,7 @@ versions/go/pms-gin/
 ├── main.go                          # 入口：embed 资源、初始化、启动
 ├── .env.example                     # 环境变量示例
 ├── start.sh                         # 便捷启动（自动 tidy、加载 .env）
-├── 部署文档.md                        # 本文
+├── ../../../docs/projects/go/pms-gin/deployment.md # 本文（集中归档）
 ├── sql/schema.sql                   # 内嵌建表脚本（go:embed）
 ├── internal/
 │   ├── config/                      # .env 加载与配置

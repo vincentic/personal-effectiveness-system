@@ -1,8 +1,8 @@
 # PMS Spring Boot API
 
-Standalone Java/Spring Boot REST API for the personal effectiveness system. The server-rendered Spring Boot monolith lives separately in `../pms-springboot`; both services implement the shared contract in `../../../db/API.md` and use the shared MySQL schema.
+Standalone Java/Spring Boot REST API for the personal effectiveness system. The server-rendered Spring Boot monolith lives separately in `../pms-springboot`; both services implement the shared contract in [`../../../docs/data/api-contract.md`](../../../docs/data/api-contract.md) and use the shared MySQL schema.
 
-搭建步骤见[搭建过程详解.md](搭建过程详解.md)。
+搭建步骤见[搭建指南](../../../docs/projects/java/pms-springboot-api/setup.md)。
 
 ## Run
 
@@ -27,4 +27,4 @@ The shared Vue application is in `../../vue/pms-vue`. From that directory, run:
 VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
 ```
 
-The API contract, auth, and CRUD endpoints are documented in `../../../db/API.md`.
+The API contract, auth, and CRUD endpoints are documented in [`../../../docs/data/api-contract.md`](../../../docs/data/api-contract.md).

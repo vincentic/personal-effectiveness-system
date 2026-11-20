@@ -2,7 +2,7 @@
 
 FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。系统与 Django、Spring Boot、Gin 版共用 v2 数据模型和账号数据，并与独立的 Spring Boot API / Gin API 共用 REST API 与 Token 契约；数据按当前用户隔离。
 
-本地环境、前端构建和启动步骤见[搭建过程详解.md](搭建过程详解.md)。
+本地环境、前端构建和启动步骤见[搭建指南](../../../docs/projects/python/pms-fastapi/setup.md)。
 
 ## 业务场景
 
@@ -38,11 +38,11 @@ FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它�
 - **前端**：Vue 3、TypeScript、Vite；PC / 手机使用同一响应式页面。构建结果输出至 `app/web`。
 - **后端**：Python 3.10+、FastAPI、Pydantic、Uvicorn；启动时幂等初始化数据库表。
 - **持久化与认证**：MySQL 8、PyMySQL；密码使用 BCrypt，API 使用 HMAC-SHA256 Token（有效期 24 小时）。
-- **共享契约**：日、周、月记录与其他实现共享表结构，API 字段见 [`../../../db/API.md`](../../../db/API.md)，数据关系见 [`../../../db/DESIGN.md`](../../../db/DESIGN.md)。
+- **共享契约**：日、周、月记录与其他实现共享表结构，API 字段见[API 契约](../../../docs/data/api-contract.md)，数据关系见[数据模型设计](../../../docs/data/schema-design.md)。
 
 ## 使用指南
 
-完整的日 / 周 / 月使用流程见[简体中文使用指南](../../../docs/user_guide.md)：[English](../../../docs/user_guide.en.md) · [繁體中文](../../../docs/user_guide.zh-TW.md) · [日本語](../../../docs/user_guide.ja.md)。
+完整的日 / 周 / 月使用流程见[简体中文使用指南](../../../docs/guides/user-guide.zh-CN.md)：[English](../../../docs/guides/user-guide.en.md) · [繁體中文](../../../docs/guides/user-guide.zh-TW.md) · [日本語](../../../docs/guides/user-guide.ja.md)。
 
 ## 启动
 
@@ -114,7 +114,7 @@ GitHub Actions 会在共享 Vue 前端相关改动时自动运行上述测试和
 
 ## API
 
-见 `../../../db/API.md`。端点包括：
+见[API 契约](../../../docs/data/api-contract.md)。端点包括：
 
 ```
 POST /api/auth/login

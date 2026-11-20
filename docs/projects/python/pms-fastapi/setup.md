@@ -1,6 +1,6 @@
 # FastAPI + Vue 搭建过程详解
 
-本文介绍如何本地运行 FastAPI 服务和共享 Vue 页面。FastAPI 负责 REST API 与静态页面托管；Vue 源码独立位于 [`../../vue/pms-vue/`](../../vue/pms-vue/搭建过程详解.md)。
+本文介绍如何本地运行 FastAPI 服务和共享 Vue 页面。FastAPI 负责 REST API 与静态页面托管；Vue 源码独立位于 [`../../vue/pms-vue/`](../../vue/pms-vue/setup.md)。
 
 ## 1. 环境准备
 
@@ -52,7 +52,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 - Vue 页面：<http://127.0.0.1:8000/>
 - OpenAPI 交互文档：<http://127.0.0.1:8000/docs>
-- API 契约：[`../../../db/API.md`](../../../db/API.md)
+- API 契约：[API 契约](../../../data/api-contract.md)
 
 如果前端尚未构建，页面入口会提示构建缺失，但 API 文档仍可访问。
 
@@ -78,6 +78,6 @@ VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
 
 ## 7. 关联资料
 
-- 项目概述与 API 端点：[README.md](README.md)
-- 生产部署：[部署文档.md](部署文档.md)
-- 共享前端搭建：[Vue 搭建详解](../../vue/pms-vue/搭建过程详解.md)
+- 项目概述与 API 端点：[README.md](../../../../versions/python/pms-fastapi/README.md)
+- 生产部署：[部署指南](deployment.md)
+- 共享前端搭建：[Vue 搭建详解](../../vue/pms-vue/setup.md)

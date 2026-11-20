@@ -2,8 +2,8 @@
 
 基于 **Gunicorn HUP 优雅重载** 的热部署方案：发布新代码时服务不中断，Nginx 无需 reload，用户请求由旧 worker 处理完后再切到新 worker。
 
-> 前置阅读：[部署文档.md](部署文档.md)（环境准备、建库、Nginx 配置、常见问题）。本文是其第五节的延伸。
-> 简体中文文档；多语言项目说明见 [README.md](README.md)。
+> 前置阅读：[部署指南](deployment.md)（环境准备、建库、Nginx 配置、常见问题）。本文是其第五节的延伸。
+> 简体中文文档；多语言项目说明见 [README.md](../../../../versions/python/pms-django/README.md)。
 
 ---
 
@@ -49,8 +49,8 @@ sequenceDiagram
 | `deploy/gunicorn.conf.py` | Gunicorn 生产配置：绑定、worker 数、优雅超时、pidfile、日志 |
 | `deploy/pms.service` | systemd 单元，含 `ExecReload`、`RuntimeDirectory`、`Restart` |
 | `deploy/hot-deploy.sh` | 一键热部署脚本（拉代码 → 依赖 → check → migrate → collectstatic → HUP → 健康检查） |
-| `部署文档.md` | 基础部署、Nginx 配置、排错（既有文档） |
-| `热部署文档.md` | 本文 |
+| [deployment.md](deployment.md) | 基础部署、Nginx 配置、排错（既有文档） |
+| [hot-deployment.md](hot-deployment.md) | 本文 |
 
 ## 三、首次接入
 
@@ -162,8 +162,8 @@ git reset --hard <上一版本 commit>     # 或用发布前记录的 PREV_VERSI
 
 | 文档 | 内容 |
 |------|------|
-| [部署文档.md](部署文档.md) | 环境准备、建库 SQL、Gunicorn + Nginx 基础部署、常见问题 |
-| [README.md](README.md) / [README.en.md](README.en.md) | 项目说明与架构设计（多语言） |
+| [部署指南](deployment.md) | 环境准备、建库 SQL、Gunicorn + Nginx 基础部署、常见问题 |
+| [README.md](../../../../versions/python/pms-django/README.md) / [README.en.md](../../../../versions/python/pms-django/README.en.md) | 项目说明与架构设计（多语言） |
 
 ---
 

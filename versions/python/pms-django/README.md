@@ -4,9 +4,9 @@
 
 基于 **Django 4.2 + MySQL** 的轻量级项目与任务管理系统。提供账号认证、工作台统计概览、项目管理、成员管理、任务看板（待处理 / 进行中 / 已完成）以及 Django Admin 后台。界面为中文，使用 Bootstrap 5，默认时区 `Asia/Shanghai`。
 
-> 生产环境部署（Gunicorn + Nginx + systemd）与常见问题排查，见 [部署文档.md](部署文档.md)。架构设计见 [第 3 节](#3-架构设计)。
+> 生产环境部署（Gunicorn + Nginx + systemd）与常见问题排查，见[部署指南](../../../docs/projects/python/pms-django/deployment.md)。架构设计见 [第 3 节](#3-架构设计)。
 >
-> 本地环境准备、数据库配置和启动步骤见[搭建过程详解.md](搭建过程详解.md)。
+> 本地环境准备、数据库配置和启动步骤见[搭建指南](../../../docs/projects/python/pms-django/setup.md)。
 
 ---
 
@@ -167,7 +167,7 @@ flowchart LR
 CREATE DATABASE pms DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-如需专用账号，可参考 [部署文档.md](部署文档.md) 第三节的建用户与授权 SQL。
+如需专用账号，可参考 [部署指南](../../../docs/projects/python/pms-django/deployment.md) 第三节的建用户与授权 SQL。
 
 **② 创建虚拟环境并安装依赖**
 
@@ -226,8 +226,8 @@ pms/
 ├── manage.py                     # Django 管理入口
 ├── requirements.txt              # Python 依赖
 ├── .env.example                  # 环境变量示例（复制为 .env 使用）
-├── 部署文档.md                    # 中文详细部署与排错文档
-├── 热部署文档.md                  # 不停机发布（HUP 优雅重载）文档
+├── ../../../docs/projects/python/pms-django/deployment.md # 中文部署与排错指南
+├── ../../../docs/projects/python/pms-django/hot-deployment.md # 不停机发布指南
 ├── README.md / README.zh-CN.md / README.zh-TW.md / README.en.md
 ├── deploy/                       # 生产与热部署配置
 │   ├── gunicorn.conf.py          # Gunicorn 优雅重载参数
@@ -278,9 +278,9 @@ pms/
 - 启动应用：`gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 3`。
 - 由 Nginx 反向代理应用，并直接托管 `/static/`。
 
-完整的 systemd 服务配置、Nginx 配置示例及排错表格见 [部署文档.md](部署文档.md) 第五、六节。
+完整的 systemd 服务配置、Nginx 配置示例及排错表格见 [部署指南](../../../docs/projects/python/pms-django/deployment.md) 第五、六节。
 
-**热部署（不停机发布）**：`deploy/pms.service` 通过 `ExecReload=/bin/kill -HUP $MAINPID` 触发 Gunicorn 优雅重载；日常发布执行 `./deploy/hot-deploy.sh`（可先加 `--dry-run` 演练），脚本依次完成代码拉取、依赖安装、`migrate`、`collectstatic`、HUP 重载与 `/login/` 健康检查，全程不中断，Nginx 无需 reload。前提是 `preload_app = False` 且数据库迁移向后兼容；详见 [热部署文档.md](热部署文档.md)。
+**热部署（不停机发布）**：`deploy/pms.service` 通过 `ExecReload=/bin/kill -HUP $MAINPID` 触发 Gunicorn 优雅重载；日常发布执行 `./deploy/hot-deploy.sh`（可先加 `--dry-run` 演练），脚本依次完成代码拉取、依赖安装、`migrate`、`collectstatic`、HUP 重载与 `/login/` 健康检查，全程不中断，Nginx 无需 reload。前提是 `preload_app = False` 且数据库迁移向后兼容；详见 [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md)。
 
 本地开发机可直接使用 `./deploy/local-hot.sh`：默认执行 HUP 热重载，`watch` 子命令监听 `.py` / `.html` / `.css` 变化自动重载，另有 `start` / `status` / `stop`；无需 systemd、sudo 或额外监听工具，详见该文档第十节。
 
@@ -303,9 +303,9 @@ python manage.py test
 
 | 文档 | 内容 |
 |------|------|
-| [搭建过程详解.md](搭建过程详解.md) | 本地 Python 环境、MySQL 配置、迁移、管理员创建与开发服务器启动步骤 |
-| [部署文档.md](部署文档.md) | 环境准备、建库 SQL、生产部署、常见问题、后续扩展建议（中文） |
-| [热部署文档.md](热部署文档.md) | Gunicorn HUP 优雅重载、一键发布脚本、回滚与排错（中文） |
+| [搭建指南](../../../docs/projects/python/pms-django/setup.md) | 本地 Python 环境、MySQL 配置、迁移、管理员创建与开发服务器启动步骤 |
+| [部署指南](../../../docs/projects/python/pms-django/deployment.md) | 环境准备、建库 SQL、生产部署、常见问题、后续扩展建议（中文） |
+| [热部署指南](../../../docs/projects/python/pms-django/hot-deployment.md) | Gunicorn HUP 优雅重载、一键发布脚本、回滚与排错（中文） |
 | [README.md](README.md) | 简体中文（默认入口） |
 | [README.zh-CN.md](README.zh-CN.md) | 简体中文（按语言代码命名的副本） |
 | [README.zh-TW.md](README.zh-TW.md) | 繁體中文版 |

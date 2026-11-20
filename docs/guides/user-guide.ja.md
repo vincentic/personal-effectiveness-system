@@ -2,8 +2,8 @@
 
 このガイドは「日次実行 → 週次レビュー → 月次リファクタ」の循環を実践するためのものです。4 つの実装はデータモデルを共有し、Django／Spring Boot／Gin は PC・モバイル画面、FastAPI は Vue 3 のレスポンシブ画面と REST API を提供します。
 
-- [简体中文](user_guide.md) · [English](user_guide.en.md) · [繁體中文](user_guide.zh-TW.md)
-- [プロジェクト README に戻る](../README.md)
+- [简体中文](user-guide.zh-CN.md) · [English](user-guide.en.md) · [繁體中文](user-guide.zh-TW.md)
+- [プロジェクト README に戻る](../../README.md)
 
 ## 1. ログインと PC／モバイルの切り替え
 
@@ -58,7 +58,7 @@
 Django / Spring Boot / Gin / FastAPI の 4 版は同じデータベースとテーブルを共有し、データはアカウントごとに分離されます。FastAPI は Spring Boot / Gin と API Token 契約を共有し、画面版はそれぞれ異なるセッション方式を使います。
 
 - **画面ユーザー**：Session／署名付き Cookie でログイン。データはアカウントごとに分離され、他人のリストは見えません。
-- **FastAPI の画面／API ユーザー**：画面ログイン後、ブラウザが現在のセッション Token を保持します。API 呼び出しでは `POST /api/auth/login` で Token を取得し、`Authorization: Bearer <token>` で送信します。FastAPI、Spring Boot、Gin 間で Token を共有できます。詳細は [API 契約](../db/API.md)。
+- **FastAPI の画面／API ユーザー**：画面ログイン後、ブラウザが現在のセッション Token を保持します。API 呼び出しでは `POST /api/auth/login` で Token を取得し、`Authorization: Bearer <token>` で送信します。FastAPI、Spring Boot、Gin 間で Token を共有できます。詳細は [API 契約](../data/api-contract.md)。
 - 既定ポート：Spring Boot 8080、Gin 8081、FastAPI 8000。Django と FastAPI はどちらも 8000 なので、同時起動時はずらしてください。
 
 ## 6. よくある質問
