@@ -2,6 +2,8 @@
 
 Standalone Go/Gin REST API for the personal effectiveness system. The server-rendered Gin monolith lives separately in `../pms-gin`; both services implement the shared contract in `../../../db/API.md` and use the shared MySQL schema.
 
+搭建步骤见[搭建过程详解.md](搭建过程详解.md)。
+
 ## Run
 
 Requirements: Go 1.22+ and MySQL 8.0+.

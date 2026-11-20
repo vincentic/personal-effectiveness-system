@@ -2,13 +2,15 @@
 
 Standalone Java/Spring Boot REST API for the personal effectiveness system. The server-rendered Spring Boot monolith lives separately in `../pms-springboot`; both services implement the shared contract in `../../../db/API.md` and use the shared MySQL schema.
 
+搭建步骤见[搭建过程详解.md](搭建过程详解.md)。
+
 ## Run
 
 Requirements: Java 17+ and MySQL 8.0+.
 
 ```bash
 cp .env.example .env
-mvn spring-boot:run
+./start.sh
 ```
 
 The API listens on port `8080` by default. Spring SQL initialization applies `src/main/resources/schema.sql`; the configured default administrator is created when the `users` table is empty.

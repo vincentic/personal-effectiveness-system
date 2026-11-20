@@ -91,16 +91,16 @@ mysql -u root -e "CREATE DATABASE IF NOT EXISTS pms CHARACTER SET utf8mb4 COLLAT
 ```bash
 # Django
 cd versions/python/pms-django && python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt && python manage.py migrate && python manage.py runserver 8000
+pip install -r requirements.txt && python manage.py migrate && python manage.py createsuperuser && python manage.py runserver 8000
 
 # Spring Boot 单体页面版（默认 8080）
-cd versions/java/pms-springboot && export JAVA_HOME=$(/usr/libexec/java_home -v 17) && mvn spring-boot:run
+cd versions/java/pms-springboot && (test -f .env || cp .env.example .env) && ./start.sh
 
 # Gin 单体页面版（默认 8081）
 cd versions/go/pms-gin && export GOPROXY=https://goproxy.cn,direct && go mod tidy && go run .
 
 # Spring Boot REST API（默认 8080；与页面版不能同时占用同一端口）
-cd versions/java/pms-springboot-api && mvn spring-boot:run
+cd versions/java/pms-springboot-api && (test -f .env || cp .env.example .env) && ./start.sh
 
 # Gin REST API（默认 8081；与页面版不能同时占用同一端口）
 cd versions/go/pms-gin-api && go run .
@@ -135,7 +135,21 @@ pms/
 └── README.md             本文件
 ```
 
-## 七、部署文档
+## 七、部署文档与项目搭建指南
+
+下表列出各独立应用的搭建过程详解，涵盖依赖准备、数据库与环境变量配置、启动方式和验证命令。
+
+| 项目 | 搭建详解 |
+|------|----------|
+| Go Gin 单体页面版 | [搭建过程详解.md](versions/go/pms-gin/搭建过程详解.md) |
+| Go Gin REST API | [搭建过程详解.md](versions/go/pms-gin-api/搭建过程详解.md) |
+| Java Spring Boot 单体页面版 | [搭建过程详解.md](versions/java/pms-springboot/搭建过程详解.md) |
+| Java Spring Boot REST API | [搭建过程详解.md](versions/java/pms-springboot-api/搭建过程详解.md) |
+| Python Django 页面版 | [搭建过程详解.md](versions/python/pms-django/搭建过程详解.md) |
+| Python FastAPI + Vue 同源版 | [搭建过程详解.md](versions/python/pms-fastapi/搭建过程详解.md) |
+| Vue 共享前端 | [搭建过程详解.md](versions/vue/pms-vue/搭建过程详解.md) |
+
+生产环境部署细节另见下表：
 
 | 服务端语言 | 实现 | 部署文档 |
 |------------|------|---------|
