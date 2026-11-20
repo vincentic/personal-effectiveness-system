@@ -2,7 +2,7 @@ name: Shared Vue frontend
 
 on:
   push:
-    branches: [main]
+    branches: ["release/flask-vue"]
     paths:
       - "versions/vue/pms-vue/**"
       - ".github/workflows/vue-frontend.yml"

@@ -67,4 +67,4 @@ server {
 
 ## 3. Docker 与 Kubernetes
 
-镜像内使用 Gunicorn 绑定 `0.0.0.0:8002`，配置通过环境变量传入。Kubernetes Secret 应承载 `API_SECRET`、`DB_PASSWORD` 和 `ADMIN_PASSWORD`；API Deployment 用 `/health` 探针，Vue 使用独立静态服务。完整 Dockerfile、Nginx Ingress、探针与发布示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+镜像内使用 Gunicorn 绑定 `0.0.0.0:8002`，配置通过环境变量传入。Kubernetes Secret 应承载 `API_SECRET`、`DB_PASSWORD` 和 `ADMIN_PASSWORD`；API Deployment 用 `/health` 探针，Vue 使用独立静态服务。完整 Dockerfile、Nginx Ingress、探针与发布示例见多语言 Docker + Kubernetes 部署指南。

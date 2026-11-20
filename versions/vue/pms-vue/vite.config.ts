@@ -3,7 +3,7 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
-  const apiTarget = env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8000";
+  const apiTarget = env.VITE_API_PROXY_TARGET || "http://127.0.0.1:8002";
 
   return {
     plugins: [vue()],
@@ -12,10 +12,6 @@ export default defineConfig(({ mode }) => {
         "/api": apiTarget,
         "/health": apiTarget,
       },
-    },
-    build: {
-      outDir: "../../python/pms-fastapi/app/web",
-      emptyOutDir: true,
     },
   };
 });

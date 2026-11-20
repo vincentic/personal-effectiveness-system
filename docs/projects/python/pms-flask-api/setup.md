@@ -48,7 +48,7 @@ pytest
 curl -i http://127.0.0.1:8002/health
 ```
 
-API 的端点、输入字段、认证错误和用户隔离规则以[REST API 契约](../../../data/api-contract.md)为准。
+API 的端点、输入字段、认证错误和用户隔离规则以REST API 契约为准。
 
 ## 5. 关联文档
 
