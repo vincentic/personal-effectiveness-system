@@ -83,11 +83,17 @@ mysql -u root -e "CREATE DATABASE IF NOT EXISTS pms CHARACTER SET utf8mb4 COLLAT
 cd versions/python/pms-django && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && python manage.py migrate && python manage.py runserver 8000
 
-# Spring Boot（默认 8080）
+# Spring Boot 单体页面版（默认 8080）
 cd versions/java/pms-springboot && export JAVA_HOME=$(/usr/libexec/java_home -v 17) && mvn spring-boot:run
 
-# Gin（默认 8081）
+# Gin 单体页面版（默认 8081）
 cd versions/go/pms-gin && export GOPROXY=https://goproxy.cn,direct && go mod tidy && go run .
+
+# Spring Boot REST API（默认 8080；与页面版不能同时占用同一端口）
+cd versions/java/pms-springboot-api && mvn spring-boot:run
+
+# Gin REST API（默认 8081；与页面版不能同时占用同一端口）
+cd versions/go/pms-gin-api && go run .
 
 # FastAPI + Vue（默认 8000，构建后访问 /，API 文档 /docs）
 cd versions/python/pms-fastapi && python3 -m venv .venv && source .venv/bin/activate
@@ -104,9 +110,11 @@ uvicorn app.main:app --reload --port 8000
 pms/
 ├── versions/
 │   ├── go/
-│   │   └── pms-gin/          Gin（PC/Mobile 双端页面 + REST API）
+│   │   ├── pms-gin/          Gin 单体版（PC/Mobile 双端页面）
+│   │   └── pms-gin-api/      Gin REST API（供共享 Vue 使用）
 │   ├── java/
-│   │   └── pms-springboot/   Spring Boot 3.2（PC/Mobile 双端页面 + REST API）
+│   │   ├── pms-springboot/   Spring Boot 3.2 单体版（PC/Mobile 双端页面）
+│   │   └── pms-springboot-api/ Spring Boot 3.2 REST API（供共享 Vue 使用）
 │   └── python/
 │       ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
 │       └── pms-fastapi/      FastAPI + Vue 3（同源响应式页面 + REST API）
@@ -120,8 +128,10 @@ pms/
 | 服务端语言 | 实现 | 部署文档 |
 |------------|------|---------|
 | Python | Django | [部署文档.md](versions/python/pms-django/部署文档.md) · [热部署文档.md](versions/python/pms-django/热部署文档.md)（不停机发布） |
-| Java | Spring Boot | [部署文档.md](versions/java/pms-springboot/部署文档.md) |
-| Go | Gin | [部署文档.md](versions/go/pms-gin/部署文档.md) |
+| Java | Spring Boot 单体页面版 | [部署文档.md](versions/java/pms-springboot/部署文档.md) |
+| Java | Spring Boot REST API | [README.md](versions/java/pms-springboot-api/README.md) |
+| Go | Gin 单体页面版 | [部署文档.md](versions/go/pms-gin/部署文档.md) |
+| Go | Gin REST API | [README.md](versions/go/pms-gin-api/README.md) |
 | Python | FastAPI + Vue | [部署文档.md](versions/python/pms-fastapi/部署文档.md) |
 
 > 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
@@ -129,6 +139,7 @@ pms/
 ## 八、API 互通验证
 
 ```bash
+# 此处启动的是 Spring Boot API（pms-springboot-api），不是同端口的单体页面版
 TOKEN=$(curl -s -X POST http://127.0.0.1:8080/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"admin123"}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["token"])')

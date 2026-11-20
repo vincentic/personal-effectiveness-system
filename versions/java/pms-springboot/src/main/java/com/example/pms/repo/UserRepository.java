@@ -7,7 +7,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -52,16 +51,4 @@ public class UserRepository {
                 username, passwordHash, displayName == null ? "" : displayName, staff ? 1 : 0);
     }
 
-    /** API 用：返回带完整时间戳的原始行，避免视图模型丢时间部分。 */
-    public Optional<Map<String, Object>> findRowByUsername(String username) {
-        return jdbc.queryForList("SELECT * FROM users WHERE username = ?", username).stream().findFirst();
-    }
-
-    public Optional<Map<String, Object>> findRowById(long id) {
-        return jdbc.queryForList("SELECT * FROM users WHERE id = ?", id).stream().findFirst();
-    }
-
-    public List<Map<String, Object>> findAllRows() {
-        return jdbc.queryForList("SELECT * FROM users ORDER BY id");
-    }
 }

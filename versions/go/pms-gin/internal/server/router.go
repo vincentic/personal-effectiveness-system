@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,11 +12,9 @@ import (
 
 // Server 聚合配置、模板集、静态资源与密钥。
 type Server struct {
-	cfg           config.Config
 	templates     map[string]*template.Template
 	staticFS      fs.FS
 	sessionSecret string
-	apiSecret     string
 	cookieSecure  bool
 }
 
@@ -32,22 +29,19 @@ func New(cfg config.Config, templatesFS, staticFS fs.FS) (*Server, error) {
 		return nil, err
 	}
 	return &Server{
-		cfg:           cfg,
 		templates:     tpls,
 		staticFS:      sub,
 		sessionSecret: cfg.SessionSecret,
-		apiSecret:     cfg.APISecret,
 		cookieSecure:  cfg.CookieSecure,
 	}, nil
 }
 
-// Router 注册页面路由与 /api/ 路由。
+// Router 注册服务端页面路由。
 // 说明：gin 路由树不允许同一层既有静态段又有通配段，因此 /xxx/new/ 合并进
 // /xxx/:id/ 内部分流（id == "new"），行为与独立路由完全一致。
 func (s *Server) Router() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
-	r.Use(apiCORSMiddleware(s.cfg.CORSOrigins))
 	r.Use(s.csrfMiddleware())
 	r.StaticFS("/static", http.FS(s.staticFS))
 
@@ -56,7 +50,7 @@ func (s *Server) Router() *gin.Engine {
 	r.POST("/login", s.loginPOST)
 	r.POST("/logout", s.logoutPOST)
 
-	// 视图模式切换（公开，GET 幂等，豁免 CSRF；与 /api/** 一样不要求登录）
+	// 视图模式切换（公开，GET 幂等，豁免 CSRF）
 	r.GET("/view/:mode/", s.viewSwitch)
 
 	// 业务页面（统一要求登录）
@@ -88,73 +82,5 @@ func (s *Server) Router() *gin.Engine {
 	page.GET("/admin/users/", s.adminUsersGET)
 	page.POST("/admin/users/", s.adminUsersPOST)
 
-	// REST API（豁免 CSRF，除 login 外均需 Bearer Token）
-	api := r.Group("/api")
-	api.POST("/auth/login", s.apiLogin)
-	authed := api.Group("")
-	authed.Use(s.apiAuth)
-	authed.GET("/me", s.apiMe)
-	authed.GET("/dashboard", s.apiDashboard)
-
-	authed.GET("/daily", s.apiDailyList)
-	authed.POST("/daily", s.apiDailyCreate)
-	authed.GET("/daily/:id", s.apiDailyGet)
-	authed.PUT("/daily/:id", s.apiDailyUpdate)
-	authed.DELETE("/daily/:id", s.apiDailyDelete)
-
-	authed.GET("/weekly", s.apiWeeklyList)
-	authed.POST("/weekly", s.apiWeeklyCreate)
-	authed.GET("/weekly/:id", s.apiWeeklyGet)
-	authed.PUT("/weekly/:id", s.apiWeeklyUpdate)
-	authed.DELETE("/weekly/:id", s.apiWeeklyDelete)
-
-	authed.GET("/monthly", s.apiMonthlyList)
-	authed.POST("/monthly", s.apiMonthlyCreate)
-	authed.GET("/monthly/:id", s.apiMonthlyGet)
-	authed.PUT("/monthly/:id", s.apiMonthlyUpdate)
-	authed.DELETE("/monthly/:id", s.apiMonthlyDelete)
-
-	authed.GET("/users", s.apiUsersList)
-	authed.POST("/users", s.apiUsersCreate)
-
 	return r
-}
-
-func apiCORSMiddleware(origins string) gin.HandlerFunc {
-	allowed := map[string]bool{}
-	for _, origin := range strings.Split(origins, ",") {
-		if origin = strings.TrimSpace(origin); origin != "" {
-			allowed[origin] = true
-		}
-	}
-
-	return func(c *gin.Context) {
-		origin := c.GetHeader("Origin")
-		if !strings.HasPrefix(c.Request.URL.Path, "/api/") || origin == "" {
-			c.Next()
-			return
-		}
-		if !allowed["*"] && !allowed[origin] {
-			if c.Request.Method == http.MethodOptions {
-				c.AbortWithStatus(http.StatusForbidden)
-				return
-			}
-			c.Next()
-			return
-		}
-		c.Header("Vary", "Origin")
-		if allowed["*"] {
-			c.Header("Access-Control-Allow-Origin", "*")
-		} else {
-			c.Header("Access-Control-Allow-Origin", origin)
-		}
-		if c.Request.Method == http.MethodOptions {
-			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type")
-			c.Header("Access-Control-Max-Age", "600")
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.Next()
-	}
 }

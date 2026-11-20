@@ -1,6 +1,6 @@
 # 个人效能系统 · FastAPI 版
 
-FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。系统与 Django、Spring Boot、Gin 版共用 v2 数据模型和账号数据，并与 Spring Boot / Gin 共用 REST API 与 Token 契约；数据按当前用户隔离。
+FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。系统与 Django、Spring Boot、Gin 版共用 v2 数据模型和账号数据，并与独立的 Spring Boot API / Gin API 共用 REST API 与 Token 契约；数据按当前用户隔离。
 
 ## 业务场景
 
@@ -19,12 +19,12 @@ FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它�
 ```text
 浏览器（PC / 手机）
   └─ Vue 3 + TypeScript 单页应用
-       ├─ Vite 开发服务器：代理 /api、/health 到 FastAPI
+       ├─ Vite 开发服务器：代理 /api、/health 到可配置的 API 后端
        └─ 生产构建：静态资源由 FastAPI 同源提供
                          │ HTTP / JSON + Bearer Token
                          ▼
                   FastAPI 应用
-                  ├─ 页面与静态资源：/、/assets/*
+                  ├─ Vue 页面与静态资源：/、/assets/*
                   ├─ REST API：/api/auth、/api/dashboard、/api/daily、/api/weekly、/api/monthly
                   ├─ Pydantic 请求校验与用户数据隔离
                   └─ PyMySQL 数据访问
@@ -77,9 +77,9 @@ npm run dev
 访问 Vite 显示的地址；`/api` 与 `/health` 默认代理到 FastAPI。前端同样可连接 Spring Boot 或 Gin API，无需复制 Vue 项目：
 
 ```bash
-# Spring Boot API
+# Spring Boot API（versions/java/pms-springboot-api）
 VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
-# Gin API
+# Gin API（versions/go/pms-gin-api）
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
 ```
 

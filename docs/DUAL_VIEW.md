@@ -1,6 +1,6 @@
 # PC / Mobile 双端实现规范（三版统一）
 
-Django / Spring Boot / Gin 三版遵循同一套双端规则，保证行为一致、可交叉验证。
+Django、Spring Boot 单体版、Gin 单体版遵循同一套 PC / Mobile 页面规则，保证行为一致、可交叉验证。Spring Boot 与 Gin 的 REST API 已拆到同级独立项目目录，不包含 Thymeleaf / Gin 页面模板；API 契约及共享 Vue 见 `db/API.md` 和 `versions/python/pms-fastapi/frontend/`。
 
 ## 1. 视图模式（view mode）
 
@@ -61,7 +61,7 @@ Django / Spring Boot / Gin 三版遵循同一套双端规则，保证行为一�
 
 ## 5. 不变的部分
 
-- REST API（`/api/**`）、Token 格式、BCrypt、用户隔离、CSRF、数据库表结构全部不动。
+- 本规范只涉及单体页面版；独立 API 项目的 REST 契约（`/api/**`）、Token 格式、BCrypt、用户隔离和数据库表结构保持不变。
 - 三版表单字段名与 POST 目标必须与 PC 端一致（移动端只是另一套呈现，提交到相同路由）。
 - 登录页也要有移动版，登录后跳回工作台。
 

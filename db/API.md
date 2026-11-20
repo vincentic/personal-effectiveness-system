@@ -1,9 +1,9 @@
 # 个人效能系统 · 多版本 REST API 契约（v2）
 
-Spring Boot 版、Gin 版、FastAPI 版共用同一套接口与认证方式，也共用 `db/schema.sql` 的
+Spring Boot API 版（`versions/java/pms-springboot-api`）、Gin API 版（`versions/go/pms-gin-api`）和 FastAPI 版共用同一套接口与认证方式，也共用 `db/schema.sql` 的
 v2 效能表（`users` + `daily_plans`/`time_blocks` + `weekly_reviews`/`weekly_domain_reviews`/`weekly_task_flows`
 + `monthly_reviews`/`system_health_checks`）与 BCrypt 密码，因此**同一个库、同一套账号、
-同一个 Token 可在三个版本间互通**。FastAPI 版使用 Vue 3 同源页面并提供 `/api/**`；Spring Boot 和 Gin 版在服务端页面之外提供 `/api/**`。
+同一个 Token 可在三个 API 版本间互通**。FastAPI 版使用 Vue 3 同源页面并提供 `/api/**`；Spring Boot 与 Gin 的 API 服务与各自的单体页面版分属独立目录。
 
 所有数据均**按当前用户隔离**：只读写 `user_id = 当前用户` 的记录；访问他人或不存在的记录一律 `404`。
 明细子表（时间盒 / 领域 / 任务流 / 健康检查）随主表在**同一次请求内整体替换**：请求体带 `blocks` /
@@ -153,4 +153,4 @@ curl -s -X POST http://127.0.0.1:8000/api/daily -H "Authorization: Bearer $TOKEN
   -d '{"plan_date":"2026-11-17","energy_level":"high","mit":"完成迁移","blocks":[{"seq":1,"block_name":"改造三版","is_done":true}]}'
 ```
 
-三个版本的默认端口：Spring Boot `8080`、Gin `8081`、FastAPI `8000`。
+三个 API 版本的默认端口：Spring Boot API `8080`、Gin API `8081`、FastAPI `8000`。Java/Go 单体页面版默认使用相同端口，因此不能与同语言 API 版同时监听该端口。

@@ -3,10 +3,6 @@ package com.example.pms.config;
 import com.example.pms.repo.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,9 +12,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * 表单登录 + Session + CSRF + 页面权限边界。
@@ -30,11 +23,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   DaoAuthenticationProvider authProvider,
-                                                   CorsConfigurationSource corsConfigurationSource) throws Exception {
+                                                   DaoAuthenticationProvider authProvider) throws Exception {
         return http
                 .authorizeHttpRequests(reg -> reg
-                        .requestMatchers("/login", "/static/**", "/favicon.ico", "/error", "/api/**").permitAll()
+                        .requestMatchers("/login", "/static/**", "/favicon.ico", "/error").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -46,29 +38,8 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login")
                         .permitAll())
-                // API 使用 HMAC Token，不走 Session/CSRF；页面表单保留 CSRF 保护
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authenticationProvider(authProvider)
                 .build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(
-            @Value("${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}") String allowedOrigins) {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isEmpty())
-                .toList());
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        config.setAllowCredentials(false);
-        config.setMaxAge(600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        return source;
     }
 
     @Bean

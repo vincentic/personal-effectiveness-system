@@ -145,12 +145,11 @@ func (s *Server) csrfValue(c *gin.Context) string {
 	return v
 }
 
-// csrfMiddleware 对所有非 /api/ 的非安全方法校验表单 _csrf 与 Cookie 是否一致。
+// csrfMiddleware 对所有非安全方法校验表单 _csrf 与 Cookie 是否一致。
 func (s *Server) csrfMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
-		if method != http.MethodGet && method != http.MethodHead && method != http.MethodOptions &&
-			!strings.HasPrefix(c.Request.URL.Path, "/api/") {
+		if method != http.MethodGet && method != http.MethodHead && method != http.MethodOptions {
 			cookie, err := c.Cookie("pms_csrf")
 			form := c.PostForm("_csrf")
 			if err != nil || cookie == "" || form == "" || !ctEq(cookie, form) {
