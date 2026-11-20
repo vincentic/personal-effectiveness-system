@@ -142,7 +142,7 @@ curl -s http://127.0.0.1:8081/api/monthly -H "Authorization: Bearer $TOKEN"
 ## 6. 目录结构
 
 ```
-versions/monolithic/pms-gin/
+versions/go/pms-gin/
 ├── main.go                       # 入口：go:embed、建表、启动
 ├── sql/schema.sql                # v2 共享建表 SQL（与 db/schema.sql 一致）
 ├── static/css/style.css          # 自定义样式

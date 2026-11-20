@@ -49,12 +49,14 @@
 
 ## 四、版本与技术栈
 
-| 版本 | 技术栈 | 默认端口 | 界面 | REST API | 会话方式 |
-|------|--------|---------|------|----------|---------|
-| Django | Django 4.2 + MySQL | 8000 | ✅ PC / Mobile 双端 | — | Django Session |
-| Spring Boot | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | ✅ `/api/**` | Spring Session + CSRF |
-| Gin | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | ✅ `/api/**` | 签名 Cookie + CSRF |
-| FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
+`versions/` 按服务端语言归档，不再按单体或前后端分离方式分类。FastAPI 实现中的 Vue 前端仍与其 Python 服务端放在同一项目目录内。
+
+| 服务端语言 | 实现 | 技术栈 | 默认端口 | 界面 | REST API | 会话方式 |
+|------------|------|--------|---------|------|----------|---------|
+| Go | Gin | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | ✅ `/api/**` | 签名 Cookie + CSRF |
+| Java | Spring Boot | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | ✅ `/api/**` | Spring Session + CSRF |
+| Python | Django | Django 4.2 + MySQL | 8000 | ✅ PC / Mobile 双端 | — | Django Session |
+| Python | FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
 
 > Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。
 
@@ -77,17 +79,17 @@ mysql -u root -e "CREATE DATABASE IF NOT EXISTS pms CHARACTER SET utf8mb4 COLLAT
 
 ```bash
 # Django
-cd versions/monolithic/pms-django && python3 -m venv .venv && source .venv/bin/activate
+cd versions/python/pms-django && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && python manage.py migrate && python manage.py runserver 8000
 
 # Spring Boot（默认 8080）
-cd versions/monolithic/pms-springboot && export JAVA_HOME=$(/usr/libexec/java_home -v 17) && mvn spring-boot:run
+cd versions/java/pms-springboot && export JAVA_HOME=$(/usr/libexec/java_home -v 17) && mvn spring-boot:run
 
 # Gin（默认 8081）
-cd versions/monolithic/pms-gin && export GOPROXY=https://goproxy.cn,direct && go mod tidy && go run .
+cd versions/go/pms-gin && export GOPROXY=https://goproxy.cn,direct && go mod tidy && go run .
 
 # FastAPI + Vue（默认 8000，构建后访问 /，API 文档 /docs）
-cd versions/separated/pms-fastapi && python3 -m venv .venv && source .venv/bin/activate
+cd versions/python/pms-fastapi && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && (test -f .env || cp .env.example .env)
 npm --prefix frontend install && npm --prefix frontend run build
 uvicorn app.main:app --reload --port 8000
@@ -100,11 +102,12 @@ uvicorn app.main:app --reload --port 8000
 ```
 pms/
 ├── versions/
-│   ├── monolithic/
-│   │   ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
-│   │   ├── pms-springboot/   Spring Boot 3.2（PC/Mobile 双端页面 + REST API）
+│   ├── go/
 │   │   └── pms-gin/          Gin（PC/Mobile 双端页面 + REST API）
-│   └── separated/
+│   ├── java/
+│   │   └── pms-springboot/   Spring Boot 3.2（PC/Mobile 双端页面 + REST API）
+│   └── python/
+│       ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
 │       └── pms-fastapi/      FastAPI + Vue 3（同源响应式页面 + REST API）
 ├── db/                   共享：schema.sql、schema.v1-legacy.sql、API.md、DESIGN.md
 ├── docs/                 双端规范 DUAL_VIEW.md + 四语言 user_guide.md
@@ -113,12 +116,12 @@ pms/
 
 ## 七、部署文档
 
-| 版本 | 部署文档 |
-|------|---------|
-| Django | [部署文档.md](versions/monolithic/pms-django/部署文档.md) · [热部署文档.md](versions/monolithic/pms-django/热部署文档.md)（不停机发布） |
-| Spring Boot | [部署文档.md](versions/monolithic/pms-springboot/部署文档.md) |
-| Gin | [部署文档.md](versions/monolithic/pms-gin/部署文档.md) |
-| FastAPI | [部署文档.md](versions/separated/pms-fastapi/部署文档.md) |
+| 服务端语言 | 实现 | 部署文档 |
+|------------|------|---------|
+| Python | Django | [部署文档.md](versions/python/pms-django/部署文档.md) · [热部署文档.md](versions/python/pms-django/热部署文档.md)（不停机发布） |
+| Java | Spring Boot | [部署文档.md](versions/java/pms-springboot/部署文档.md) |
+| Go | Gin | [部署文档.md](versions/go/pms-gin/部署文档.md) |
+| Python | FastAPI + Vue | [部署文档.md](versions/python/pms-fastapi/部署文档.md) |
 
 > 生产环境务必修改各版本 `.env` 中的数据库账号、管理员密码与密钥；三版 `API_SECRET` 需一致才能跨版本互认 Token。
 
