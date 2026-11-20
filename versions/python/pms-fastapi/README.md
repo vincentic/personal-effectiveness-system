@@ -74,7 +74,16 @@ npm install
 npm run dev
 ```
 
-访问 Vite 显示的地址；`/api` 与 `/health` 会代理到 FastAPI。部署前执行 `npm run build`，生成的 `app/web` 由 FastAPI 提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
+访问 Vite 显示的地址；`/api` 与 `/health` 默认代理到 FastAPI。前端同样可连接 Spring Boot 或 Gin API，无需复制 Vue 项目：
+
+```bash
+# Spring Boot API
+VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
+# Gin API
+VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
+```
+
+`.env.local` 也可设置 `VITE_API_PROXY_TARGET`。若将 Vue 静态资源与 API 分开部署，可在构建时设置 `VITE_API_BASE_URL=https://api.example.com`；这时 Java/Gin 后端需将 Vue 的站点 origin 加入 `CORS_ORIGINS`。默认留空表示同源 API。部署 FastAPI 时执行 `npm run build`，生成的 `app/web` 仍由 FastAPI 提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
 
 前端单元测试与生产构建可在 `frontend` 目录执行：
 

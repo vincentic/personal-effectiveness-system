@@ -10,6 +10,7 @@ import type {
 } from "./types";
 
 const TOKEN_KEY = "pms.fastapi.token";
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
 
 let token = sessionStorage.getItem(TOKEN_KEY) ?? "";
 
@@ -31,7 +32,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (init.body) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(path, { ...init, headers });
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
   if (!response.ok) {
     let message = `请求失败（${response.status}）`;
     try {

@@ -45,6 +45,7 @@ go run .                             # 或 ./start.sh
 | `SERVER_PORT` | `8081` | 服务监听端口 |
 | `SESSION_SECRET` | `dev-insecure-session-secret-change-me` | 会话 Cookie 签名密钥 |
 | `API_SECRET` | `dev-insecure-api-secret-change-me` | API Token 签名密钥（三版一致才互认） |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | 允许访问 API 的 Vue 站点 origin，多个用逗号分隔 |
 | `ADMIN_USERNAME` | `admin` | 首次启动创建的管理员 |
 | `ADMIN_PASSWORD` | `admin123` | 首次启动创建的管理员密码 |
 | `COOKIE_SECURE` | `false` | Cookie 是否仅 HTTPS 传输 |
@@ -105,6 +106,10 @@ go run .                             # 或 ./start.sh
 周复盘 `week_end(=week_start+6天)/domains/flows`；月重构 `health_checks/avg_score`。
 
 明细子表（时间盒 / 领域 / 任务流 / 健康检查）随主表在**同一事务内整体替换**（先删后插）。
+
+共享 Vue 源码位于 `versions/python/pms-fastapi/frontend`。在该目录运行
+`VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev` 可直接使用 Gin API；
+若 Vue 与 Gin 分开部署，将前端 origin 配入 `CORS_ORIGINS`。
 
 ### Token 格式（自实现 HMAC-SHA256，无第三方 JWT 依赖）
 

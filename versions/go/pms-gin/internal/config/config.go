@@ -18,6 +18,7 @@ type Config struct {
 
 	SessionSecret string
 	APISecret     string
+	CORSOrigins   string
 
 	AdminUsername string
 	AdminPassword string
@@ -37,6 +38,7 @@ func Load() Config {
 		ServerPort:    env("SERVER_PORT", "8081"),
 		SessionSecret: env("SESSION_SECRET", "dev-insecure-session-secret-change-me"),
 		APISecret:     env("API_SECRET", "dev-insecure-api-secret-change-me"),
+		CORSOrigins:   env("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"),
 		AdminUsername: env("ADMIN_USERNAME", "admin"),
 		AdminPassword: env("ADMIN_PASSWORD", "admin123"),
 		CookieSecure:  boolEnv("COOKIE_SECURE", false),

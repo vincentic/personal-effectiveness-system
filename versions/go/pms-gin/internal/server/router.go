@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -46,6 +47,7 @@ func New(cfg config.Config, templatesFS, staticFS fs.FS) (*Server, error) {
 func (s *Server) Router() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(apiCORSMiddleware(s.cfg.CORSOrigins))
 	r.Use(s.csrfMiddleware())
 	r.StaticFS("/static", http.FS(s.staticFS))
 
@@ -116,4 +118,43 @@ func (s *Server) Router() *gin.Engine {
 	authed.POST("/users", s.apiUsersCreate)
 
 	return r
+}
+
+func apiCORSMiddleware(origins string) gin.HandlerFunc {
+	allowed := map[string]bool{}
+	for _, origin := range strings.Split(origins, ",") {
+		if origin = strings.TrimSpace(origin); origin != "" {
+			allowed[origin] = true
+		}
+	}
+
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		if !strings.HasPrefix(c.Request.URL.Path, "/api/") || origin == "" {
+			c.Next()
+			return
+		}
+		if !allowed["*"] && !allowed[origin] {
+			if c.Request.Method == http.MethodOptions {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+			c.Next()
+			return
+		}
+		c.Header("Vary", "Origin")
+		if allowed["*"] {
+			c.Header("Access-Control-Allow-Origin", "*")
+		} else {
+			c.Header("Access-Control-Allow-Origin", origin)
+		}
+		if c.Request.Method == http.MethodOptions {
+			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type")
+			c.Header("Access-Control-Max-Age", "600")
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
+	}
 }

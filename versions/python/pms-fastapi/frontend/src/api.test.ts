@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const fetchMock = vi.fn<typeof fetch>();
 let storage: Map<string, string>;
@@ -19,7 +19,27 @@ beforeEach(async () => {
   ({ api, currentToken, setToken } = await import("./api"));
 });
 
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 describe("API client", () => {
+  it("uses the configured API origin", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "http://localhost:8080/");
+    vi.resetModules();
+    const configuredApi = (await import("./api")).api;
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({}), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await configuredApi.me();
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe("http://localhost:8080/api/me");
+  });
+
   it("sends login credentials as JSON", async () => {
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify({ token: "new-token", user: {} }), {

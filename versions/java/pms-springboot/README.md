@@ -30,6 +30,7 @@ java -jar target/pms-springboot-*.jar
 | `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `pms` / `root` / 空 | 数据库 |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | `admin` / `admin123` | 首次启动默认管理员 |
 | `API_SECRET` | `dev-insecure-api-secret-change-me` | API Token 密钥，与另两版一致 |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | 允许访问 API 的 Vue 站点 origin，多个用逗号分隔 |
 
 启动时 `spring.sql.init` 会执行 `src/main/resources/schema.sql` 幂等建表（v2：users + daily/time_blocks
 + weekly/domains/flows + monthly/health_checks）；users 表为空则自动创建默认管理员。
@@ -68,6 +69,10 @@ GET    /api/users            POST   /api/users        （管理员）
 
 除登录外均需 `Authorization: Bearer <token>`；`/api/**` 豁免 CSRF。创建返回 201、删除返回 204，
 校验失败/越权/不存在分别返回 400/403/404，错误体统一 `{"detail":"..."}`。
+
+共享 Vue 源码位于 `versions/python/pms-fastapi/frontend`。在该目录运行
+`VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev` 可直接使用 Spring Boot API；
+若 Vue 与 Spring Boot 分开部署，将前端 origin 配入 `CORS_ORIGINS`。
 
 ```bash
 TOKEN=$(curl -s -X POST http://127.0.0.1:8080/api/auth/login \
