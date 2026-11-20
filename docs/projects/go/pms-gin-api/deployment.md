@@ -1,11 +1,11 @@
 # PMS Gin API 部署文档
 
-本文面向独立部署的 Gin REST API。Go 项目构建流程见[构建过程讲解](build-process-explained.md)，本地安装与启动见[搭建指南](setup.md)。此服务不托管 Vue 页面；页面可独立部署，也可用 FastAPI 项目同源托管。
+本文面向独立部署的 Gin REST API。Go 项目构建流程见[构建过程讲解](build-process-explained.md)，本地安装与启动见[搭建指南](setup.md)。此服务不托管 React 页面；页面可独立部署，也可用 FastAPI 项目同源托管。
 
 ## 1. 运行拓扑与前置条件
 
 ```text
-Vue 静态站点 / API 客户端 → Nginx HTTPS → Gin API → MySQL
+React 静态站点 / API 客户端 → Nginx HTTPS → Gin API → MySQL
 ```
 
 服务器需要 Linux、Go 1.22+（仅在服务器构建时需要）、MySQL 8+、systemd 和 Nginx。API 默认监听 `8081`，部署前先创建数据库和最小权限账号；数据库表由应用启动时执行的内嵌 `sql/schema.sql` 初始化。
@@ -30,7 +30,7 @@ mkdir -p build
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -o build/pms-gin-api .
 ```
 
-上述命令示例面向 Linux x86-64；如目标为 ARM64，使用 `GOARCH=arm64`，或在目标服务器本机编译。将 `build/pms-gin-api` 复制到服务器，例如 `/opt/pms-gin-api/pms-gin-api`。部署目录不需要 Go 源码、模板或 Vue 文件；SQL schema 已编入二进制。
+上述命令示例面向 Linux x86-64；如目标为 ARM64，使用 `GOARCH=arm64`，或在目标服务器本机编译。将 `build/pms-gin-api` 复制到服务器，例如 `/opt/pms-gin-api/pms-gin-api`。部署目录不需要 Go 源码、模板或 React 文件；SQL schema 已编入二进制。
 
 ```bash
 sudo install -d -o www-data -g www-data -m 0750 /opt/pms-gin-api
@@ -56,7 +56,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=replace-with-a-unique-strong-password
 ```
 
-`API_SECRET` 与 Spring Boot / FastAPI API 共用 Token 时必须完全一致。`ADMIN_*` 只会在用户表为空时创建初始管理员。CORS 应配置为 Vue 站点的精确 origin；若前端和 API 由同一 origin 反向代理，则按实际浏览器请求路径配置并避免通配来源。保护 `.env`，不要提交到 Git。
+`API_SECRET` 与 Spring Boot / FastAPI API 共用 Token 时必须完全一致。`ADMIN_*` 只会在用户表为空时创建初始管理员。CORS 应配置为 React 站点的精确 origin；若前端和 API 由同一 origin 反向代理，则按实际浏览器请求路径配置并避免通配来源。保护 `.env`，不要提交到 Git。
 
 ```bash
 sudo chown www-data:www-data /opt/pms-gin-api/.env
@@ -115,7 +115,7 @@ server {
 }
 ```
 
-生产应在 Nginx 或受信任的边缘入口配置 HTTPS，并只开放必要的外部端口。Vue 与 API 使用不同 origin 时，将 Vue 地址配置到后端 `CORS_ORIGINS`，并在 Vue 构建时设置 `VITE_API_BASE_URL`。
+生产应在 Nginx 或受信任的边缘入口配置 HTTPS，并只开放必要的外部端口。React 与 API 使用不同 origin 时，将 React 地址配置到后端 `CORS_ORIGINS`，并在 React 构建时设置 `VITE_API_BASE_URL`。
 
 ```bash
 sudo nginx -t
@@ -143,4 +143,4 @@ curl -i http://127.0.0.1:8081/api/me
 
 ## 7. Docker 与 Kubernetes
 
-容器端口为 `8081`；API 没有匿名健康路由，Kubernetes 应使用 TCP 探针，不要用返回 401 的 `/api/me` 作为 HTTP probe。镜像构建、Nginx Ingress、Secret 和 Vue 路由见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+容器端口为 `8081`；API 没有匿名健康路由，Kubernetes 应使用 TCP 探针，不要用返回 401 的 `/api/me` 作为 HTTP probe。镜像构建、Nginx Ingress、Secret 和 React 路由见多语言 Docker + Kubernetes 部署指南。
