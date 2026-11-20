@@ -19,7 +19,7 @@ Set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD` for MySQL. `AP
 
 ## Shared Vue
 
-The shared Vue application is in `../../python/pms-fastapi/frontend`. From that directory, run:
+The shared Vue application is in `../../vue/pms-vue`. From that directory, run:
 
 ```bash
 VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev

@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      outDir: "../app/web",
+      outDir: "../../python/pms-fastapi/app/web",
       emptyOutDir: true,
     },
   };

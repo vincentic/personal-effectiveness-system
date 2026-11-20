@@ -252,7 +252,7 @@ def root():
     if not index.is_file():
         raise HTTPException(
             status_code=503,
-            detail="Vue frontend is not built. Run `npm install && npm run build` in the frontend directory.",
+            detail="Vue frontend is not built. Run `npm --prefix versions/vue/pms-vue run build` from the repository root.",
         )
     return FileResponse(index)
 

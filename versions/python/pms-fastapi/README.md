@@ -56,8 +56,8 @@ test -f .env || cp .env.example .env
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-npm --prefix frontend install
-npm --prefix frontend run build
+npm --prefix ../../vue/pms-vue install
+npm --prefix ../../vue/pms-vue run build
 uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
@@ -66,10 +66,10 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 浏览器登录后可在工作台与每日执行、每周复盘、每月重构页面间切换；手机浏览器使用折叠导航和响应式布局。通过 API 调用时，先请求 `POST /api/auth/login` 获取 Token，再在后续请求中携带 `Authorization: Bearer <token>`。
 
-前端独立开发时，在一个终端启动 FastAPI（8000 端口），另一个终端运行：
+前端独立开发时，在一个终端启动 FastAPI（8000 端口），另一个终端在仓库根目录运行：
 
 ```bash
-cd frontend
+cd versions/vue/pms-vue
 npm install
 npm run dev
 ```
@@ -83,9 +83,9 @@ VITE_API_PROXY_TARGET=http://127.0.0.1:8080 npm run dev
 VITE_API_PROXY_TARGET=http://127.0.0.1:8081 npm run dev
 ```
 
-`.env.local` 也可设置 `VITE_API_PROXY_TARGET`。若将 Vue 静态资源与 API 分开部署，可在构建时设置 `VITE_API_BASE_URL=https://api.example.com`；这时 Java/Gin 后端需将 Vue 的站点 origin 加入 `CORS_ORIGINS`。默认留空表示同源 API。部署 FastAPI 时执行 `npm run build`，生成的 `app/web` 仍由 FastAPI 提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
+`.env.local` 也可设置 `VITE_API_PROXY_TARGET`。若将 Vue 静态资源与 API 分开部署，可在构建时设置 `VITE_API_BASE_URL=https://api.example.com`；这时 Java/Gin 后端需将 Vue 的站点 origin 加入 `CORS_ORIGINS`。默认留空表示同源 API。从 `versions/vue/pms-vue` 执行 `npm run build` 会将构建产物写入 FastAPI 的 `app/web`，仍由 FastAPI 同源提供。未构建前端时访问 `/` 会返回明确的 503 构建提示，API 文档仍可访问。
 
-前端单元测试与生产构建可在 `frontend` 目录执行：
+前端单元测试与生产构建可在 `versions/vue/pms-vue` 目录执行：
 
 ```bash
 npm ci
@@ -93,7 +93,7 @@ npm test
 npm run build
 ```
 
-GitHub Actions 会在 FastAPI 前端相关改动时自动运行上述测试和构建。
+GitHub Actions 会在共享 Vue 前端相关改动时自动运行上述测试和构建。
 
 ## 配置
 

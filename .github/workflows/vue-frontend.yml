@@ -1,16 +1,16 @@
-name: FastAPI frontend
+name: Shared Vue frontend
 
 on:
   push:
     branches: [main]
     paths:
-      - "versions/python/pms-fastapi/frontend/**"
-      - ".github/workflows/fastapi-frontend.yml"
+      - "versions/vue/pms-vue/**"
+      - ".github/workflows/vue-frontend.yml"
   pull_request:
     branches: [main]
     paths:
-      - "versions/python/pms-fastapi/frontend/**"
-      - ".github/workflows/fastapi-frontend.yml"
+      - "versions/vue/pms-vue/**"
+      - ".github/workflows/vue-frontend.yml"
   workflow_dispatch:
 
 jobs:
@@ -18,14 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: versions/python/pms-fastapi/frontend
+        working-directory: versions/vue/pms-vue
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: versions/python/pms-fastapi/frontend/package-lock.json
+          cache-dependency-path: versions/vue/pms-vue/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build

@@ -49,16 +49,19 @@
 
 ## 四、版本与技术栈
 
-`versions/` 按服务端语言归档，不再按单体或前后端分离方式分类。FastAPI 实现中的 Vue 前端仍与其 Python 服务端放在同一项目目录内。
+`versions/` 按服务端语言或前端技术归档。共享 Vue 应用独立放在 `versions/vue/pms-vue/`；FastAPI 仍可将 Vue 构建产物与 API 同源提供。
 
-| 服务端语言 | 实现 | 技术栈 | 默认端口 | 界面 | REST API | 会话方式 |
+| 平台 / 语言 | 实现 | 技术栈 | 默认端口 | 界面 | REST API | 认证方式 |
 |------------|------|--------|---------|------|----------|---------|
-| Go | Gin | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | ✅ `/api/**` | 签名 Cookie + CSRF |
-| Java | Spring Boot | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | ✅ `/api/**` | Spring Session + CSRF |
+| Go | Gin 单体页面版 | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | — | 签名 Cookie + CSRF |
+| Go | Gin REST API | Gin + database/sql | 8081 | 共享 Vue | ✅ `/api/**` | HMAC Token |
+| Java | Spring Boot 单体页面版 | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | — | Spring Session + CSRF |
+| Java | Spring Boot REST API | Spring Boot 3.2 + JdbcTemplate | 8080 | 共享 Vue | ✅ `/api/**` | HMAC Token |
 | Python | Django | Django 4.2 + MySQL | 8000 | ✅ PC / Mobile 双端 | — | Django Session |
 | Python | FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
+| Vue | PMS Vue | Vue 3 + TypeScript + Vite | 5173 | ✅ 响应式 PC / Mobile 页面 | 调用共享 API | Bearer Token |
 
-> Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。
+> Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。Go / Java 的单体页面版与 API 版也使用相同默认端口，不能同时启动。
 
 **共享数据层**
 
@@ -98,7 +101,7 @@ cd versions/go/pms-gin-api && go run .
 # FastAPI + Vue（默认 8000，构建后访问 /，API 文档 /docs）
 cd versions/python/pms-fastapi && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && (test -f .env || cp .env.example .env)
-npm --prefix frontend install && npm --prefix frontend run build
+npm --prefix ../../vue/pms-vue install && npm --prefix ../../vue/pms-vue run build
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -115,9 +118,11 @@ pms/
 │   ├── java/
 │   │   ├── pms-springboot/   Spring Boot 3.2 单体版（PC/Mobile 双端页面）
 │   │   └── pms-springboot-api/ Spring Boot 3.2 REST API（供共享 Vue 使用）
-│   └── python/
-│       ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
-│       └── pms-fastapi/      FastAPI + Vue 3（同源响应式页面 + REST API）
+│   ├── python/
+│   │   ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
+│   │   └── pms-fastapi/      FastAPI REST API（可同源提供 Vue 构建页面）
+│   └── vue/
+│       └── pms-vue/          共享 Vue 3 + TypeScript 前端
 ├── db/                   共享：schema.sql、schema.v1-legacy.sql、API.md、DESIGN.md
 ├── docs/                 双端规范 DUAL_VIEW.md + 四语言 user_guide.md
 └── README.md             本文件
