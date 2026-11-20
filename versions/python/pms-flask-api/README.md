@@ -24,7 +24,7 @@ pip install -r requirements.txt
 VITE_API_PROXY_TARGET=http://127.0.0.1:8002 npm run dev
 ```
 
-共享 API 的请求/响应字段、权限边界和错误格式见[REST API 契约](../../../docs/data/api-contract.md)；项目的安装、构建和生产部署步骤见[搭建指南](../../../docs/projects/python/pms-flask-api/setup.md)、[构建过程讲解](../../../docs/projects/python/pms-flask-api/build-process-explained.md)和[部署指南](../../../docs/projects/python/pms-flask-api/deployment.md)。
+共享 API 的请求/响应字段、权限边界和错误格式见REST API 契约；项目的安装、构建和生产部署步骤见[搭建指南](../../../docs/projects/python/pms-flask-api/setup.md)、[构建过程讲解](../../../docs/projects/python/pms-flask-api/build-process-explained.md)和[部署指南](../../../docs/projects/python/pms-flask-api/deployment.md)。
 
 ## 配置
 
