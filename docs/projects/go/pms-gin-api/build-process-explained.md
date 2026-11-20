@@ -1,6 +1,6 @@
 # PMS Gin API 构建过程讲解
 
-本文说明独立 Go/Gin REST API 的依赖、编译、配置加载和验证流程。API 端点与共享数据结构见[API 契约](../../../data/api-contract.md)；本地搭建见[搭建指南](setup.md)，生产运行见[部署指南](deployment.md)。
+本文说明独立 Go/Gin REST API 的依赖、编译、配置加载和验证流程。API 端点与共享数据结构见API 契约；本地搭建见[搭建指南](setup.md)，生产运行见[部署指南](deployment.md)。
 
 ## 1. 工程边界与请求链路
 
