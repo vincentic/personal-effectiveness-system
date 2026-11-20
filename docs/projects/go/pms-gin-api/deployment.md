@@ -143,4 +143,4 @@ curl -i http://127.0.0.1:8081/api/me
 
 ## 7. Docker 与 Kubernetes
 
-容器端口为 `8081`；API 没有匿名健康路由，Kubernetes 应使用 TCP 探针，不要用返回 401 的 `/api/me` 作为 HTTP probe。镜像构建、Nginx Ingress、Secret 和 Vue 路由见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+容器端口为 `8081`；API 没有匿名健康路由，Kubernetes 应使用 TCP 探针，不要用返回 401 的 `/api/me` 作为 HTTP probe。镜像构建、Nginx Ingress、Secret 和 Vue 路由见多语言 Docker + Kubernetes 部署指南。
