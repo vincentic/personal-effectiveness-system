@@ -83,4 +83,4 @@ curl -I https://pms.example.com/
 
 ## 5. Docker 与 Kubernetes
 
-Vue 可构建为 Nginx 静态镜像，通过 Ingress 将 `/` 发往 Vue Service、将 `/api` 发往所选 API Service；也可保持 FastAPI 同源模式并将所有路径发往 FastAPI。镜像与 Ingress 配置示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+Vue 可构建为 Nginx 静态镜像，通过 Ingress 将 `/` 发往 Vue Service、将 `/api` 发往所选 API Service；也可保持 FastAPI 同源模式并将所有路径发往 FastAPI。镜像与 Ingress 配置示例见多语言 Docker + Kubernetes 部署指南。
