@@ -1,13 +1,13 @@
 # 個人效能系統 · 使用指南（繁體中文）
 
-本指南協助你落實「日執行 → 週復盤 → 月重構」的效能閉環。系統包含 Django、Go/Gin、Java/Spring Boot、FastAPI 與 Flask 實作：Gin、Spring Boot、Flask 提供伺服器端頁面，Django 提供 Session 頁面，FastAPI 可同源託管 Vue 3 與 REST API。
+本指南協助你落實「日執行 → 週復盤 → 月重構」的效能閉環。系統包含 Django、Go/Gin、Java/Spring Boot、FastAPI 與 Flask 實作，並提供 Vue 與 React 兩套共用前端：Gin、Spring Boot、Flask 提供伺服器端頁面，Django 提供 Session 頁面，FastAPI 可同源託管 Vue 與 REST API。
 
 - [简体中文](user-guide.zh-CN.md) · [English](user-guide.en.md) · [日本語](user-guide.ja.md)
 - [返回專案 README](../../README.md)
 
 ## 1. 登入與雙端切換
 
-1. 開啟所選版本的根網址（Django `:8000/`、Spring Boot `:8080/`、Gin `:8081/`、Flask 頁面版 `:8001/`；FastAPI 完成前端建置後為 `:8000/`），輸入帳號密碼登入。
+1. 開啟所選版本的根網址（Django `:8000/`、Spring Boot `:8080/`、Gin `:8081/`、Flask 頁面版 `:8001/`；FastAPI 完成前端建置後為 `:8000/`；React 開發頁為 `:5174/`），輸入帳號密碼登入。
 2. **Django / Spring Boot / Gin 雙端**：系統依瀏覽器 User-Agent 自動選擇電腦版或手機版，手機上會顯示適合觸控的行動介面。
 3. **前三版手動切換**：
    - 電腦版頂欄點「📱 手機版」切到行動版；
@@ -16,6 +16,7 @@
    - 切換會重新載入目前頁面；未儲存的表單輸入會遺失，切換前請先儲存。
 
 4. **FastAPI 頁面**：電腦與手機共用 Vue 3 響應式頁面；手機導覽會折疊為選單。頁面由 FastAPI 同源提供，`/docs` 是互動式 API 文件。
+5. **React 頁面**：功能與 Vue 版一致，可獨立部署並連接任一相容 API；開發時預設使用 `http://127.0.0.1:5174/`。
 
 ## 2. 每日執行清單（早上 3 分鐘 + 晚上 5 分鐘）
 
@@ -58,8 +59,8 @@
 Gin、Spring Boot、FastAPI 與 Flask 使用 `db/schema.sql` 定義的共享 v2 表結構，資料依帳號隔離；Django 使用自己的 ORM 遷移實作對應業務實體。FastAPI、Spring Boot、Gin 與 Flask API 遵循相同的 API Token 契約；頁面版各自使用不同的工作階段機制。
 
 - **頁面使用者**：透過 Session / 簽名 Cookie 登入，資料依帳號隔離，看不到別人的清單。
-- **API 使用者**：程式呼叫可用 `POST /api/auth/login` 取得 Token，並在 `Authorization: Bearer <token>` 中攜帶；四種 API 實作的 Token 可互通。完整端點見 [API 契約](../data/api-contract.md)。
-- 預設連接埠：Spring Boot 8080、Gin 8081、Django / FastAPI 8000、Flask 頁面版 8001、Flask API 版 8002。
+- **API 使用者**：Vue / React 前端與程式呼叫都透過 `POST /api/auth/login` 取得 Token，並在 `Authorization: Bearer <token>` 中攜帶；四種 API 實作的 Token 可互通。完整端點見 [API 契約](../data/api-contract.md)。
+- 預設連接埠：Spring Boot 8080、Gin 8081、Django / FastAPI 8000、Flask 頁面版 8001、Flask API 版 8002、Vue 5173、React 5174。
 
 ## 6. 常見問題
 
@@ -76,7 +77,7 @@ Gin、Spring Boot、FastAPI 與 Flask 使用 `db/schema.sql` 定義的共享 v2 
 在每日執行列表點「填寫今日清單」，日期選過去某天即可補錄；但同一天已有紀錄時需編輯該筆。
 
 **Q：手機上內容看不全？**
-Django / Spring Boot / Gin 使用獨立行動模板；Flask 頁面與 FastAPI Vue 頁面採用響應式版面，內容會配合螢幕寬度調整。
+Django / Spring Boot / Gin 使用獨立行動模板；Flask、Vue 與 React 頁面採用響應式版面，內容會配合螢幕寬度調整。
 
 **Q：可以多人同時使用嗎？**
 可以，資料依帳號隔離。使用者管理僅管理員可操作（在 `/admin/users/` 或對應頁面）。

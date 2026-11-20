@@ -45,6 +45,7 @@
 | Python | Flask 页面单体版 | [搭建](projects/python/pms-flask/setup.md) | [构建讲解](projects/python/pms-flask/build-process-explained.md) | [部署](projects/python/pms-flask/deployment.md) |
 | Python | Flask REST API | [搭建](projects/python/pms-flask-api/setup.md) | [构建讲解](projects/python/pms-flask-api/build-process-explained.md) | [部署](projects/python/pms-flask-api/deployment.md) |
 | Vue | 共享 Vue 前端 | [搭建](projects/vue/pms-vue/setup.md) | [构建讲解](projects/vue/pms-vue/build-process-explained.md) | [部署](projects/vue/pms-vue/deployment.md) |
+| React | 共享 React 前端 | [搭建](projects/react/pms-react/setup.md) | [构建讲解](projects/react/pms-react/build-process-explained.md) | [部署](projects/react/pms-react/deployment.md) |
 
 各语言与运行模式的 Docker、Kubernetes、Nginx Ingress、探针和发布方案统一见[多语言 Docker + Kubernetes 部署指南](guides/container-deployment.md)。
 

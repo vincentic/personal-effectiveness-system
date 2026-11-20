@@ -1,6 +1,6 @@
 # 多语言 Docker + Kubernetes 部署指南
 
-本文为仓库中的 Go、Java、Python 和共享 Vue 实现提供统一的容器化部署方式，包含 Docker 多阶段构建、Nginx HTTPS / Ingress、Kubernetes Secret、健康探针和发布验证。每次部署选择一个后端实现；不要把同端口的单体页面版与 API 版同时部署到同一主机端口。
+本文为仓库中的 Go、Java、Python 以及独立 Vue / React 前端提供统一的容器化部署方式，包含 Docker 多阶段构建、Nginx HTTPS / Ingress、Kubernetes Secret、健康探针和发布验证。每次部署选择一个后端实现；不要把同端口的单体页面版与 API 版同时部署到同一主机端口。
 
 > 示例用于说明构建与编排结构。仓库当前不提交生产镜像、真实密钥或集群配置；镜像应按组织策略固定版本或 digest，并由 CI 构建、扫描和推送。
 
@@ -9,14 +9,15 @@
 | 实现 | 类型 | 默认容器端口 | 推荐探针 | 页面模式 |
 |---|---|---:|---|---|
 | Go `pms-gin` | 服务端页面单体 | 8081 | TCP | Go 提供页面 |
-| Go `pms-gin-api` | REST API | 8081 | TCP | Vue 独立部署 |
+| Go `pms-gin-api` | REST API | 8081 | TCP | Vue / React 独立部署 |
 | Java `pms-springboot` | 服务端页面单体 | 8080 | HTTP `/` | Java 提供页面 |
-| Java `pms-springboot-api` | REST API | 8080 | TCP | Vue 独立部署 |
+| Java `pms-springboot-api` | REST API | 8080 | TCP | Vue / React 独立部署 |
 | Python `pms-django` | 服务端页面 | 8000 | HTTP `/login/` | Django 提供页面 |
 | Python `pms-fastapi` | Vue 同源 + REST API | 8000 | HTTP `/health` | FastAPI 提供 Vue |
 | Python `pms-flask` | 服务端页面单体 | 8001 | HTTP `/health` | Flask 提供页面 |
-| Python `pms-flask-api` | REST API | 8002 | HTTP `/health` | Vue 独立部署 |
+| Python `pms-flask-api` | REST API | 8002 | HTTP `/health` | Vue / React 独立部署 |
 | Vue `pms-vue` | 静态前端 | 8080（Nginx） | HTTP `/` | Vue 单独提供页面 |
+| React `pms-react` | 静态前端 | 8080（Nginx） | HTTP `/` | React 单独提供页面 |
 
 Go API 与 Java API 当前未提供匿名健康端点，使用 Kubernetes TCP 探针；不要将受保护的 `/api/me` 401 响应误配置为 HTTP readiness probe。Django、FastAPI 与 Flask 的具体容器细节仍以各项目部署指南为准，尤其是 Django 的 `collectstatic`、静态文件和迁移步骤。
 
@@ -161,6 +162,26 @@ EXPOSE 80
 
 Nginx `location /` 使用 `try_files $uri $uri/ /index.html;`。所有 `VITE_*` 值会进入浏览器资源；不要把密钥放进前端构建参数。
 
+### 2.7 React 独立静态站点
+
+React 前端与 Vue 一样构建为独立 SPA；默认输出目录为 React 项目的 `dist/`，使用 pnpm lockfile：
+
+```bash
+cd versions/react/pms-react
+pnpm install --frozen-lockfile
+VITE_API_BASE_URL=https://api.example.com pnpm run build
+```
+
+使用 Nginx 提供 React 静态文件：
+
+```dockerfile
+FROM nginx:1.27-alpine
+COPY dist/ /usr/share/nginx/html/
+EXPOSE 80
+```
+
+配置 SPA 回退 `try_files $uri $uri/ /index.html;`。生产 Ingress 可将 `/api` 与 `/health` 发往 API Service，将 `/` 发往 React 静态 Service。
+
 ## 3. Docker 单机运行与 Nginx
 
 生产 MySQL 建议使用独立持久化或托管实例，不要将数据库文件保存在应用容器可写层。运行后端时，将密钥通过受控 `.env` 文件或 Secret Manager 注入：
@@ -172,7 +193,7 @@ docker run -d --name pms-app \
   registry.example.com/pms-flask-api:1.0.0
 ```
 
-Nginx 可以统一提供 Vue 静态站点并把 API 路由转发到后端：
+Nginx 可以统一提供 Vue 或 React 静态站点并把 API 路由转发到后端：
 
 ```nginx
 server {
@@ -346,9 +367,9 @@ livenessProbe:
 
 HTTP `/health` 只适用于已提供该路由的服务。探针应与启动行为一致；若探针会触发 schema 初始化，首次部署不要并行启动多个副本。
 
-## 6. Nginx Ingress 与 Vue 路由
+## 6. Nginx Ingress 与前端路由
 
-集群先安装并验证 Nginx Ingress Controller，DNS 指向其外部地址，TLS 证书存入 Kubernetes Secret。Vue 独立部署时，静态 Nginx Service 使用 `pms-vue:80`；以下 Ingress 将 `/api` 与 `/health` 发往 Flask API，其他页面由 Vue SPA 提供：
+集群先安装并验证 Nginx Ingress Controller，DNS 指向其外部地址，TLS 证书存入 Kubernetes Secret。以下示例使用 Vue 静态 Service `pms-vue:80`；部署 React 时将服务名改为 `pms-react`。Ingress 将 `/api` 与 `/health` 发往 Flask API，其他页面由 SPA 提供：
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -398,7 +419,7 @@ spec:
 
 - **Go / Java / Flask 服务端页面单体、Django**：只将 `/` 转发到对应页面应用 Service。
 - **FastAPI 同源版**：`/`、`/api`、`/health` 均转发至 `pms-fastapi` 同一 Service。
-- **独立 Vue + 任一 API**：`/api` 转发 API Service，`/` 转发 Vue 静态 Service；如暴露 `/health`，也转发 API Service。
+- **独立 Vue / React + 任一 API**：`/api` 转发 API Service，`/` 转发所选静态前端 Service；如暴露 `/health`，也转发 API Service。
 
 ## 7. Django 迁移与静态资源
 
@@ -415,7 +436,7 @@ kubectl -n pms get pods,svc,ingress
 kubectl -n pms logs deployment/pms-flask-api --tail=100
 ```
 
-可用以下命令检查 Ingress 与服务状态；生产环境还应登录 Vue、调用 API，并验证 MySQL CRUD 与用户隔离：
+可用以下命令检查 Ingress 与服务状态；生产环境还应登录 Vue 或 React、调用 API，并验证 MySQL CRUD 与用户隔离：
 
 ```bash
 curl -i https://pms.example.com/health

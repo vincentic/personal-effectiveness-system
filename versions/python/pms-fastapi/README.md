@@ -1,6 +1,6 @@
 # 个人效能系统 · FastAPI 版
 
-FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。它与 Gin、Spring Boot 和 Flask API 共用 REST API 与 Token 契约；独立 Flask API、Gin API 和 Spring Boot API 也可连接同一份共享 Vue 前端。
+FastAPI 版将 Vue 3 响应式页面与 REST API 部署在同一服务中。它适合希望用网页管理个人日程和复盘，同时也需要标准 API 供脚本或其他客户端调用的场景。它与 Gin、Spring Boot 和 Flask API 共用 REST API 与 Token 契约；Vue 和 React 独立前端都可连接这四种 API。
 
 本地环境和启动步骤见[搭建指南](../../../docs/projects/python/pms-fastapi/setup.md)，前后端构建流程见[构建过程讲解](../../../docs/projects/python/pms-fastapi/build-process-explained.md)，生产发布见[部署指南](../../../docs/projects/python/pms-fastapi/deployment.md)。
 

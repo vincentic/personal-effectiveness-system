@@ -1,6 +1,6 @@
 # PC / Mobile 双端实现规范（三版统一）
 
-Django、Spring Boot 单体版、Gin 单体版遵循同一套 PC / Mobile 页面规则，保证行为一致、可交叉验证。Spring Boot 与 Gin 的 REST API 已拆到同级独立项目目录，不包含 Thymeleaf / Gin 页面模板；API 契约见[数据与 API 文档](../data/api-contract.md)，共享 Vue 源码位于 `versions/vue/pms-vue/`。
+Django、Spring Boot 单体版、Gin 单体版遵循同一套 PC / Mobile 页面规则，保证行为一致、可交叉验证。Spring Boot 与 Gin 的 REST API 已拆到同级独立项目目录，不包含 Thymeleaf / Gin 页面模板；API 契约见[数据与 API 文档](../data/api-contract.md)，共享 Vue 和 React 前端分别位于 `versions/vue/pms-vue/` 与 `versions/react/pms-react/`。
 
 ## 1. 视图模式（view mode）
 

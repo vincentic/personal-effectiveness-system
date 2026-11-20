@@ -37,9 +37,9 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 3. 组块、领域、任务流、健康检查属于主记录的明细。REST API 的 `blocks`、`domains`、`flows`、`health_checks` 是随主记录提交的完整数组，而不是局部补丁。
 4. 完成率、检查项计数、周结束日期和健康均分属于读取时派生的数据，不应被当作用户输入字段重复保存。
 
-页面与 API 的认证入口有所不同：Spring Boot、Gin 和 Flask 的服务端页面使用各自的会话机制，REST API 使用共享 HMAC Token；Django 页面使用 Django 登录会话；Vue 可由 FastAPI 同源提供，也可独立部署后复用 FastAPI、Spring Boot、Gin 或 Flask API 的 `/api/**`，均通过 Bearer Token 认证。
+页面与 API 的认证入口有所不同：Spring Boot、Gin 和 Flask 的服务端页面使用各自的会话机制，REST API 使用共享 HMAC Token；Django 页面使用 Django 登录会话；Vue 与 React 可独立连接 FastAPI、Spring Boot、Gin 或 Flask API 的 `/api/**`，均通过 Bearer Token 认证。Vue 也可由 FastAPI 同源提供。
 
-共享 Vue 源码位于 [`versions/vue/pms-vue/`](../../versions/vue/pms-vue/)，与 Python 后端项目分离。开发时用 `VITE_API_PROXY_TARGET` 指向 `http://127.0.0.1:8000`（FastAPI）、`http://127.0.0.1:8080`（Spring Boot）或 `http://127.0.0.1:8081`（Gin）；独立部署时用 `VITE_API_BASE_URL` 指定 API origin，并将前端站点 origin 配入 Java / Go 的 `CORS_ORIGINS`。这样三种后端复用同一份 Vue 页面与 TypeScript API 类型，不需要维护三份前端。
+共享 Vue 源码位于 [`versions/vue/pms-vue/`](../../versions/vue/pms-vue/)，React 源码位于 [`versions/react/pms-react/`](../../versions/react/pms-react/)，两者均与 Python 后端项目分离。开发时分别以 `VITE_API_PROXY_TARGET` 指向后端地址；独立部署时以 `VITE_API_BASE_URL` 指定 API origin，并将前端站点 origin 配入后端的 CORS allowlist。两套前端实现同一 REST 契约，可以独立选择 Vue 或 React。
 
 ## 三、四个实现的代码阅读顺序
 
@@ -76,6 +76,8 @@ REST 写入的共通路径如下；浏览器页面也经过相同的业务规则
 3. [`db.py`](../../versions/python/pms-fastapi/app/db.py)：提供 PyMySQL 连接、查询、写入和启动时建表初始化；SQL 由路由模块调用。
 4. [`security.py`](../../versions/python/pms-fastapi/app/security.py)：处理密码哈希和 HMAC Token。
 5. [`api.ts`](../../versions/vue/pms-vue/src/api.ts)、[`types.ts`](../../versions/vue/pms-vue/src/types.ts) 与 [`src/views/`](../../versions/vue/pms-vue/src/views/)：Vue 页面维护前端类型、调用 REST API 并呈现响应。
+
+React 页面位于独立的 `versions/react/pms-react/`，采用相同的 API 类型、Token 认证和日 / 周 / 月业务字段；启动与发布步骤见 [React 搭建指南](../projects/react/pms-react/setup.md)。
 
 ## 四、示例追踪：`weekly.domains[]` 中的领域回顾
 
@@ -151,7 +153,7 @@ Vue 收到响应后刷新周复盘列表；用户稍后编辑时，页面将服�
 
 ### 六、跨实现核对时要特别留意
 
-1. **相同业务，不同输入载体**：Vue/API 使用 JSON 与 DTO / Schema；Django、Gin 页面版和 Spring 页面版使用各自表单。不能把表单字段名或 URL 当成 REST 契约。
+1. **相同业务，不同输入载体**：Vue / React API 使用 JSON 与 DTO / Schema；Django、Gin 页面版和 Spring 页面版使用各自表单。不能把表单字段名或 URL 当成 REST 契约。
 2. **明细按整体替换理解**：API 的 `domains` 和 `flows` 是本次提交的完整数组。编辑时提交空数组表示清空该类明细，不是“保持旧值不变”。
 3. **事务边界并不一致**：Go API 使用 SQL transaction，Spring Repository 使用 `@Transactional`；Django 页面视图没有显式 `transaction.atomic()`；FastAPI 使用 `autocommit=True`，主表和子表操作是独立 SQL 执行。不能只根据 HTTP 请求是一次提交，就推断每个实现都具有相同的原子性。
 4. **校验实现有差异**：Go 与 Spring API 显式检查领域重复；FastAPI Schema 声明领域枚举，但没有同等的请求级重复领域检查，数据库唯一约束仍会限制重复值。新增或修改规则时，应把边界行为作为跨版本验收项，而不是只确认正常请求成功。
@@ -169,7 +171,7 @@ Vue 收到响应后刷新周复盘列表；用户稍后编辑时，页面将服�
 4. **更新输入层**：分别更新 Go 输入结构与 normalize、Java DTO 与转换校验、Django ModelForm/FormSet、FastAPI Pydantic Schema。
 5. **更新持久化层**：一次写操作同时处理主表与子表；所有读写保持用户范围过滤；编辑时依契约整体处理明细集合，并明确事务边界。
 6. **更新请求入口**：调整 API handler / controller / Django view，并保持创建、读取、更新、删除的状态码、错误和重复记录行为一致。
-7. **更新输出与界面**：保持 JSON snake_case 契约；服务端页面同步模板和表单，FastAPI 同步 TypeScript 类型、API 调用和 Vue 视图。
+7. **更新输出与界面**：保持 JSON snake_case 契约；服务端页面同步模板和表单，Vue / React 同步 TypeScript 类型、API 调用和对应视图。
 8. **补验证并跨版核对**：覆盖合法、非法、重复日期/周/月、空明细、编辑替换、级联删除和跨用户访问；检查四版对同一份共享数据的解释一致。
 
 ### 实现差异需要显式核对

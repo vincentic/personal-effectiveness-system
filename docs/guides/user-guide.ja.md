@@ -1,13 +1,13 @@
 # 個人効率システム · ユーザーガイド（日本語）
 
-このガイドは「日次実行 → 週次レビュー → 月次リファクタ」の循環を実践するためのものです。Django、Go/Gin、Java/Spring Boot、FastAPI、Flask の実装があり、Gin／Spring Boot／Flask はサーバー画面、Django は Session 画面、FastAPI は Vue 3 と REST API を同一オリジンで提供できます。
+このガイドは「日次実行 → 週次レビュー → 月次リファクタ」の循環を実践するためのものです。Django、Go/Gin、Java/Spring Boot、FastAPI、Flask の実装に加え、共有 Vue／React フロントエンドがあります。Gin／Spring Boot／Flask はサーバー画面、Django は Session 画面、FastAPI は Vue 3 と REST API を同一オリジンで提供できます。
 
 - [简体中文](user-guide.zh-CN.md) · [English](user-guide.en.md) · [繁體中文](user-guide.zh-TW.md)
 - [プロジェクト README に戻る](../../README.md)
 
 ## 1. ログインと PC／モバイルの切り替え
 
-1. 使いたい版のルート URL を開きます（Django `:8000/`、Spring Boot `:8080/`、Gin `:8081/`、Flask 画面版 `:8001/`、FastAPI はフロントエンドのビルド後に `:8000/`）。アカウントとパスワードでログインします。
+1. 使いたい版のルート URL を開きます（Django `:8000/`、Spring Boot `:8080/`、Gin `:8081/`、Flask 画面版 `:8001/`、FastAPI はフロントエンドのビルド後に `:8000/`、React 開発画面は `:5174/`）。アカウントとパスワードでログインします。
 2. **Django／Spring Boot／Gin のデュアルビュー**：サーバーがブラウザの User-Agent で PC 版／モバイル版を自動選択します。スマートフォンではタッチ操作に適した画面になります。
 3. **最初の 3 版の手動切り替え**：
    - PC 版の上部バー「📱 モバイル」でモバイル版へ；
@@ -16,6 +16,7 @@
    - 切り替えると現在のページが再読み込みされます。未保存のフォーム入力は失われるため、切り替える前に保存してください。
 
 4. **FastAPI の画面**：PC とスマートフォンで同じ Vue 3 のレスポンシブ画面を使います。スマートフォンではナビゲーションがメニューに折りたたまれます。画面は FastAPI と同じオリジンから配信され、`/docs` は対話型 API ドキュメントです。
+5. **React 画面**：Vue 版と同じワークフローを提供し、独立してデプロイできます。開発サーバーの既定 URL は `http://127.0.0.1:5174/` です。
 
 ## 2. 毎日の実行チェックリスト（朝 3 分＋夜 5 分）
 
@@ -58,8 +59,8 @@
 Gin、Spring Boot、FastAPI、Flask は `db/schema.sql` の共有 v2 スキーマを使い、データはアカウントごとに分離されます。Django は独自の ORM マイグレーションで同等の業務エンティティを実装します。FastAPI、Spring Boot、Gin、Flask API は同じ API Token 契約に従います。
 
 - **画面ユーザー**：Session／署名付き Cookie でログイン。データはアカウントごとに分離され、他人のリストは見えません。
-- **API ユーザー**：`POST /api/auth/login` で Token を取得し、`Authorization: Bearer <token>` で送信します。4 つの API 実装間で Token を共有できます。詳細は [API 契約](../data/api-contract.md)。
-- 既定ポート：Spring Boot 8080、Gin 8081、Django／FastAPI 8000、Flask 画面版 8001、Flask API 版 8002。
+- **API ユーザー**：Vue／React フロントエンドと API クライアントは `POST /api/auth/login` で Token を取得し、`Authorization: Bearer <token>` で送信します。4 つの API 実装間で Token を共有できます。詳細は [API 契約](../data/api-contract.md)。
+- 既定ポート：Spring Boot 8080、Gin 8081、Django／FastAPI 8000、Flask 画面版 8001、Flask API 版 8002、Vue 5173、React 5174。
 
 ## 6. よくある質問
 
@@ -76,7 +77,7 @@ Gin、Spring Boot、FastAPI、Flask は `db/schema.sql` の共有 v2 スキー�
 日次実行の一覧から「今日のリストを作成」を開き、過去の日付を選べば登録できます。その日に既に記録がある場合は編集してください。
 
 **Q：スマートフォンで内容が読みにくいです。**
-Django／Spring Boot／Gin は専用のモバイルテンプレートを使い、Flask と FastAPI Vue 画面はレスポンシブレイアウトを使います。
+Django／Spring Boot／Gin は専用のモバイルテンプレートを使い、Flask、Vue、React 画面はレスポンシブレイアウトを使います。
 
 **Q：複数人で同時に使えますか？**
 はい、データはアカウントごとに分離されています。ユーザー管理は管理者のみ（`／admin/users/` または該当ページ）。

@@ -2,8 +2,7 @@
 
 Spring Boot API 版（`versions/java/pms-springboot-api`）、Gin API 版（`versions/go/pms-gin-api`）、FastAPI 版和 Flask API 版（`versions/python/pms-flask-api`）共用同一套接口与认证方式，也共用 `db/schema.sql` 的
 v2 效能表（`users` + `daily_plans`/`time_blocks` + `weekly_reviews`/`weekly_domain_reviews`/`weekly_task_flows`
-+ `monthly_reviews`/`system_health_checks`）与 BCrypt 密码，因此**同一个库、同一套账号、
-同一个 Token 可在四个 API 版本间互通**。FastAPI 版使用 Vue 3 同源页面并提供 `/api/**`；Spring Boot、Gin 与 Flask API 服务与各自的单体页面版分属独立目录。
++ `monthly_reviews`/`system_health_checks`）与 BCrypt 密码，因此**同一个库、同一套账号、同一个 Token 可在四个 API 版本间互通**。FastAPI 版可同源提供 Vue 页面与 `/api/**`；Vue 和 React 独立前端也可连接 FastAPI、Spring Boot、Gin 或 Flask API。Spring Boot、Gin 与 Flask API 服务与各自的单体页面版分属独立目录。
 
 所有数据均**按当前用户隔离**：只读写 `user_id = 当前用户` 的记录；访问他人或不存在的记录一律 `404`。
 明细子表（时间盒 / 领域 / 任务流 / 健康检查）随主表在**同一次请求内整体替换**：请求体带 `blocks` /

@@ -1,6 +1,6 @@
 # 个人效能系统 · 多语言多版本实现
 
-> **v4（当前）**：系统提供 Go、Java、Python 和共享 Vue 多种实现。Gin、Spring Boot、Flask 有服务端页面单体版；Django 是独立 Session 页面版；FastAPI 可同源托管 Vue 与 REST API；Gin、Spring Boot、FastAPI、Flask API 均遵循共享 REST 契约与 HMAC Token。各实现围绕日 / 周 / 月个人效能流程，数据 schema 与认证边界因项目而异，详见[数据模型](docs/data/schema-design.md)和[API 契约](docs/data/api-contract.md)。
+> **v4（当前）**：系统提供 Go、Java、Python、Vue 和 React 多种实现。Gin、Spring Boot、Flask 有服务端页面单体版；Django 是独立 Session 页面版；FastAPI 可同源托管 Vue 与 REST API；Vue、React 可独立连接 Gin、Spring Boot、FastAPI 或 Flask API。API 实现遵循共享 REST 契约与 HMAC Token。各实现围绕日 / 周 / 月个人效能流程，数据 schema 与认证边界因项目而异，详见[数据模型](docs/data/schema-design.md)和[API 契约](docs/data/api-contract.md)。
 >
 > 历史版本：v3 = 三版业务迁移到效能模型（`af45fbf`）；v2 = 按 PDF 重设计表结构与 Django 界面（`00850f2`）；v1 = 原 PMS 项目/任务系统基线（`a702875`），旧建表语句见 [db/schema.v1-legacy.sql](db/schema.v1-legacy.sql)。
 
@@ -65,19 +65,20 @@
 
 ## 四、版本与技术栈
 
-`versions/` 按服务端语言或前端技术归档。共享 Vue 应用独立放在 `versions/vue/pms-vue/`；FastAPI 仍可将 Vue 构建产物与 API 同源提供。
+`versions/` 按服务端语言或前端技术归档。共享 Vue 和 React 应用分别独立放在 `versions/vue/pms-vue/` 与 `versions/react/pms-react/`；FastAPI 可将 Vue 构建产物与 API 同源提供。
 
 | 平台 / 语言 | 实现 | 技术栈 | 默认端口 | 界面 | REST API | 认证方式 |
 |------------|------|--------|---------|------|----------|---------|
 | Go | Gin 单体页面版 | Gin + database/sql + html/template | 8081 | ✅ PC / Mobile 双端 | — | 签名 Cookie + CSRF |
-| Go | Gin REST API | Gin + database/sql | 8081 | 共享 Vue | ✅ `/api/**` | HMAC Token |
+| Go | Gin REST API | Gin + database/sql | 8081 | Vue / React | ✅ `/api/**` | HMAC Token |
 | Java | Spring Boot 单体页面版 | Spring Boot 3.2 + Thymeleaf + Security + JdbcTemplate | 8080 | ✅ PC / Mobile 双端 | — | Spring Session + CSRF |
-| Java | Spring Boot REST API | Spring Boot 3.2 + JdbcTemplate | 8080 | 共享 Vue | ✅ `/api/**` | HMAC Token |
+| Java | Spring Boot REST API | Spring Boot 3.2 + JdbcTemplate | 8080 | Vue / React | ✅ `/api/**` | HMAC Token |
 | Python | Django 页面版 | Django 4.2 + MySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | — | Django Session |
 | Python | FastAPI | FastAPI + Vue 3 + TypeScript + PyMySQL | 8000 | ✅ 响应式 PC / Mobile 页面 | ✅ 全部 | HMAC Token |
 | Python | Flask 单体页面版 | Flask + Jinja2 + PyMySQL | 8001 | ✅ 响应式 PC / Mobile 页面 | — | Flask Session + CSRF |
-| Python | Flask REST API | Flask + Pydantic + PyMySQL | 8002 | 共享 Vue | ✅ `/api/**` | HMAC Token |
+| Python | Flask REST API | Flask + Pydantic + PyMySQL | 8002 | Vue / React | ✅ `/api/**` | HMAC Token |
 | Vue | PMS Vue | Vue 3 + TypeScript + Vite | 5173 | ✅ 响应式 PC / Mobile 页面 | 调用共享 API | Bearer Token |
+| React | PMS React | React 19 + TypeScript + Vite | 5174 | ✅ 响应式 PC / Mobile 页面 | 调用共享 API | Bearer Token |
 
 > Django 与 FastAPI 默认都是 8000，同时启动需用 `SERVER_PORT` 错开。Go 与 Java 的单体版、API 版默认端口相同，不能同时绑定；Flask 两个项目默认分别使用 8001 和 8002。
 
@@ -95,7 +96,7 @@
 |------|------|
 | [使用指南](docs/guides/user-guide.zh-CN.md)（[English](docs/guides/user-guide.en.md) · [繁體中文](docs/guides/user-guide.zh-TW.md) · [日本語](docs/guides/user-guide.ja.md)） | 面向使用者，说明登录与设备切换，以及每日执行、每周复盘、每月重构的填写方法和建议节奏。 |
 | [PC / Mobile 双端实现规范](docs/guides/dual-view-guidelines.md) | 说明三种服务端页面版的视图切换、模板组织、移动端设计要求和验收标准。 |
-| [业务说明与代码应用顺序](docs/business/business-flow-and-code-reading.md) | 从日 / 周 / 月业务闭环出发，介绍 Go、Java、Python 与 Vue 项目的代码阅读路径，并追踪周复盘数据的处理过程。 |
+| [业务说明与代码应用顺序](docs/business/business-flow-and-code-reading.md) | 从日 / 周 / 月业务闭环出发，介绍 Go、Java、Python、Vue 与 React 项目的代码阅读路径，并追踪周复盘数据的处理过程。 |
 | [中文音视频口播稿](docs/business/business-flow-video-script.zh-CN.md) | 配套业务追踪文档的中文讲解脚本，包含画面提示和时间码，预计时长约 20 分钟。 |
 | [需求规格说明书（2026.11.20）](docs/requirements/requirements-2026-11-20.md) | 汇总系统范围、用户场景、功能需求、关键实体与可验证的成功标准。 |
 | [架构设计与组件关系（2026.11.20）](docs/architecture/architecture-diagram.md) | 通过架构图和组件关系图概览系统分层、技术栈、数据存储及主要组件职责。 |
@@ -135,9 +136,12 @@ uvicorn app.main:app --reload --port 8000
 cd versions/python/pms-flask && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && (test -f .env || cp .env.example .env) && ./start.sh
 
-# Flask REST API（默认 8002；共享 Vue 可代理到此服务）
+# Flask REST API（默认 8002；共享 Vue / React 可代理到此服务）
 cd versions/python/pms-flask-api && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && (test -f .env || cp .env.example .env) && ./start.sh
+
+# React 共享前端（默认 5174；pnpm）
+cd versions/react/pms-react && pnpm install && pnpm dev
 ```
 
 > 迁移说明：请在新库上使用 v2/v3 表结构；若数据库已有 v1 的 Django 表（`auth_user` / `projects_project` 等），需自行编写数据迁移或另建库。
@@ -149,17 +153,19 @@ pms/
 ├── versions/
 │   ├── go/
 │   │   ├── pms-gin/          Gin 单体版（PC/Mobile 双端页面）
-│   │   └── pms-gin-api/      Gin REST API（供共享 Vue 使用）
+│   │   └── pms-gin-api/      Gin REST API（供共享前端使用）
 │   ├── java/
 │   │   ├── pms-springboot/   Spring Boot 3.2 单体版（PC/Mobile 双端页面）
-│   │   └── pms-springboot-api/ Spring Boot 3.2 REST API（供共享 Vue 使用）
+│   │   └── pms-springboot-api/ Spring Boot 3.2 REST API（供共享前端使用）
 │   ├── python/
 │   │   ├── pms-django/       Django 4.2（PC/Mobile 双端页面）
 │   │   ├── pms-fastapi/      FastAPI + Vue 同源页面 / REST API
 │   │   ├── pms-flask/        Flask 服务端页面单体版（响应式页面）
-│   │   └── pms-flask-api/    Flask REST API（供共享 Vue 使用）
-│   └── vue/
-│       └── pms-vue/          共享 Vue 3 + TypeScript 前端
+│   │   └── pms-flask-api/    Flask REST API（供共享前端使用）
+│   ├── vue/
+│   │   └── pms-vue/          共享 Vue 3 + TypeScript 前端
+│   └── react/
+│       └── pms-react/        React 19 + TypeScript 前端（独立项目）
 ├── db/                   共享建表脚本：schema.sql、schema.v1-legacy.sql
 ├── docs/                 集中存放业务、指南、架构、数据与项目搭建文档
 └── README.md             本文件
@@ -180,6 +186,7 @@ pms/
 | Python Flask 单体页面版 | [搭建](docs/projects/python/pms-flask/setup.md) | [构建讲解](docs/projects/python/pms-flask/build-process-explained.md) | [部署](docs/projects/python/pms-flask/deployment.md) |
 | Python Flask REST API | [搭建](docs/projects/python/pms-flask-api/setup.md) | [构建讲解](docs/projects/python/pms-flask-api/build-process-explained.md) | [部署](docs/projects/python/pms-flask-api/deployment.md) |
 | Vue 共享前端 | [搭建](docs/projects/vue/pms-vue/setup.md) | [构建讲解](docs/projects/vue/pms-vue/build-process-explained.md) | [部署](docs/projects/vue/pms-vue/deployment.md) |
+| React 共享前端 | [搭建](docs/projects/react/pms-react/setup.md) | [构建讲解](docs/projects/react/pms-react/build-process-explained.md) | [部署](docs/projects/react/pms-react/deployment.md) |
 
 所有语言的容器化部署入口见[Docker + Kubernetes 指南](docs/guides/container-deployment.md)。生产环境务必修改 `.env` 中的数据库账号、管理员密码与密钥；API 版本的 `API_SECRET` 需一致才能跨版本互认 Token。
 

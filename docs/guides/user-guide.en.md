@@ -1,13 +1,13 @@
 # Personal Effectiveness System · User Guide (English)
 
-This guide helps you put the "daily execution → weekly review → monthly refactor" loop into practice. The system includes Django, Go/Gin, Java/Spring Boot, FastAPI, and Flask implementations: Gin, Spring Boot, and Flask provide server-rendered pages, Django provides a Session page, and FastAPI can host Vue 3 and the REST API at one origin.
+This guide helps you put the "daily execution → weekly review → monthly refactor" loop into practice. The system includes Django, Go/Gin, Java/Spring Boot, FastAPI, and Flask implementations, plus shared Vue and React frontends. Gin, Spring Boot, and Flask provide server-rendered pages, Django provides a Session page, and FastAPI can host Vue 3 and the REST API at one origin.
 
 - [简体中文](user-guide.zh-CN.md) · [繁體中文](user-guide.zh-TW.md) · [日本語](user-guide.ja.md)
 - [Back to project README](../../README.md)
 
 ## 1. Sign in and switch between PC / Mobile
 
-1. Open your chosen version's root URL (Django `:8000/`, Spring Boot `:8080/`, Gin `:8081/`, Flask page app `:8001/`; FastAPI `:8000/` after building the frontend) and sign in with your account.
+1. Open your chosen version's root URL (Django `:8000/`, Spring Boot `:8080/`, Gin `:8081/`, Flask page app `:8001/`; FastAPI `:8000/` after building the frontend; React dev page `:5174/`) and sign in with your account.
 2. **Django / Spring Boot / Gin dual view**: the server picks PC or Mobile by browser User-Agent and serves a touch-friendly mobile view on phones.
 3. **Manual switch in the first three editions**:
    - On PC, click "📱 Mobile" in the top bar to go mobile.
@@ -16,6 +16,7 @@ This guide helps you put the "daily execution → weekly review → monthly refa
    - Switching reloads the current page. Unsaved form input will be lost, so save before switching.
 
 4. **FastAPI page**: PC and phone share a responsive Vue 3 interface; on phones the navigation collapses into a menu. The page is served by FastAPI at the same origin, and `/docs` is the interactive API documentation.
+5. **React page**: it provides the same workflows as Vue, can be deployed independently, and defaults to `http://127.0.0.1:5174/` in development.
 
 ## 2. Daily Execution Checklist (3 min morning + 5 min evening)
 
@@ -58,8 +59,8 @@ Go to **Monthly** and click "New monthly refactor". Four sections:
 Gin, Spring Boot, FastAPI, and Flask use the shared v2 schema in `db/schema.sql`, with data isolated by account. Django uses its own ORM migrations for equivalent business entities. FastAPI, Spring Boot, Gin, and Flask API follow the same API Token contract; each page app has its own session mechanism.
 
 - **Page users**: sign in via Session / signed cookie; data is isolated per account — nobody else can see your lists.
-- **API users**: get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across all four API implementations. See the [API contract](../data/api-contract.md).
-- Default ports: Spring Boot 8080, Gin 8081, Django / FastAPI 8000, Flask page app 8001, Flask API 8002.
+- **API users**: Vue / React frontends and API clients get a Token from `POST /api/auth/login`, then send `Authorization: Bearer <token>`; Tokens work across all four API implementations. See the [API contract](../data/api-contract.md).
+- Default ports: Spring Boot 8080, Gin 8081, Django / FastAPI 8000, Flask page app 8001, Flask API 8002, Vue 5173, React 5174.
 
 ## 6. FAQ
 
@@ -76,7 +77,7 @@ They are saved with the parent list. Editing detail rows and saving replaces the
 In the Daily list click "New daily plan" and pick a past date; if that day already has a record, edit it instead.
 
 **Q: Is content hard to read on my phone?**
-Django / Spring Boot / Gin use separate mobile templates; Flask and FastAPI Vue pages use responsive layouts. Content adapts to screen width.
+Django / Spring Boot / Gin use separate mobile templates; Flask, Vue, and React pages use responsive layouts. Content adapts to screen width.
 
 **Q: Can several people use it at once?**
 Yes, data is isolated per account. User management is admin-only (`/admin/users/` or the equivalent page).
