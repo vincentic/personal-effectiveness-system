@@ -64,6 +64,7 @@
 
 - 建表脚本 [db/schema.sql](db/schema.sql)（5 处副本一致）；效能表：每日 `daily_plans` + `time_blocks`，每周 `weekly_reviews` + `weekly_domain_reviews` + `weekly_task_flows`，每月 `monthly_reviews` + `system_health_checks`。
 - 字段映射与设计说明见 [db/DESIGN.md](db/DESIGN.md)；REST API 契约见 [db/API.md](db/API.md)。
+- 四个实现的业务流程、源码阅读路径与功能落地顺序见[业务说明与代码应用顺序](docs/业务说明与代码应用顺序.md)。
 - 密码统一 BCrypt。默认管理员首次启动且 users 为空时自动创建，生产环境务必用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 覆盖。
 - 双端实现规范见 [docs/DUAL_VIEW.md](docs/DUAL_VIEW.md)。
 
