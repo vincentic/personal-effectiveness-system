@@ -73,6 +73,8 @@
 
 **使用指南（多语言）**：[简体中文](docs/user_guide.md) · [English](docs/user_guide.en.md) · [繁體中文](docs/user_guide.zh-TW.md) · [日本語](docs/user_guide.ja.md)
 
+**业务代码讲解**：[业务说明与代码应用顺序](docs/业务说明与代码应用顺序.md) · [中文音视频口播稿](docs/业务说明与代码应用顺序-中文口播稿.md)。
+
 **需求与架构基线（2026.11.20）**：[需求规格说明书](docs/requirements-2026-11-20.md) · [架构设计与组件关系](.github/modernize/assessment/engines/facts/architecture-diagram.md)
 
 ## 五、快速开始
