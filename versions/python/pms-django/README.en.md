@@ -4,7 +4,7 @@
 
 A lightweight project and task management system built with **Django 4.2 + MySQL**. It provides authentication, a dashboard with statistics, project management, member management, a three-column task board (To Do / In Progress / Done), and the Django Admin site. The UI is in Chinese, styled with Bootstrap 5, and uses the `Asia/Shanghai` time zone by default.
 
-> For production deployment (Gunicorn + Nginx + systemd) and troubleshooting, see [部署指南](../../../docs/projects/python/pms-django/deployment.md) (in Simplified Chinese). For the architecture, see [Section 3](#3-architecture).
+> For production deployment (Linux/systemd, Docker Compose, and Kubernetes with Nginx) and troubleshooting, see [部署指南](../../../docs/projects/python/pms-django/deployment.md) (in Simplified Chinese). For the architecture, see [Section 3](#3-architecture).
 > Build, migration, and static-file collection steps are explained in [构建过程讲解](../../../docs/projects/python/pms-django/build-process-explained.md) (in Simplified Chinese).
 
 ---
