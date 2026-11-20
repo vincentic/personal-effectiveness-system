@@ -1,6 +1,6 @@
 # PMS Spring Boot API 构建过程讲解
 
-本文说明 REST API 项目如何由 Maven 依赖解析、Java 编译、测试和 Spring Boot 可执行 JAR 打包。项目搭建步骤见[搭建指南](setup.md)，Linux 生产发布见[部署指南](deployment.md)；API 字段与行为以[共享契约](../../../data/api-contract.md)为准。
+本文说明 REST API 项目如何由 Maven 依赖解析、Java 编译、测试和 Spring Boot 可执行 JAR 打包。项目搭建步骤见[搭建指南](setup.md)，Linux 生产发布见[部署指南](deployment.md)；API 字段与行为以共享契约为准。
 
 ## 1. 工程与依赖边界
 
