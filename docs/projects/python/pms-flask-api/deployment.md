@@ -1,9 +1,9 @@
 # Flask API 版部署指南
 
-Flask API 默认监听 `8002`，适配共享 Vue 前端。独立部署拓扑：
+Flask API 默认监听 `8002`，适配共享 React 前端。独立部署拓扑：
 
 ```text
-Vue 静态站点 → Nginx HTTPS → Flask API / Gunicorn → MySQL
+React 静态站点 → Nginx HTTPS → Flask API / Gunicorn → MySQL
 ```
 
 应用首次请求会初始化 schema 和空用户表的管理员。跨 API 共享 Token 时，`API_SECRET` 必须与对应 FastAPI、Go 或 Java API 完全一致。
@@ -46,7 +46,7 @@ sudo systemctl status pms-flask-api
 journalctl -u pms-flask-api -f
 ```
 
-## 2. Nginx、Vue 与 HTTPS
+## 2. Nginx、React 与 HTTPS
 
 ```nginx
 server {
@@ -63,8 +63,8 @@ server {
 }
 ```
 
-将 Vue 构建产物部署为 HTTPS 静态站点，构建时指定 `VITE_API_BASE_URL=https://api.example.com`，并在 API 的 `CORS_ORIGINS` 中精确加入 Vue origin。若 Nginx 对外统一为同一 origin，可让 `/api` 和 `/health` 反代 API，其余路径由 Nginx 提供 Vue SPA。
+将 React 构建产物部署为 HTTPS 静态站点，构建时指定 `VITE_API_BASE_URL=https://api.example.com`，并在 API 的 `CORS_ORIGINS` 中精确加入 React origin。若 Nginx 对外统一为同一 origin，可让 `/api` 和 `/health` 反代 API，其余路径由 Nginx 提供 React SPA。
 
 ## 3. Docker 与 Kubernetes
 
-镜像内使用 Gunicorn 绑定 `0.0.0.0:8002`，配置通过环境变量传入。Kubernetes Secret 应承载 `API_SECRET`、`DB_PASSWORD` 和 `ADMIN_PASSWORD`；API Deployment 用 `/health` 探针，Vue 使用独立静态服务。完整 Dockerfile、Nginx Ingress、探针与发布示例见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+镜像内使用 Gunicorn 绑定 `0.0.0.0:8002`，配置通过环境变量传入。Kubernetes Secret 应承载 `API_SECRET`、`DB_PASSWORD` 和 `ADMIN_PASSWORD`；API Deployment 用 `/health` 探针，React 使用独立静态服务。完整 Dockerfile、Nginx Ingress、探针与发布示例见多语言 Docker + Kubernetes 部署指南。
