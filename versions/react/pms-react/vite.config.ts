@@ -7,6 +7,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      outDir: "../../python/pms-fastapi/app/web",
+      emptyOutDir: true,
+    },
     server: {
       port: 5174,
       strictPort: true,

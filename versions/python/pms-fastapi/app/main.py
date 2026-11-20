@@ -1,4 +1,4 @@
-"""个人效能系统：FastAPI 提供 Vue 页面与 REST API，与其他版本共用数据与 Token 契约。
+"""个人效能系统：FastAPI 提供 React 页面与 REST API，与其他版本共用数据与 Token 契约。
 
 日 / 周 / 月清单全部按当前用户隔离；明细子表在写请求内随主表整体替换。
 契约见 docs/data/api-contract.md。
@@ -69,7 +69,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="个人效能系统 API",
     version="2.0.0",
-    description="个人效能系统 FastAPI 服务，提供 Vue 页面和 REST API。契约见 docs/data/api-contract.md。",
+    description="个人效能系统 FastAPI 服务，提供 React 页面和 REST API。契约见 docs/data/api-contract.md。",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -252,7 +252,7 @@ def root():
     if not index.is_file():
         raise HTTPException(
             status_code=503,
-            detail="Vue frontend is not built. Run `npm --prefix versions/vue/pms-vue run build` from the repository root.",
+            detail="React frontend is not built. Run `npm --prefix versions/vue/pms-vue run build` from the repository root.",
         )
     return FileResponse(index)
 

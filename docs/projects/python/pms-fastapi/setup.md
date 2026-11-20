@@ -1,83 +1,10 @@
-# FastAPI + Vue 搭建过程详解
+# FastAPI + React setup
 
-本文介绍如何本地运行 FastAPI 服务和共享 Vue 页面。FastAPI 负责 REST API 与静态页面托管；Vue 源码独立位于 [`../../vue/pms-vue/`](../../vue/pms-vue/setup.md)。
+FastAPI runs the REST API and hosts the built React application at the same origin. Requirements: Python 3.10+, Node.js 24+, pnpm 12+, and MySQL 8+.
 
-## 1. 环境准备
+1. Create a Python virtual environment in `versions/python/pms-fastapi/` and install `requirements.txt`.
+2. Copy `.env.example` to `.env`; configure the MySQL connection, `API_SECRET`, and administrator credentials.
+3. From the repository root, run `pnpm --dir versions/react/pms-react install --frozen-lockfile` followed by `pnpm --dir versions/react/pms-react run build`. The React bundle is generated in `versions/python/pms-fastapi/app/web/`.
+4. Start FastAPI with `versions/python/pms-fastapi/start.sh`. Visit `http://127.0.0.1:8000/`; `/docs` provides the interactive API reference.
 
-- Python 3.10 或更高版本。
-- Node.js 与 npm（推荐 Node.js LTS）。
-- MySQL 8.0 或更高版本。
-
-创建应用数据库：
-
-```bash
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS pms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-```
-
-首次启动时 FastAPI 会执行项目的 `sql/schema.sql` 幂等建表，并在 `users` 表为空时创建默认管理员；数据库本身仍需预先创建。
-
-## 2. 配置并安装后端
-
-在仓库根目录执行：
-
-```bash
-cd versions/python/pms-fastapi
-cp .env.example .env
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-按需编辑 `.env` 的 MySQL `DB_*` 配置。`ADMIN_USERNAME` / `ADMIN_PASSWORD` 只对空用户表生效；生产环境必须设置强密码。`API_SECRET` 用于签名 Token，需与 Gin / Spring API 共享 Token 时应设置为相同值。
-
-## 3. 安装并构建 Vue
-
-仍在 FastAPI 项目目录时，安装前端依赖并构建（以下相对路径从 `versions/python/pms-fastapi` 计算）：
-
-```bash
-npm --prefix ../../vue/pms-vue ci
-npm --prefix ../../vue/pms-vue run build
-```
-
-构建产物写入 `versions/python/pms-fastapi/app/web`，由 FastAPI 同源提供。再次构建会清空并重建该目录；不要在其中保存手工文件。
-
-## 4. 启动并验证
-
-在 FastAPI 项目目录、且已激活虚拟环境时运行：
-
-```bash
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-
-- Vue 页面：<http://127.0.0.1:8000/>
-- OpenAPI 交互文档：<http://127.0.0.1:8000/docs>
-- API 契约：[API 契约](../../../data/api-contract.md)
-
-如果前端尚未构建，页面入口会提示构建缺失，但 API 文档仍可访问。
-
-## 5. 前端独立开发模式
-
-运行 FastAPI 后，另开终端：
-
-```bash
-cd versions/vue/pms-vue
-npm ci
-VITE_API_PROXY_TARGET=http://127.0.0.1:8000 npm run dev
-```
-
-此模式使用 Vite 开发服务器，并通过代理转发 `/api` 和 `/health`。也可将代理目标改为 Spring Boot API 的 `8080` 或 Gin API 的 `8081`。若前后端部署在不同 origin，需设置 Vue 的 `VITE_API_BASE_URL`，并在后端配置允许的 CORS 来源。
-
-## 6. 常见问题
-
-- **数据库连接失败**：确认 MySQL 服务和数据库存在，核对 DB_* 设置及账号授权。
-- **页面返回构建缺失提示**：从仓库根目录重新运行 `npm --prefix versions/vue/pms-vue run build`。
-- **跨域请求失败**：本地开发用 Vite 代理；独立部署时设置 `CORS_ORIGINS` 与 `VITE_API_BASE_URL`。
-- **Token 无法跨 API 版本验证**：保证各 API 使用同一个 `API_SECRET`。
-- **端口冲突**：FastAPI 默认 8000；修改启动参数中的端口，并同步调整 Vue 代理目标。
-
-## 7. 关联资料
-
-- 项目概述与 API 端点：[README.md](../../../../versions/python/pms-fastapi/README.md)
-- 生产部署：[部署指南](deployment.md)
-- 共享前端搭建：[Vue 搭建详解](../../vue/pms-vue/setup.md)
+The development proxy defaults to the FastAPI API on port 8000. See the [React setup guide](../../react/pms-react/setup.md) for independent frontend development.
