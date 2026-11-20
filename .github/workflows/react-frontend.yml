@@ -2,7 +2,7 @@ name: Shared React frontend
 
 on:
   push:
-    branches: [main]
+    branches: ["release/fastapi-react"]
     paths:
       - "versions/react/pms-react/**"
       - ".github/workflows/react-frontend.yml"
