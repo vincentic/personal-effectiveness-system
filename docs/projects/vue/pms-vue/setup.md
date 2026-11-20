@@ -71,8 +71,8 @@ npm run build
 ## 6. 关联资料
 
 - 前端代码和测试：[src/](../../../../versions/vue/pms-vue/src/)
-- API 数据结构与请求契约：[API 契约](../../../data/api-contract.md)
+- API 数据结构与请求契约：API 契约
 - FastAPI 同源托管方式：[FastAPI 搭建详解](../../python/pms-fastapi/setup.md)
-- Go API：[Gin API 搭建详解](../../go/pms-gin-api/setup.md)
-- Java API：[Spring Boot API 搭建详解](../../java/pms-springboot-api/setup.md)
-- Flask API：[Flask API 搭建指南](../../python/pms-flask-api/setup.md)
+- Go API：Gin API 搭建详解
+- Java API：Spring Boot API 搭建详解
+- Flask API：Flask API 搭建指南

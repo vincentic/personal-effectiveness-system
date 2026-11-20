@@ -7,7 +7,7 @@ Vue 源码独立位于 `versions/vue/pms-vue/`，构建后由 FastAPI 同源提�
 
 ## 一、系统功能
 
-- API Token 认证（HMAC-SHA256，签名格式见[API 契约](../../../data/api-contract.md)）
+- API Token 认证（HMAC-SHA256，签名格式见API 契约）
 - 工作台统计：`/api/dashboard`
 - 项目 CRUD、成员管理、进度计算
 - 任务 CRUD、三列看板排序、执行人指派
@@ -262,4 +262,4 @@ curl -s http://127.0.0.1:8000/api/dashboard -H "Authorization: Bearer $TOKEN"
 
 ## 八、Docker 与 Kubernetes
 
-FastAPI + Vue 同源模式在容器内监听 `8000`，`/health` 可用于 HTTP 探针；镜像需从仓库根目录构建 Vue 产物。Docker 多阶段构建、Ingress 路由、Secret 和多后端探针方案见[多语言 Docker + Kubernetes 部署指南](../../../guides/container-deployment.md)。
+FastAPI + Vue 同源模式在容器内监听 `8000`，`/health` 可用于 HTTP 探针；镜像需从仓库根目录构建 Vue 产物。Docker 多阶段构建、Ingress 路由、Secret 和多后端探针方案见多语言 Docker + Kubernetes 部署指南。
