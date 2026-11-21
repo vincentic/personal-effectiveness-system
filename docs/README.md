@@ -9,6 +9,7 @@
 | [业务闭环与代码阅读路径](business/business-flow-and-code-reading.md) | 介绍日 / 周 / 月业务流程、各语言实现入口和关键数据流。 |
 | [中文音视频口播稿](business/business-flow-video-script.zh-CN.md) | 配套业务追踪文档的录制脚本，含分段时间码与画面提示。 |
 | [项目全景介绍口播稿](business/project-overview-video-script.zh-CN.md) | 约 57 分钟，覆盖需求、功能、架构设计、验收管理、反馈收集和扩展方向。 |
+| [项目扩展与 Feature 路线图](business/project-expansion-roadmap.zh-CN.md) | 带日期、文档版本、分支和基线提交的项目不足及待开发 Feature 清单。 |
 | [需求规格说明书（2026.11.20）](requirements/requirements-2026-11-20.md) | 用户场景、功能需求、关键实体和成功标准。 |
 
 ## 项目与组合口播稿
