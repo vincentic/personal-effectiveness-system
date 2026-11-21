@@ -2,6 +2,8 @@
 
 本文说明如何运行独立的 Spring Boot REST API，并让共享 Vue 前端通过它读写个人效能数据。该服务不渲染业务页面；服务端页面版见 [`../pms-springboot/`](../pms-springboot/setup.md)。
 
+需要逐步配置环境、启动服务和排查问题，请看[详细搭建指南](setup-detailed.md)；项目技术讲解、架构和面试追问见[面试讲解文档](interview-guide.md)。
+
 ## 1. 环境准备
 
 - JDK 17 或更高版本。

@@ -8,7 +8,23 @@
 |------|------|
 | [业务闭环与代码阅读路径](business/business-flow-and-code-reading.md) | 介绍日 / 周 / 月业务流程、各语言实现入口和关键数据流。 |
 | [中文音视频口播稿](business/business-flow-video-script.zh-CN.md) | 配套业务追踪文档的录制脚本，含分段时间码与画面提示。 |
+| [项目全景介绍口播稿](business/project-overview-video-script.zh-CN.md) | 约 57 分钟，覆盖需求、功能、架构设计、验收管理、反馈收集和扩展方向。 |
 | [需求规格说明书（2026.11.20）](requirements/requirements-2026-11-20.md) | 用户场景、功能需求、关键实体和成功标准。 |
+
+## 项目与组合口播稿
+
+总介绍脚本控制在 60 分钟以内；每个 API 与前端组合均有独立脚本，预计成片约 18 分钟，包含产品需求、架构、演示、验收、反馈和扩展说明。
+
+| 组合应用 | 独立口播稿 |
+|---|---|
+| Go Gin API + Vue | [go-vue.zh-CN.md](business/combination-video-scripts/go-vue.zh-CN.md) |
+| Go Gin API + React | [go-react.zh-CN.md](business/combination-video-scripts/go-react.zh-CN.md) |
+| Spring Boot API + Vue | [java-vue.zh-CN.md](business/combination-video-scripts/java-vue.zh-CN.md) |
+| Spring Boot API + React | [java-react.zh-CN.md](business/combination-video-scripts/java-react.zh-CN.md) |
+| FastAPI + Vue | [fastapi-vue.zh-CN.md](business/combination-video-scripts/fastapi-vue.zh-CN.md) |
+| FastAPI + React | [fastapi-react.zh-CN.md](business/combination-video-scripts/fastapi-react.zh-CN.md) |
+| Flask API + Vue | [flask-vue.zh-CN.md](business/combination-video-scripts/flask-vue.zh-CN.md) |
+| Flask API + React | [flask-react.zh-CN.md](business/combination-video-scripts/flask-react.zh-CN.md) |
 
 ## 使用与界面规范
 
@@ -39,7 +55,7 @@
 | Go | Gin 页面单体版 | [搭建](projects/go/pms-gin/setup.md) | [构建讲解](projects/go/pms-gin/build-process-explained.md) | [部署](projects/go/pms-gin/deployment.md) |
 | Go | Gin REST API | [搭建](projects/go/pms-gin-api/setup.md) | [构建讲解](projects/go/pms-gin-api/build-process-explained.md) | [部署](projects/go/pms-gin-api/deployment.md) |
 | Java | Spring Boot 页面单体版 | [搭建](projects/java/pms-springboot/setup.md) | [构建讲解](projects/java/pms-springboot/build-process-explained.md) | [部署](projects/java/pms-springboot/deployment.md) |
-| Java | Spring Boot REST API | [搭建](projects/java/pms-springboot-api/setup.md) | [构建讲解](projects/java/pms-springboot-api/build-process-explained.md) | [部署](projects/java/pms-springboot-api/deployment.md) |
+| Java | Spring Boot REST API | [搭建](projects/java/pms-springboot-api/setup.md) · [详细搭建](projects/java/pms-springboot-api/setup-detailed.md) | [构建讲解](projects/java/pms-springboot-api/build-process-explained.md) | [部署](projects/java/pms-springboot-api/deployment.md) · [面试讲解](projects/java/pms-springboot-api/interview-guide.md) |
 | Python | Django 页面版 | [搭建](projects/python/pms-django/setup.md) | [构建讲解](projects/python/pms-django/build-process-explained.md) | [部署](projects/python/pms-django/deployment.md) · [不停机发布](projects/python/pms-django/hot-deployment.md) |
 | Python | FastAPI + Vue 同源版 | [搭建](projects/python/pms-fastapi/setup.md) | [构建讲解](projects/python/pms-fastapi/build-process-explained.md) | [部署](projects/python/pms-fastapi/deployment.md) |
 | Python | Flask 页面单体版 | [搭建](projects/python/pms-flask/setup.md) | [构建讲解](projects/python/pms-flask/build-process-explained.md) | [部署](projects/python/pms-flask/deployment.md) |

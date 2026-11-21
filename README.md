@@ -98,6 +98,7 @@
 | [PC / Mobile 双端实现规范](docs/guides/dual-view-guidelines.md) | 说明三种服务端页面版的视图切换、模板组织、移动端设计要求和验收标准。 |
 | [业务说明与代码应用顺序](docs/business/business-flow-and-code-reading.md) | 从日 / 周 / 月业务闭环出发，介绍 Go、Java、Python、Vue 与 React 项目的代码阅读路径，并追踪周复盘数据的处理过程。 |
 | [中文音视频口播稿](docs/business/business-flow-video-script.zh-CN.md) | 配套业务追踪文档的中文讲解脚本，包含画面提示和时间码，预计时长约 20 分钟。 |
+| [项目全景介绍口播稿](docs/business/project-overview-video-script.zh-CN.md) | 覆盖需求、功能、架构、验收、反馈与扩展，预计约 57 分钟；8 个组合应用的独立口播稿见[文档中心](docs/README.md)，每篇约 18 分钟。 |
 | [需求规格说明书（2026.11.20）](docs/requirements/requirements-2026-11-20.md) | 汇总系统范围、用户场景、功能需求、关键实体与可验证的成功标准。 |
 | [架构设计与组件关系（2026.11.20）](docs/architecture/architecture-diagram.md) | 通过架构图和组件关系图概览系统分层、技术栈、数据存储及主要组件职责。 |
 
